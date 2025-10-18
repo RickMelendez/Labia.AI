@@ -454,3 +454,14 @@ async def get_redis() -> RedisClient:
     if not redis_client.connected:
         await redis_client.connect()
     return redis_client
+
+
+def get_redis_client() -> RedisClient:
+    """
+    Get the global Redis client instance (for startup/shutdown events)
+
+    Usage:
+        redis = get_redis_client()
+        await redis.connect()
+    """
+    return redis_client
