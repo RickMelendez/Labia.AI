@@ -248,6 +248,18 @@ class StructuredLogger:
         }
         logger.bind(**log_data).error(f"Error: {error_type} - {error_message}")
 
+    def log_info(self, message: str, **kwargs):
+        """Log info message"""
+        logger.bind(**kwargs).info(message)
+
+    def log_warning(self, message: str, **kwargs):
+        """Log warning message"""
+        logger.bind(**kwargs).warning(message)
+
+    def log_debug(self, message: str, **kwargs):
+        """Log debug message"""
+        logger.bind(**kwargs).debug(message)
+
 
 # Global logger instance
 structured_logger = StructuredLogger()
