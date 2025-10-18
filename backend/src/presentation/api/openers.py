@@ -6,6 +6,8 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from loguru import logger
+import hashlib
+import json
 
 from ...infrastructure.external_services import (
     AIConversationService,
@@ -13,6 +15,7 @@ from ...infrastructure.external_services import (
     LLMProvider
 )
 from ...core.config import settings
+from ...infrastructure.cache.redis_client import get_redis, RedisClient
 
 router = APIRouter()
 
@@ -84,7 +87,8 @@ def get_ai_service() -> AIConversationService:
 @router.post("/openers", response_model=OpenersListResponse)
 async def generate_openers(
     request: OpenerRequest,
-    ai_service: AIConversationService = Depends(get_ai_service)
+    ai_service: AIConversationService = Depends(get_ai_service),
+    cache: RedisClient = Depends(get_redis)
 ):
     """
     Generate conversation openers for dating apps
@@ -96,6 +100,8 @@ async def generate_openers(
     - Directo (Direct/Concise)
 
     Perfect for Puerto Rican and Latin American users!
+
+    **Caching**: Results are cached for 1 hour to improve performance and reduce LLM costs.
     """
     try:
         logger.info(f"Generating openers with {request.cultural_style} style")
@@ -107,6 +113,25 @@ async def generate_openers(
                 status_code=400,
                 detail=f"Invalid cultural_style. Must be one of: {', '.join(valid_styles)}"
             )
+
+        # Create cache key from request parameters
+        cache_data = {
+            "bio": request.bio,
+            "interests": sorted(request.interests),
+            "cultural_style": request.cultural_style,
+            "user_interests": sorted(request.user_interests) if request.user_interests else None,
+            "num_suggestions": request.num_suggestions
+        }
+        cache_hash = hashlib.md5(json.dumps(cache_data, sort_keys=True).encode()).hexdigest()
+        cache_key = f"opener:{request.cultural_style}:{cache_hash}"
+
+        # Try to get from cache
+        cached_result = await cache.get(cache_key)
+        if cached_result:
+            logger.info(f"Cache HIT for openers: {cache_key}")
+            return OpenersListResponse(**cached_result)
+
+        logger.info(f"Cache MISS for openers: {cache_key}")
 
         # Generate openers
         openers = await ai_service.generate_openers(
@@ -130,12 +155,18 @@ async def generate_openers(
 
         logger.info(f"Successfully generated {len(opener_responses)} openers")
 
-        return OpenersListResponse(
+        response = OpenersListResponse(
             success=True,
             openers=opener_responses,
             cultural_style=request.cultural_style,
             suggestions_remaining=None  # TODO: Implement with user auth
         )
+
+        # Cache the result for 1 hour
+        await cache.set(cache_key, response.model_dump(), ttl=3600)
+        logger.info(f"Cached openers result: {cache_key}")
+
+        return response
 
     except Exception as e:
         logger.error(f"Error generating openers: {e}")

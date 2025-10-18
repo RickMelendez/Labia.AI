@@ -6,6 +6,8 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from loguru import logger
+import hashlib
+import json
 
 from ...infrastructure.external_services import (
     AIConversationService,
@@ -13,6 +15,7 @@ from ...infrastructure.external_services import (
     LLMProvider
 )
 from ...core.config import settings
+from ...infrastructure.cache.redis_client import get_redis, RedisClient
 
 router = APIRouter()
 
@@ -115,7 +118,8 @@ def get_ai_service() -> AIConversationService:
 @router.post("/responses", response_model=ResponsesListResponse)
 async def generate_responses(
     request: ResponseRequest,
-    ai_service: AIConversationService = Depends(get_ai_service)
+    ai_service: AIConversationService = Depends(get_ai_service),
+    cache: RedisClient = Depends(get_redis)
 ):
     """
     Generate conversation responses to received messages
@@ -127,6 +131,8 @@ async def generate_responses(
     - Directo (Direct/Clear)
 
     Perfect for keeping the conversation flowing naturally!
+
+    **Caching**: Results are cached for 30 minutes to improve performance.
     """
     try:
         logger.info(f"Generating responses with {request.cultural_style} style")
@@ -146,6 +152,26 @@ async def generate_responses(
                 status_code=400,
                 detail=f"Invalid relationship_stage. Must be one of: {', '.join(valid_stages)}"
             )
+
+        # Create cache key from request parameters
+        cache_data = {
+            "received_message": request.received_message,
+            "cultural_style": request.cultural_style,
+            "conversation_context": request.conversation_context or [],
+            "shared_interests": sorted(request.shared_interests) if request.shared_interests else None,
+            "relationship_stage": request.relationship_stage,
+            "num_suggestions": request.num_suggestions
+        }
+        cache_hash = hashlib.md5(json.dumps(cache_data, sort_keys=True).encode()).hexdigest()
+        cache_key = f"response:{request.cultural_style}:{cache_hash}"
+
+        # Try to get from cache
+        cached_result = await cache.get(cache_key)
+        if cached_result:
+            logger.info(f"Cache HIT for responses: {cache_key}")
+            return ResponsesListResponse(**cached_result)
+
+        logger.info(f"Cache MISS for responses: {cache_key}")
 
         # Generate responses
         responses = await ai_service.generate_responses(
@@ -170,13 +196,19 @@ async def generate_responses(
 
         logger.info(f"Successfully generated {len(response_models)} responses")
 
-        return ResponsesListResponse(
+        response = ResponsesListResponse(
             success=True,
             responses=response_models,
             cultural_style=request.cultural_style,
             relationship_stage=request.relationship_stage,
             suggestions_remaining=None  # TODO: Implement with user auth
         )
+
+        # Cache the result for 30 minutes (shorter than openers since context is more dynamic)
+        await cache.set(cache_key, response.model_dump(), ttl=1800)
+        logger.info(f"Cached responses result: {cache_key}")
+
+        return response
 
     except Exception as e:
         logger.error(f"Error generating responses: {e}")
