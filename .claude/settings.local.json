@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p backend frontend docs)",
+      "Read(//c/Users/Rickm/Downloads/**)",
+      "Bash(tree backend/src -L 3)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

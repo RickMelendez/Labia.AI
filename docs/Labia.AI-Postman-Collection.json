@@ -1,0 +1,439 @@
+{
+  "info": {
+    "name": "Labia.AI API - Puerto Rico & Latin Market",
+    "_postman_id": "labia-ai-collection",
+    "description": "Complete API collection for Labia.AI - AI conversation assistant for Puerto Rican and Latin American users",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "api_version",
+      "value": "v1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health & Status",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/{{api_version}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["api", "{{api_version}}", "health"]
+            }
+          }
+        },
+        {
+          "name": "Ping",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/{{api_version}}/ping",
+              "host": ["{{base_url}}"],
+              "path": ["api", "{{api_version}}", "ping"]
+            }
+          }
+        },
+        {
+          "name": "Root - Wepa!",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Conversation Openers",
+      "item": [
+        {
+          "name": "Generate Puerto Rican Openers",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bio\": \"Me encanta la playa, el mofongo y Bad Bunny 🐰 Trabajo en marketing digital y siempre estoy buscando nuevas aventuras.\",\n  \"interests\": [\"playa\", \"música\", \"marketing\", \"viajes\"],\n  \"cultural_style\": \"boricua\",\n  \"user_interests\": [\"música\", \"deportes\"],\n  \"num_suggestions\": 3\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/{{api_version}}/openers",
+              "host": ["{{base_url}}"],
+              "path": ["api", "{{api_version}}", "openers"]
+            }
+          }
+        },
+        {
+          "name": "Generate Mexican Openers",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bio\": \"Taquero de corazón 🌮 Fan de los Pumas y las películas de terror. Busco alguien con buen humor.\",\n  \"interests\": [\"tacos\", \"fútbol\", \"cine\"],\n  \"cultural_style\": \"mexicano\",\n  \"num_suggestions\": 3\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/{{api_version}}/openers",
+              "host": ["{{base_url}}"],
+              "path": ["api", "{{api_version}}", "openers"]
+            }
+          }
+        },
+        {
+          "name": "Generate Colombian Openers",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bio\": \"Bailarín de salsa 💃 Amante del café y la buena conversación. Parcero, hablemos!\",\n  \"interests\": [\"baile\", \"café\", \"cultura\"],\n  \"cultural_style\": \"colombiano\",\n  \"num_suggestions\": 3\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/{{api_version}}/openers",
+              "host": ["{{base_url}}"],
+              "path": ["api", "{{api_version}}", "openers"]
+            }
+          }
+        },
+        {
+          "name": "Preview Single Opener",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bio\": \"Fotógrafa freelance. Me gusta capturar momentos únicos 📸\",\n  \"interests\": [\"fotografía\", \"arte\", \"naturaleza\"],\n  \"cultural_style\": \"boricua\",\n  \"num_suggestions\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/{{api_version}}/openers/preview",
+              "host": ["{{base_url}}"],
+              "path": ["api", "{{api_version}}", "openers", "preview"]
+            }
+          }
+        },
+        {
+          "name": "Get Opener Examples",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/{{api_version}}/openers/examples",
+              "host": ["{{base_url}}"],
+              "path": ["api", "{{api_version}}", "openers", "examples"]
+            }
+          }
+        },
+        {
+          "name": "Invalid Cultural Style (Error Test)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bio\": \"Test bio\",\n  \"interests\": [\"test\"],\n  \"cultural_style\": \"invalid_style\",\n  \"num_suggestions\": 3\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/{{api_version}}/openers",
+              "host": ["{{base_url}}"],
+              "path": ["api", "{{api_version}}", "openers"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Conversation Responses",
+      "item": [
+        {
+          "name": "Generate Puerto Rican Responses - Early Stage",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"received_message\": \"Hola! Me gustó tu perfil. ¿Cómo estuvo tu día?\",\n  \"cultural_style\": \"boricua\",\n  \"relationship_stage\": \"early\",\n  \"num_suggestions\": 3\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/{{api_version}}/responses",
+              "host": ["{{base_url}}"],
+              "path": ["api", "{{api_version}}", "responses"]
+            }
+          }
+        },
+        {
+          "name": "Generate Responses with Context",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"received_message\": \"Jaja me encanta tu sentido del humor! Deberíamos seguir hablando\",\n  \"cultural_style\": \"boricua\",\n  \"conversation_context\": [\n    \"Hola! ¿Cómo estás?\",\n    \"Todo bien! Vi que te gusta la música\",\n    \"Sí, sobre todo el reggaeton y la salsa\"\n  ],\n  \"shared_interests\": [\"música\", \"playa\"],\n  \"relationship_stage\": \"building\",\n  \"num_suggestions\": 3\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/{{api_version}}/responses",
+              "host": ["{{base_url}}"],
+              "path": ["api", "{{api_version}}", "responses"]
+            }
+          }
+        },
+        {
+          "name": "Advanced Stage Response",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"received_message\": \"Me la paso súper bien hablando contigo. ¿Qué te parece si nos vemos pronto?\",\n  \"cultural_style\": \"boricua\",\n  \"relationship_stage\": \"advanced\",\n  \"shared_interests\": [\"música\", \"comida\", \"cine\"],\n  \"num_suggestions\": 3\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/{{api_version}}/responses",
+              "host": ["{{base_url}}"],
+              "path": ["api", "{{api_version}}", "responses"]
+            }
+          }
+        },
+        {
+          "name": "Get Response Examples",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/{{api_version}}/responses/examples",
+              "host": ["{{base_url}}"],
+              "path": ["api", "{{api_version}}", "responses", "examples"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Content Safety",
+      "item": [
+        {
+          "name": "Check Safe Content",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Hola, ¿cómo estás? Me gustaría conocerte mejor y saber más sobre tus intereses.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/{{api_version}}/responses/safety-check",
+              "host": ["{{base_url}}"],
+              "path": ["api", "{{api_version}}", "responses", "safety-check"]
+            }
+          }
+        },
+        {
+          "name": "Check Inappropriate Content",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"[Contenido inapropiado para prueba]\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/{{api_version}}/responses/safety-check",
+              "host": ["{{base_url}}"],
+              "path": ["api", "{{api_version}}", "responses", "safety-check"]
+            }
+          }
+        },
+        {
+          "name": "Rewrite Inappropriate Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"[Mensaje inapropiado que necesita ser reescrito]\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/{{api_version}}/responses/rewrite?cultural_style=boricua",
+              "host": ["{{base_url}}"],
+              "path": ["api", "{{api_version}}", "responses", "rewrite"],
+              "query": [
+                {
+                  "key": "cultural_style",
+                  "value": "boricua"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cultural Styles Test Suite",
+      "item": [
+        {
+          "name": "All Styles - Opener Test",
+          "item": [
+            {
+              "name": "Boricua (Puerto Rican)",
+              "request": {
+                "method": "POST",
+                "header": [{"key": "Content-Type", "value": "application/json"}],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"bio\": \"Amante de la playa y el reggaeton\",\n  \"interests\": [\"playa\", \"música\"],\n  \"cultural_style\": \"boricua\",\n  \"num_suggestions\": 1\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/{{api_version}}/openers",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "{{api_version}}", "openers"]
+                }
+              }
+            },
+            {
+              "name": "Mexicano",
+              "request": {
+                "method": "POST",
+                "header": [{"key": "Content-Type", "value": "application/json"}],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"bio\": \"Taquero de corazón\",\n  \"interests\": [\"comida\", \"fútbol\"],\n  \"cultural_style\": \"mexicano\",\n  \"num_suggestions\": 1\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/{{api_version}}/openers",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "{{api_version}}", "openers"]
+                }
+              }
+            },
+            {
+              "name": "Colombiano",
+              "request": {
+                "method": "POST",
+                "header": [{"key": "Content-Type", "value": "application/json"}],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"bio\": \"Bailarín de salsa\",\n  \"interests\": [\"baile\", \"café\"],\n  \"cultural_style\": \"colombiano\",\n  \"num_suggestions\": 1\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/{{api_version}}/openers",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "{{api_version}}", "openers"]
+                }
+              }
+            },
+            {
+              "name": "Argentino",
+              "request": {
+                "method": "POST",
+                "header": [{"key": "Content-Type", "value": "application/json"}],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"bio\": \"Fanático del fútbol y el vino\",\n  \"interests\": [\"fútbol\", \"vino\"],\n  \"cultural_style\": \"argentino\",\n  \"num_suggestions\": 1\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/{{api_version}}/openers",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "{{api_version}}", "openers"]
+                }
+              }
+            },
+            {
+              "name": "Español (Spain)",
+              "request": {
+                "method": "POST",
+                "header": [{"key": "Content-Type", "value": "application/json"}],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"bio\": \"Me gusta salir de fiesta y viajar\",\n  \"interests\": [\"fiesta\", \"viajes\"],\n  \"cultural_style\": \"español\",\n  \"num_suggestions\": 1\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/{{api_version}}/openers",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "{{api_version}}", "openers"]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,154 @@
+# Docker Compose for Labia.AI Local Development
+# Services: PostgreSQL, Redis, Backend API
+
+version: '3.8'
+
+services:
+  # ==================== PostgreSQL Database ====================
+  postgres:
+    image: postgres:15-alpine
+    container_name: labiaai-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: labiaai
+      POSTGRES_PASSWORD: labiaai
+      POSTGRES_DB: labiaai
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - labiaai-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U labiaai -d labiaai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================== Redis Cache ====================
+  redis:
+    image: redis:7-alpine
+    container_name: labiaai-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - labiaai-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================== FastAPI Backend ====================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: labiaai-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      # Application
+      ENVIRONMENT: development
+      DEBUG: "True"
+
+      # Database
+      DATABASE_URL: postgresql://labiaai:labiaai@postgres:5432/labiaai
+
+      # Redis
+      REDIS_URL: redis://redis:6379/0
+
+      # LLM (set your API keys in .env file)
+      LLM_PROVIDER: ${LLM_PROVIDER:-openai}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+
+      # Security
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-dev-jwt-secret-change-in-production-min-32-chars}
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-key-change-in-production}
+
+      # CORS
+      ALLOWED_ORIGINS: http://localhost:3000,http://localhost:8081,http://localhost:19000,http://localhost:19006
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/src:/app/src:ro  # Mount source for hot reload (dev only)
+      - ./backend/alembic:/app/alembic:ro
+    networks:
+      - labiaai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    command: >
+      sh -c "
+        echo 'Waiting for database...' &&
+        sleep 5 &&
+        echo 'Running migrations...' &&
+        alembic upgrade head &&
+        echo 'Starting server...' &&
+        uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+      "
+
+  # ==================== pgAdmin (Optional - for DB management) ====================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: labiaai-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@labiaai.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - labiaai-network
+    depends_on:
+      - postgres
+    profiles:
+      - tools  # Only start with: docker-compose --profile tools up
+
+  # ==================== Redis Commander (Optional - for Redis management) ====================
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: labiaai-redis-commander
+    restart: unless-stopped
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - "8081:8081"
+    networks:
+      - labiaai-network
+    depends_on:
+      - redis
+    profiles:
+      - tools  # Only start with: docker-compose --profile tools up
+
+# ==================== Networks ====================
+networks:
+  labiaai-network:
+    driver: bridge
+    name: labiaai-network
+
+# ==================== Volumes ====================
+volumes:
+  postgres_data:
+    name: labiaai-postgres-data
+  redis_data:
+    name: labiaai-redis-data
+  pgadmin_data:
+    name: labiaai-pgadmin-data
