@@ -12,7 +12,7 @@ export default function ToneSelector({ selectedTone, onSelect }: ToneSelectorPro
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Tono</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollView}>
+      <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} style={styles.scrollView}>
         {TONES.map((tone) => {
           const isSelected = selectedTone === tone.value;
           return (

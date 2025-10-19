@@ -22,6 +22,11 @@ class Settings(BaseSettings):
         "http://localhost:8081",  # React Native
         "http://localhost:19000",  # Expo
         "http://localhost:19006",  # Expo web
+        "https://labia.chat",  # Production domain
+        "https://www.labia.chat",  # Production domain (www)
+        "https://api.labia.chat",  # API subdomain
+        "https://staging.labia.chat",  # Staging domain
+        "https://api.staging.labia.chat",  # Staging API subdomain
     ]
 
     # Database
@@ -58,6 +63,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
+        extra = "ignore"  # Ignore extra fields in .env that aren't defined in Settings
 
 
 @lru_cache()

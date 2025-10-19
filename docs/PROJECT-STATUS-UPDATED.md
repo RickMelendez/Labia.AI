@@ -1,5 +1,7 @@
 # Labia.AI - Project Status Update
 
+**Production Domain**: https://labia.chat
+**Production API**: https://api.labia.chat
 **Date**: October 19, 2025
 **Previous Status**: Backend 75%, Frontend 0% → **NEW STATUS**: Backend 75%, Frontend 80%
 **Overall Progress**: 40% → **77.5%** 🎉

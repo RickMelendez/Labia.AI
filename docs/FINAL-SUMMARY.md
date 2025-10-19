@@ -1,6 +1,8 @@
 # 🎉 Labia.AI Backend - FINAL SUMMARY
 
 **Project**: Labia.AI - AI-Powered Conversation Assistant for Puerto Rico & Latin America
+**Production Domain**: https://labia.chat
+**Production API**: https://api.labia.chat
 **Date**: October 18, 2025
 **Branch**: `feature/initial-project-setup`
 **Status**: **75% Complete - Backend Ready for Production Testing** ✅

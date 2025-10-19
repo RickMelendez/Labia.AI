@@ -1,0 +1,86 @@
+# Labia.AI - Docker Ignore File
+# Files and directories to exclude from Docker builds
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+*.manifest
+*.spec
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+
+# Environment Files
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Tests
+tests/
+*.pytest_cache/
+
+# Logs
+logs/
+*.log
+
+# Frontend (not needed in backend image)
+frontend/
+node_modules/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.circleci/
+
+# Misc
+.dockerignore
+docker-compose*.yml
+Dockerfile
+*.dockerfile

@@ -98,19 +98,27 @@ class ApiClient {
     return response.data;
   }
 
-  // Auth Endpoints (for future implementation)
-  async register(email: string, password: string, culturalStyle: string): Promise<{ user: UserProfile; token: string }> {
-    const response = await this.client.post('/auth/register', { email, password, cultural_style: culturalStyle });
+  // Auth Endpoints
+  async register(data: { email: string; password: string; name: string; plan: string }): Promise<{ user: UserProfile; access_token: string }> {
+    const response = await this.client.post('/auth/register', data);
+    if (response.data.access_token) {
+      this.setAuthToken(response.data.access_token);
+    }
     return response.data;
   }
 
-  async login(email: string, password: string): Promise<{ user: UserProfile; token: string }> {
-    const response = await this.client.post('/auth/login', { email, password });
+  async login(data: { email: string; password: string }): Promise<{ user: UserProfile; access_token: string }> {
+    const response = await this.client.post('/auth/login', data);
+    if (response.data.access_token) {
+      this.setAuthToken(response.data.access_token);
+    }
     return response.data;
   }
 
   async logout(): Promise<void> {
-    await this.client.post('/auth/logout');
+    this.setAuthToken(null);
+    // If backend has logout endpoint, call it here
+    // await this.client.post('/auth/logout');
   }
 
   // Profile Endpoints (for future implementation)

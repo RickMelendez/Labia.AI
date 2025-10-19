@@ -9,22 +9,32 @@ import { STORAGE_KEYS } from '../constants';
 // Navigators
 import MainNavigator from './MainNavigator';
 import OnboardingNavigator from './OnboardingNavigator';
+import AuthNavigator from './AuthNavigator';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator() {
-  const { isLoading } = useAppStore();
+  const { isLoading, isAuthenticated } = useAppStore();
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = React.useState<boolean | null>(null);
+
+  const checkOnboardingStatus = React.useCallback(async () => {
+    const onboardingCompleted = await AsyncStorage.getItem(STORAGE_KEYS.ONBOARDING_COMPLETED);
+    setHasCompletedOnboarding(onboardingCompleted === 'true');
+  }, []);
 
   useEffect(() => {
     const initialize = async () => {
       await initializeAppStore();
-      const onboardingCompleted = await AsyncStorage.getItem(STORAGE_KEYS.ONBOARDING_COMPLETED);
-      setHasCompletedOnboarding(onboardingCompleted === 'true');
+      await checkOnboardingStatus();
     };
 
     initialize();
-  }, []);
+
+    // Listen for focus events to re-check onboarding status
+    // This allows the app to update when returning from background
+    const interval = setInterval(checkOnboardingStatus, 1000);
+    return () => clearInterval(interval);
+  }, [checkOnboardingStatus]);
 
   if (isLoading || hasCompletedOnboarding === null) {
     // Could show a splash screen here
@@ -34,6 +44,12 @@ export default function RootNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {/* Auth Flow - Optional for now, users can skip */}
+        {/* {!isAuthenticated ? (
+          <Stack.Screen name="Auth" component={AuthNavigator} />
+        ) : */}
+
+        {/* Onboarding or Main App */}
         {!hasCompletedOnboarding ? (
           <Stack.Screen name="Onboarding" component={OnboardingNavigator} />
         ) : (

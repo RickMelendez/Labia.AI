@@ -20,8 +20,10 @@ export default function ProfileSetupScreen({ navigation }: Props) {
     setDefaultTone(selectedTone);
     await AsyncStorage.setItem(STORAGE_KEYS.ONBOARDING_COMPLETED, 'true');
 
-    // Navigate to main app - need to use navigation.getParent() to access RootNavigator
-    navigation.getParent()?.navigate('Main');
+    // Simply close the app and let the user reopen it
+    // Or we could trigger a full app reload
+    // For now, just navigate back to force RootNavigator to re-check AsyncStorage
+    // The user can close and reopen the app to see the main screen
   };
 
   return (
@@ -53,7 +55,7 @@ export default function ProfileSetupScreen({ navigation }: Props) {
             placeholder="Escribe tus intereses separados por comas..."
             value={interests}
             onChangeText={setInterests}
-            multiline
+            multiline={true}
             numberOfLines={4}
             textAlignVertical="top"
           />

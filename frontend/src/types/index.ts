@@ -136,8 +136,14 @@ export interface UserMission {
 
 // Navigation Types
 export type RootStackParamList = {
+  Auth: undefined;
   Onboarding: undefined;
   Main: undefined;
+};
+
+export type AuthStackParamList = {
+  Login: undefined;
+  Signup: undefined;
 };
 
 export type MainTabParamList = {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { MainTabParamList } from '../types';
 import { COLORS } from '../constants';
 
@@ -16,17 +16,20 @@ export default function MainNavigator() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName: keyof typeof Ionicons.glyphMap;
+          let iconName: keyof typeof MaterialCommunityIcons.glyphMap;
 
           if (route.name === 'Chat') {
-            iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
+            // Heart-message icon for dating conversations
+            iconName = focused ? 'heart-circle' : 'heart-circle-outline';
           } else if (route.name === 'Trainer') {
-            iconName = focused ? 'trophy' : 'trophy-outline';
+            // Dumbbell/fitness icon for trainer
+            iconName = focused ? 'diamond-stone' : 'diamond-outline';
           } else {
-            iconName = focused ? 'person' : 'person-outline';
+            // Account icon for profile
+            iconName = focused ? 'account-heart' : 'account-heart-outline';
           }
 
-          return <Ionicons name={iconName} size={size} color={color} />;
+          return <MaterialCommunityIcons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: COLORS.primary,
         tabBarInactiveTintColor: COLORS.text.secondary,

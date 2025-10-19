@@ -62,8 +62,8 @@ export default function TutorialScreen({ navigation }: Props) {
         ref={flatListRef}
         data={TUTORIAL_SLIDES}
         renderItem={renderSlide}
-        horizontal
-        pagingEnabled
+        horizontal={true}
+        pagingEnabled={true}
         showsHorizontalScrollIndicator={false}
         onMomentumScrollEnd={(event) => {
           const index = Math.round(event.nativeEvent.contentOffset.x / width);

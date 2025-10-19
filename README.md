@@ -121,9 +121,15 @@ API_URL=http://localhost:8000
 
 ## API Documentation
 
-Once the backend is running, visit:
+### Development
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
+
+### Production
+- Website: https://labia.chat
+- API: https://api.labia.chat
+- Swagger UI: https://api.labia.chat/docs
+- ReDoc: https://api.labia.chat/redoc
 
 ## Contributing
 

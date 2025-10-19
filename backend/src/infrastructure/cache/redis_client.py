@@ -62,7 +62,9 @@ class RedisClient:
 
         except Exception as e:
             logger.error(f"Failed to connect to Redis: {e}")
-            raise CacheException(f"Redis connection failed: {e}")
+            # Don't raise exception - allow app to run without cache
+            self.connected = False
+            self.client = None
 
     async def disconnect(self) -> None:
         """Close Redis connection"""
@@ -450,9 +452,12 @@ async def get_redis() -> RedisClient:
         @router.get("/cached")
         async def cached_endpoint(cache: RedisClient = Depends(get_redis)):
             value = await cache.get("key")
+
+    Note: Returns a client that may not be connected. Always check redis_client.connected
+    or redis_client.client before using cache operations.
     """
-    if not redis_client.connected:
-        await redis_client.connect()
+    # Don't attempt to reconnect - just return the client (may be disconnected)
+    # The cache operations (get, set, etc.) already handle the disconnected case
     return redis_client
 
 

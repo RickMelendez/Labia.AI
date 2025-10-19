@@ -1,9 +1,11 @@
 import { CulturalStyle, Tone } from '../types';
 
 // API Configuration
+// For development on physical device, use your computer's IP address
+// Find it with: ipconfig (Windows) or ifconfig (Mac/Linux)
 export const API_BASE_URL = __DEV__
-  ? 'http://localhost:8000/api/v1'
-  : 'https://api.labia.ai/api/v1';
+  ? 'http://192.168.0.126:8000/api/v1'
+  : 'https://api.labia.chat/api/v1';
 
 export const API_TIMEOUT = 30000; // 30 seconds
 

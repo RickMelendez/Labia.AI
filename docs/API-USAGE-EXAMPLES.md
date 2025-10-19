@@ -1,8 +1,10 @@
 # Labia.AI API - Usage Examples
 
 **Version**: 1.0
-**Base URL**: `http://localhost:8000`
-**API Docs**: `http://localhost:8000/docs`
+**Development Base URL**: `http://localhost:8000`
+**Production Base URL**: `https://api.labia.chat`
+**API Docs (Dev)**: `http://localhost:8000/docs`
+**API Docs (Prod)**: `https://api.labia.chat/docs`
 
 ---
 
