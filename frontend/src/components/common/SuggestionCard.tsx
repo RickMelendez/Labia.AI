@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Clipboard } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, TONES } from '../../constants';
 import { Tone } from '../../types';
+import { showToast } from '../../services/toast';
 
 interface SuggestionCardProps {
   text: string;
@@ -21,10 +22,22 @@ export default function SuggestionCard({
   onRegenerate
 }: SuggestionCardProps) {
   const toneInfo = TONES.find((t) => t.value === tone);
+  const [liked, setLiked] = useState<boolean | null>(null);
 
   const handleCopy = () => {
     Clipboard.setString(text);
+    showToast.success('¡Copiado!', 'El texto ha sido copiado al portapapeles');
     onCopy?.();
+  };
+
+  const handleLike = () => {
+    setLiked(true);
+    showToast.success('¡Gracias!', 'Nos alegra que te guste esta sugerencia');
+  };
+
+  const handleDislike = () => {
+    setLiked(false);
+    showToast.info('Gracias por tu feedback', 'Trabajaremos en generar mejores sugerencias');
   };
 
   return (
@@ -52,15 +65,43 @@ export default function SuggestionCard({
         {/* Actions */}
         <View style={styles.actions}>
           <TouchableOpacity style={styles.actionButton} onPress={handleCopy}>
-            <Ionicons name="copy-outline" size={20} color={COLORS.primary} />
+            <MaterialCommunityIcons name="content-copy" size={18} color={COLORS.primary} />
             <Text style={styles.actionText}>Copiar</Text>
           </TouchableOpacity>
 
+          <View style={styles.divider} />
+
+          {/* Feedback Buttons */}
+          <TouchableOpacity
+            style={[styles.feedbackButton, liked === true && styles.feedbackButtonActive]}
+            onPress={handleLike}
+          >
+            <MaterialCommunityIcons
+              name={liked === true ? "thumb-up" : "thumb-up-outline"}
+              size={18}
+              color={liked === true ? COLORS.success : COLORS.text.secondary}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.feedbackButton, liked === false && styles.feedbackButtonActive]}
+            onPress={handleDislike}
+          >
+            <MaterialCommunityIcons
+              name={liked === false ? "thumb-down" : "thumb-down-outline"}
+              size={18}
+              color={liked === false ? COLORS.error : COLORS.text.secondary}
+            />
+          </TouchableOpacity>
+
           {onRegenerate && (
-            <TouchableOpacity style={styles.actionButton} onPress={onRegenerate}>
-              <Ionicons name="refresh-outline" size={20} color={COLORS.secondary} />
-              <Text style={styles.actionText}>Regenerar</Text>
-            </TouchableOpacity>
+            <>
+              <View style={styles.divider} />
+              <TouchableOpacity style={styles.actionButton} onPress={onRegenerate}>
+                <MaterialCommunityIcons name="refresh" size={18} color={COLORS.secondary} />
+                <Text style={styles.actionText}>Regenerar</Text>
+              </TouchableOpacity>
+            </>
           )}
         </View>
       </LinearGradient>
@@ -129,17 +170,31 @@ const styles = StyleSheet.create({
   },
   actions: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
-    gap: 16
+    alignItems: 'center',
+    gap: 12
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6
+    gap: 6,
+    paddingVertical: 4
   },
   actionText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: COLORS.text.primary
+  },
+  divider: {
+    width: 1,
+    height: 20,
+    backgroundColor: '#E5E7EB'
+  },
+  feedbackButton: {
+    padding: 6,
+    borderRadius: 8,
+    backgroundColor: 'transparent'
+  },
+  feedbackButtonActive: {
+    backgroundColor: '#F3F4F6'
   }
 });

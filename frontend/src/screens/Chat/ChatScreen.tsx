@@ -7,16 +7,16 @@ import {
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
-  Platform,
-  Alert
+  Platform
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS } from '../../constants';
 import { useAppStore } from '../../store/appStore';
 import { useChatStore } from '../../store/chatStore';
 import { apiClient } from '../../services/api';
+import { showToast } from '../../services/toast';
 import SuggestionCard from '../../components/common/SuggestionCard';
 import CulturalStylePicker from '../../components/common/CulturalStylePicker';
 import ToneSelector from '../../components/common/ToneSelector';
@@ -35,7 +35,7 @@ export default function ChatScreen() {
 
   const handleGenerate = async () => {
     if (!inputText.trim()) {
-      Alert.alert('Atención', 'Por favor ingresa un texto para generar sugerencias');
+      showToast.error('Atención', 'Por favor ingresa un texto para generar sugerencias');
       return;
     }
 
@@ -52,6 +52,7 @@ export default function ChatScreen() {
           include_follow_ups: true
         });
         setSuggestions(response.suggestions);
+        showToast.success('¡Listo!', `${response.suggestions.length} sugerencias generadas`);
       } else {
         const response = await apiClient.generateResponses({
           message: inputText,
@@ -60,18 +61,19 @@ export default function ChatScreen() {
           relationship_stage: 'early'
         });
         setSuggestions(response.suggestions);
+        showToast.success('¡Listo!', `${response.suggestions.length} respuestas generadas`);
       }
     } catch (error: any) {
       console.error('Error generating suggestions:', error);
       setError(error.detail || 'Error al generar sugerencias');
-      Alert.alert('Error', error.detail || 'No se pudo generar las sugerencias. Intenta nuevamente.');
+      showToast.error('Error', error.detail || 'No se pudo generar las sugerencias. Intenta nuevamente.');
     } finally {
       setIsGenerating(false);
     }
   };
 
   const handleCopy = () => {
-    Alert.alert('Copiado', 'Texto copiado al portapapeles');
+    // Toast is shown in SuggestionCard component
   };
 
   const handleRegenerate = () => {
@@ -134,7 +136,7 @@ export default function ChatScreen() {
             }
             value={inputText}
             onChangeText={setInputText}
-            multiline
+            multiline={true}
             numberOfLines={4}
             textAlignVertical="top"
             editable={!isGenerating}
@@ -149,10 +151,13 @@ export default function ChatScreen() {
               style={styles.generateButton}
             >
               {isGenerating ? (
-                <Text style={styles.generateButtonText}>Generando...</Text>
+                <>
+                  <MaterialCommunityIcons name="heart-pulse" size={22} color="#FFFFFF" />
+                  <Text style={styles.generateButtonText}>Generando...</Text>
+                </>
               ) : (
                 <>
-                  <Ionicons name="sparkles" size={20} color="#FFFFFF" />
+                  <MaterialCommunityIcons name="magic-staff" size={22} color="#FFFFFF" />
                   <Text style={styles.generateButtonText}>Generar Sugerencias</Text>
                 </>
               )}
@@ -184,7 +189,12 @@ export default function ChatScreen() {
 
           {!isGenerating && suggestions.length === 0 && (
             <View style={styles.emptyState}>
-              <Text style={styles.emptyIcon}>💬</Text>
+              <MaterialCommunityIcons
+                name={mode === 'openers' ? 'heart-outline' : 'message-reply-text'}
+                size={80}
+                color={COLORS.primary}
+                style={styles.emptyStateIcon}
+              />
               <Text style={styles.emptyTitle}>
                 {mode === 'openers' ? 'Crea Aperturas Épicas' : 'Genera Respuestas Inteligentes'}
               </Text>
@@ -306,9 +316,9 @@ const styles = StyleSheet.create({
     paddingVertical: 60,
     paddingHorizontal: 40
   },
-  emptyIcon: {
-    fontSize: 64,
-    marginBottom: 16
+  emptyStateIcon: {
+    marginBottom: 20,
+    opacity: 0.8
   },
   emptyTitle: {
     fontSize: 20,
