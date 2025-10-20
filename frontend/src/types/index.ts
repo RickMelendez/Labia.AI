@@ -167,6 +167,7 @@ export interface AppState {
   culturalStyle: CulturalStyle;
   defaultTone: Tone;
   setUser: (user: UserProfile | null) => void;
+  setToken: (token: string) => Promise<void>;
   setCulturalStyle: (style: CulturalStyle) => void;
   setDefaultTone: (tone: Tone) => void;
   logout: () => void;

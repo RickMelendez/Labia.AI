@@ -23,6 +23,11 @@ export const useAppStore = create<AppState>((set) => ({
     }
   },
 
+  setToken: async (token: string) => {
+    await AsyncStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
+    set({ isAuthenticated: true });
+  },
+
   setCulturalStyle: (culturalStyle) => {
     set({ culturalStyle });
     AsyncStorage.setItem(STORAGE_KEYS.CULTURAL_STYLE, culturalStyle);

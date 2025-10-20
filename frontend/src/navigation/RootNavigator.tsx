@@ -44,15 +44,15 @@ export default function RootNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {/* Auth Flow - Optional for now, users can skip */}
-        {/* {!isAuthenticated ? (
+        {/* Protected Routes Flow: Auth → Onboarding → Main */}
+        {!isAuthenticated ? (
+          // Not authenticated - show auth screens
           <Stack.Screen name="Auth" component={AuthNavigator} />
-        ) : */}
-
-        {/* Onboarding or Main App */}
-        {!hasCompletedOnboarding ? (
+        ) : !hasCompletedOnboarding ? (
+          // Authenticated but hasn't completed onboarding
           <Stack.Screen name="Onboarding" component={OnboardingNavigator} />
         ) : (
+          // Authenticated and onboarded - show main app
           <Stack.Screen name="Main" component={MainNavigator} />
         )}
       </Stack.Navigator>
