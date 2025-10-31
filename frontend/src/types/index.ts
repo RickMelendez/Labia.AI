@@ -148,6 +148,7 @@ export type AuthStackParamList = {
 
 export type MainTabParamList = {
   Chat: undefined;
+  History: undefined;
   Trainer: undefined;
   Profile: undefined;
 };
