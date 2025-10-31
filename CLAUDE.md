@@ -311,6 +311,37 @@ logger.log_error(operation, error, context)
 
 PostgreSQL with pgvector for embeddings (schema defined but not fully implemented):
 
+### Connection Strategy (`src/main.py:56-81`)
+
+**Graceful Degradation Pattern**:
+```python
+@app.on_event("startup")
+async def startup_event():
+    # Check database connection
+    db_connected = await check_database_connection()
+    if db_connected:
+        logger.info(f"✅ Database connected")
+    else:
+        logger.warning("⚠️  Database connection failed - running without persistence")
+
+    # Initialize Redis cache
+    try:
+        redis_client = get_redis_client()
+        if await redis_client.ping():
+            logger.info(f"✅ Redis cache connected")
+        else:
+            logger.warning("⚠️  Redis ping failed - caching disabled")
+    except Exception as e:
+        logger.warning(f"⚠️  Redis connection failed: {e} - caching disabled")
+```
+
+**Key Design Points**:
+- App **continues running** even if DB/Redis unavailable
+- Database failures logged as warnings, not errors
+- Redis failures don't crash the app
+- Cache operations (get/set) handle disconnected state gracefully
+- Production should use managed PostgreSQL (AWS RDS, DigitalOcean, etc.)
+
 ### Core Tables
 - **users**: User accounts with auth, plan (free/pro/premium)
 - **profiles**: User preferences (cultural_style, default_tone, interests)
@@ -322,6 +353,8 @@ PostgreSQL with pgvector for embeddings (schema defined but not fully implemente
 - User 1:1 Profile
 - User 1:N Conversations
 - Conversation 1:N Messages
+
+**Current Status**: Migrations defined in `backend/alembic/versions/` but database not actively used for MVP (app functions without persistence).
 
 See `backend/alembic/versions/` for full schema DDL.
 
@@ -375,7 +408,7 @@ See `.env.example` for complete configuration options.
 
 ## Development Status
 
-**Overall Progress: 80%** (Backend: 75%, Frontend: 80%, Infrastructure: 95%)
+**Overall Progress: ~88%** (Backend: 75%, Frontend: 100% MVP, Infrastructure: 90%)
 
 ### ✅ Backend Complete (75%)
 - 17 REST API endpoints with full functionality
@@ -383,29 +416,32 @@ See `.env.example` for complete configuration options.
 - Cultural context system (5 markets with authentic slang)
 - Content safety checking and rewriting
 - Intelligent LLM response caching (50-80% cost savings)
-- JWT authentication system
+- JWT authentication system (backend ready, not connected to UI)
 - Redis-backed rate limiting (plan-based)
-- PostgreSQL database integration
+- PostgreSQL database integration (schema ready, not actively used)
 - Error handling & structured logging
 - 15+ unit tests (75% coverage)
 - Docker configuration
 - ~120 pages comprehensive documentation
 
-### ✅ Frontend Complete (80%)
+### ✅ Frontend Complete (100% MVP)
 - React Native + Expo + TypeScript setup
-- Complete navigation system (Root, Main, Onboarding)
+- Complete navigation system (Root, Main, Onboarding, Auth)
 - Onboarding flow (4 screens: Splash, Tutorial, Country Selection, Profile Setup)
 - Main screens (Chat Assistant, Trainer placeholder, Profile)
+- Auth screens (Login, Signup with social login placeholders)
 - State management with Zustand + AsyncStorage
-- Full API client integration
-- Reusable UI components (SuggestionCard, CulturalStylePicker, ToneSelector, etc.)
-- Beautiful Latino-themed UI with gradients
+- Full API client integration (all endpoints including auth)
+- Reusable UI components (SuggestionCard, CulturalStylePicker, ToneSelector, Modals, etc.)
+- Beautiful Latino-themed UI with dating icons and gradients
+- Toast notification system for UX feedback
 - 5 cultural styles + 5 conversation tones
 - Copy to clipboard functionality
 - Loading states and error handling
-- ~3,500 lines of TypeScript/TSX code
+- Feedback buttons (thumbs up/down)
+- ~6,500 lines of TypeScript/TSX code
 
-### ✅ Infrastructure & DevOps Complete (95%)
+### ✅ Infrastructure & DevOps Complete (90%)
 - Production-ready Dockerfile with multi-stage build
 - Docker Compose for local development and production
 - Kubernetes manifests (deployment, services, ingress)
@@ -416,23 +452,26 @@ See `.env.example` for complete configuration options.
 - Auto-scaling configuration (HPA)
 - Comprehensive deployment documentation
 
-### ⚠️ Partially Complete (5%)
+### ⚠️ Partially Complete (3%)
 - Database migrations defined but not run
 - Backend connected but data not persisted to database yet
 - Some backend tests need fixes (15/20 passing)
+- Auth flow designed but not enabled in app (commented out)
 - Actual cloud infrastructure not yet provisioned
 
-### ❌ Not Started (15%)
-- Authentication UI (login/register screens in frontend)
+### ❌ Not Started (9%)
 - Conversation history persistence
-- Trainer module implementation (gamification)
+- Trainer module implementation (gamification, missions)
 - Voice mode with regional accents
 - Dark mode
+- Social login integration (Google, Apple)
+- Email verification flow
+- Forgot password flow
 - Cloud provider setup (AWS/DigitalOcean/Railway)
-- DNS and SSL certificate configuration
 - Production monitoring dashboards
+- Payment integration for Pro/Premium plans
 
-See `docs/PROJECT-STATUS-UPDATED.md` for detailed progress tracking.
+See `docs/DEVELOPMENT-PROGRESS.md` and `docs/PROJECT-STATUS-UPDATED.md` for detailed progress tracking.
 
 ## Key Implementation Notes
 
@@ -618,178 +657,187 @@ All comprehensive documentation is located in `docs/`:
 - `DELIVERABLES-SUMMARY.md` - Project deliverables
 - `README.md` - Documentation index
 
-## Common Tasks
+## Critical Architecture Details
 
-### Running the Full Stack Locally
+### Request Flow & Middleware Execution Order
 
-```bash
-# Terminal 1: Start backend
-cd backend
-source venv/bin/activate  # Windows: venv\Scripts\activate
-uvicorn src.main:app --reload
-# Backend running at http://localhost:8000
+**Middleware Stack** (defined in `src/main.py:33-36`):
 
-# Terminal 2: Start frontend
-cd frontend
-npm start
-# Scan QR with Expo Go or press 'i' for iOS / 'a' for Android
+```python
+app.add_middleware(ErrorHandlerMiddleware)        # Added 1st = Executes LAST
+app.add_middleware(RequestLoggingMiddleware)      # Added 2nd = Executes 3rd
+app.add_middleware(RateLimiterMiddleware)         # Added 3rd = Executes 2nd
+app.add_middleware(CORSMiddleware, ...)           # Added 4th = Executes 1st (outermost)
 ```
 
-**Testing the Integration**:
-1. Open app on device/simulator
-2. Complete onboarding flow (choose Boricua 🇵🇷)
-3. In Chat screen, enter a bio: "Le gusta Bad Bunny y la playa"
-4. Tap "Generar Sugerencias"
-5. See 3 culturally-adapted openers!
+**Execution Order for Incoming Requests**:
+1. **CORSMiddleware** (outermost) - Handles CORS preflight/headers
+2. **RateLimiterMiddleware** - Checks rate limits before processing
+3. **RequestLoggingMiddleware** - Logs request details and timing
+4. **ErrorHandlerMiddleware** (innermost) - Catches all exceptions from above layers
+5. → **Route Handler** - Your endpoint code executes
 
-### Adding a New Cultural Context
+**Why This Matters**: ErrorHandlerMiddleware is innermost so it catches exceptions from all other middleware and route handlers, providing consistent error responses.
 
-**Backend** (`backend/src/infrastructure/external_services/prompt_templates.py`):
-1. Add context to `CULTURAL_CONTEXTS` dictionary with slang, communication style, humor, formality
-2. Update prompt templates for openers and responses
-3. Add test cases for the new cultural style
+### Intelligent Caching Strategy
 
-**Frontend** (`frontend/src/constants/index.ts`):
-4. Add new cultural style to `CULTURAL_STYLES` array with flag emoji, name, description
-5. Update type definitions if needed
-6. Test UI with new option
+**Cache Key Generation** (`src/presentation/api/openers.py:117-126`, `responses.py:156-166`):
 
-### Adding a New Tone
+```python
+# 1. Create deterministic cache data structure
+cache_data = {
+    "bio": request.bio,
+    "interests": sorted(request.interests),  # Sorted for consistency!
+    "cultural_style": request.cultural_style,
+    "user_interests": sorted(request.user_interests) if request.user_interests else None,
+    "num_suggestions": request.num_suggestions
+}
 
-**Backend**:
-1. Update `PromptTemplates.get_opener_system_prompt()` with tone description
-2. Add tone examples in prompt templates
-3. Update API request validation to include new tone
+# 2. Generate MD5 hash
+cache_hash = hashlib.md5(json.dumps(cache_data, sort_keys=True).encode()).hexdigest()
 
-**Frontend**:
-4. Add tone to `TONES` array in `src/constants/index.ts` with emoji and description
-5. Update type definitions
-6. Test with each cultural style
-
-### Adding a New Screen (Frontend)
-
-1. Create screen component in `frontend/src/screens/[Category]/[ScreenName].tsx`
-2. Add to appropriate navigator in `frontend/src/navigation/`
-3. Update navigation types in `frontend/src/types/index.ts`
-4. Add any necessary state to Zustand stores
-5. Test navigation flow
-
-### Debugging LLM Issues
-
-1. Check backend logs in `backend/logs/errors/` for detailed error logs
-2. Verify API key is set correctly in `backend/.env`
-3. Check token usage (may hit rate limits)
-4. Review prompt templates for clarity in `backend/src/infrastructure/external_services/prompt_templates.py`
-5. Test with smaller inputs first
-6. Use `/api/v1/docs` to test endpoints directly
-
-### Debugging Frontend Issues
-
-1. Check Metro bundler terminal for errors
-2. Open React Native debugger (shake device → "Debug")
-3. Check if backend is running: `curl http://localhost:8000/api/v1/health`
-4. Verify API_BASE_URL in `frontend/src/constants/index.ts`
-5. On physical devices, use computer's IP address, not `localhost`
-6. Check AsyncStorage: Clear app data if state is corrupted
-
-### Deploying to Production
-
-**Option 1: Railway.app (Easiest)**:
-1. Create account at https://railway.app
-2. Connect GitHub repository
-3. Railway auto-detects Dockerfile
-4. Add environment variables from `.env.production`
-5. Deploy
-6. Configure custom domain in Cloudflare
-
-**Option 2: Kubernetes**:
-```bash
-# Configure kubectl for your cluster
-# AWS EKS example:
-aws eks update-kubeconfig --region us-east-1 --name labia-ai-cluster
-
-# Create namespace and secrets
-kubectl create namespace labia-ai
-kubectl create secret generic labia-ai-secrets \
-  --from-literal=SECRET_KEY=<strong-key> \
-  --from-literal=JWT_SECRET_KEY=<jwt-key> \
-  --from-literal=OPENAI_API_KEY=<api-key> \
-  -n labia-ai
-
-# Deploy all services
-kubectl apply -f k8s/
-
-# Check deployment
-kubectl get pods -n labia-ai
-kubectl logs -f -n labia-ai -l app=labia-ai
-
-# Scale manually if needed
-kubectl scale deployment/labia-ai-backend --replicas=5 -n labia-ai
+# 3. Create namespaced cache key
+cache_key = f"opener:{cultural_style}:{cache_hash}"  # e.g., "opener:boricua:a1b2c3d4e5f6..."
 ```
 
-**Option 3: AWS ECS** (see `.github/workflows/deploy.yml` for automated deployment):
-```bash
-# Configure AWS CLI
-aws configure
+**Cache Strategy**:
+- **Openers**: TTL = 3600s (1 hour) - Static bios don't change often
+- **Responses**: TTL = 1800s (30 min) - Conversation context more dynamic
+- **Sorting**: Ensures `["music", "beach"]` == `["beach", "music"]` (same cache key)
+- **Expected Savings**: 50-80% reduction in LLM API calls
 
-# Push image to ECR
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <account-id>.dkr.ecr.us-east-1.amazonaws.com
-docker tag labia-ai-backend:latest <account-id>.dkr.ecr.us-east-1.amazonaws.com/labia-ai-backend:latest
-docker push <account-id>.dkr.ecr.us-east-1.amazonaws.com/labia-ai-backend:latest
-
-# Update ECS service
-aws ecs update-service --cluster labia-ai-prod --service labia-ai-backend --force-new-deployment
+**Cache Hit Flow**:
+```
+Request → Check cache → HIT? → Return cached response (instant, no LLM call)
+                      → MISS? → Call LLM → Cache result → Return response
 ```
 
-### Setting Up CI/CD
+### Frontend-Backend Type Contract
 
-1. Add required secrets to GitHub repository settings
-2. Push to `develop` branch for staging deployment
-3. Push to `main` branch for production deployment
-4. Monitor in GitHub Actions tab
+**Critical Synchronization Points**:
 
-**Required Secrets** (Settings → Secrets and variables → Actions):
-```bash
-OPENAI_API_KEY
-ANTHROPIC_API_KEY
-STAGING_HOST
-STAGING_USER
-STAGING_SSH_KEY
-PROD_HOST
-PROD_USER
-PROD_SSH_KEY
-AWS_ACCESS_KEY_ID (if using AWS)
-AWS_SECRET_ACCESS_KEY (if using AWS)
-SLACK_WEBHOOK_URL (optional, for notifications)
+1. **Cultural Styles Must Match Exactly**:
+   - Frontend: `CULTURAL_STYLES` in `frontend/src/constants/index.ts:13-44`
+   - Backend: `valid_styles` in `backend/src/presentation/api/openers.py:110`
+   - Values: `boricua`, `mexicano`, `colombiano`, `argentino`, `español`
+   - ⚠️ **If mismatch**: Backend returns 400 error "Invalid cultural_style"
+
+2. **Tone Generation**:
+   - Frontend: 5 tones defined (`chill`, `elegant`, `intellectual`, `playero`, `minimalist`)
+   - Backend: Generates 3 fixed tones per request (`genuino`, `coqueto`, `directo`)
+   - Note: Frontend tones are UI preferences; backend always generates 3 standard tones
+
+3. **API Base URL Configuration**:
+   - Development: `frontend/src/constants/index.ts:6-8`
+   - **Important**: When testing on physical devices, change to your computer's IP:
+     ```typescript
+     export const API_BASE_URL = __DEV__
+       ? 'http://192.168.0.126:8000/api/v1'  // Replace with YOUR IP
+       : 'https://api.labia.chat/api/v1';
+     ```
+   - Find IP: `ipconfig` (Windows) or `ifconfig` (Mac/Linux)
+
+### State Management Architecture
+
+**Frontend Stores** (Zustand):
+
+1. **appStore** (`src/store/appStore.ts`):
+   - Global application state
+   - Persisted to AsyncStorage automatically
+   - Keys: user, isAuthenticated, culturalStyle, defaultTone
+   - Methods: `setUser()`, `setToken()`, `setCulturalStyle()`, `logout()`
+   - Initialization: `initializeAppStore()` called on app start
+
+2. **chatStore** (`src/store/chatStore.ts`):
+   - Ephemeral chat state (not persisted)
+   - Keys: currentConversation, messages, isGenerating, error
+   - Methods: `addMessage()`, `setIsGenerating()`, `clearMessages()`
+
+**AsyncStorage Keys** (`src/constants/index.ts:158-166`):
+```typescript
+STORAGE_KEYS = {
+  USER_PROFILE: '@labia_user_profile',
+  CULTURAL_STYLE: '@labia_cultural_style',
+  DEFAULT_TONE: '@labia_default_tone',
+  AUTH_TOKEN: '@labia_auth_token',
+  ONBOARDING_COMPLETED: '@labia_onboarding_completed',
+}
 ```
 
-### Monitoring Production
+### LLM Provider Architecture
 
-```bash
-# Check health
-curl https://api.labia.chat/api/v1/health
+**Provider Selection Flow** (`src/presentation/api/openers.py:64-84`):
 
-# Check Kubernetes pods
-kubectl get pods -n labia-ai
-kubectl describe pod <pod-name> -n labia-ai
+```python
+def get_ai_service() -> AIConversationService:
+    # 1. Read environment variable
+    llm_provider_type = LLMProvider(settings.LLM_PROVIDER)  # "openai" or "anthropic"
 
-# View logs
-kubectl logs -f -n labia-ai -l app=labia-ai --tail=100
+    # 2. Select appropriate API key and model
+    if llm_provider_type == LLMProvider.OPENAI:
+        api_key = settings.OPENAI_API_KEY
+        model = settings.OPENAI_MODEL  # "gpt-4-turbo-preview"
+    elif llm_provider_type == LLMProvider.ANTHROPIC:
+        api_key = settings.ANTHROPIC_API_KEY
+        model = settings.ANTHROPIC_MODEL  # "claude-3-5-sonnet-20241022"
 
-# Check HPA (auto-scaling)
-kubectl get hpa -n labia-ai
-kubectl describe hpa labia-ai-backend-hpa -n labia-ai
+    # 3. Validate API key exists
+    if not api_key:
+        raise HTTPException(status_code=500, detail=f"API key not configured")
 
-# View metrics (if Prometheus enabled)
-curl https://api.labia.chat/metrics
+    # 4. Factory creates appropriate provider
+    llm_provider = LLMProviderFactory.create(llm_provider_type, api_key, model)
+
+    # 5. Return service wrapping provider
+    return AIConversationService(llm_provider)
 ```
+
+**Key Design**:
+- **Dependency Injection**: Each endpoint request gets fresh AI service instance
+- **Stateless**: No shared state between requests
+- **Failsafe**: Missing API key = immediate 500 error (not runtime failure)
+
+### Windows Development Notes
+
+**Virtual Environment Activation**:
+```bash
+# Git Bash / MINGW64 (recommended)
+source venv/Scripts/activate
+
+# CMD
+venv\Scripts\activate.bat
+
+# PowerShell
+venv\Scripts\Activate.ps1
+```
+
+**Path Separators**:
+- Backend uses forward slashes (`/`) internally
+- Windows tools use backslashes (`\`)
+- Git Bash handles both correctly
 
 ## Performance Targets
 
-- API Response Time: <3 seconds (including LLM call)
-- Database Queries: <100ms
-- Cache Hit Rate: >70%
+**API Response Times**:
+- Cached requests: <100ms (Redis lookup only)
+- LLM requests (OpenAI GPT-4): 2-5 seconds (network + generation)
+- LLM requests (Anthropic Claude): 3-7 seconds (network + generation)
+- Health check: <50ms
+
+**Caching Performance**:
+- Cache Hit Rate Target: >70% in production
+- Openers TTL: 3600s (1 hour)
+- Responses TTL: 1800s (30 minutes)
+- Expected LLM Cost Savings: 50-80%
+
+**Database Performance**:
+- Query time target: <100ms
+- Connection pooling: Enabled (SQLAlchemy)
+- Note: Database not actively used in MVP (queries minimal)
+
+**Reliability Targets**:
 - Uptime: 99.9%
 - Error Rate: <1%
+- Graceful degradation: App runs without Redis/DB if unavailable
 
-Currently focused on functionality over optimization.
+**Current Focus**: Functionality over optimization. Performance optimization planned for Phase 4.

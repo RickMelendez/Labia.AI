@@ -166,10 +166,12 @@ export interface AppState {
   isLoading: boolean;
   culturalStyle: CulturalStyle;
   defaultTone: Tone;
+  isDarkMode: boolean;
   setUser: (user: UserProfile | null) => void;
   setToken: (token: string) => Promise<void>;
   setCulturalStyle: (style: CulturalStyle) => void;
   setDefaultTone: (tone: Tone) => void;
+  setDarkMode: (isDarkMode: boolean) => void;
   logout: () => void;
 }
 

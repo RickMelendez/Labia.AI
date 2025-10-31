@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { COLORS, CULTURAL_STYLES, TONES } from '../../constants';
 import { useAppStore } from '../../store/appStore';
 import { showToast } from '../../services/toast';
 import CulturalStyleModal from '../../components/common/CulturalStyleModal';
 import ToneModal from '../../components/common/ToneModal';
+import UsageCard from '../../components/common/UsageCard';
 
 export default function ProfileScreen() {
-  const { culturalStyle, setCulturalStyle, defaultTone, setDefaultTone, logout } = useAppStore();
+  const theme = useTheme();
+  const { user, culturalStyle, setCulturalStyle, defaultTone, setDefaultTone, isDarkMode, setDarkMode, logout } = useAppStore();
   const [showCultureModal, setShowCultureModal] = useState(false);
   const [showToneModal, setShowToneModal] = useState(false);
 
@@ -32,24 +35,35 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['top']}>
       <View style={styles.header}>
         <MaterialCommunityIcons name="account-heart" size={48} color={COLORS.primary} />
-        <Text style={styles.headerTitle}>Mi Perfil</Text>
+        <Text style={[styles.headerTitle, { color: theme.colors.onBackground }]}>Mi Perfil</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Usage Tracking */}
+        {user && (
+          <View style={styles.section}>
+            <UsageCard
+              used={user.daily_suggestions_used || 0}
+              limit={user.daily_limit || 10}
+              plan={user.plan || 'free'}
+            />
+          </View>
+        )}
+
         {/* Plan Info */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Plan Actual</Text>
-          <View style={styles.planCard}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>Plan Actual</Text>
+          <View style={[styles.planCard, { backgroundColor: theme.colors.surface }]}>
             <View style={styles.planHeader}>
-              <Text style={styles.planName}>Free</Text>
+              <Text style={[styles.planName, { color: theme.colors.onSurface }]}>Free</Text>
               <View style={styles.planBadge}>
                 <Text style={styles.planBadgeText}>Gratis</Text>
               </View>
             </View>
-            <Text style={styles.planDescription}>10 sugerencias por día</Text>
+            <Text style={[styles.planDescription, { color: theme.colors.onSurfaceVariant }]}>10 sugerencias por día</Text>
 
             <TouchableOpacity style={styles.upgradeButton}>
               <MaterialCommunityIcons name="crown-outline" size={20} color={COLORS.primary} />
@@ -60,13 +74,14 @@ export default function ProfileScreen() {
 
         {/* Preferences */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Preferencias</Text>
+          <Text style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>Preferencias</Text>
 
           <SettingItem
             icon="flag-variant"
             label="Estilo Cultural"
             value={`${currentCulture?.flag} ${currentCulture?.label}`}
             onPress={() => setShowCultureModal(true)}
+            theme={theme}
           />
 
           <SettingItem
@@ -74,41 +89,71 @@ export default function ProfileScreen() {
             label="Tono Predeterminado"
             value={`${currentToneInfo?.icon} ${currentToneInfo?.label}`}
             onPress={() => setShowToneModal(true)}
+            theme={theme}
           />
+
+          <View style={[styles.settingItem, { backgroundColor: theme.colors.surface }]}>
+            <View style={styles.settingLeft}>
+              <MaterialCommunityIcons
+                name={isDarkMode ? "weather-night" : "weather-sunny"}
+                size={24}
+                color={theme.colors.primary}
+              />
+              <Text style={[styles.settingLabel, { color: theme.colors.onSurface }]}>
+                Modo Oscuro
+              </Text>
+            </View>
+            <Switch
+              value={isDarkMode}
+              onValueChange={(value) => {
+                setDarkMode(value);
+                showToast.success(
+                  'Tema actualizado',
+                  `Modo ${value ? 'oscuro' : 'claro'} activado`
+                );
+              }}
+              trackColor={{ false: '#E5E7EB', true: COLORS.primary }}
+              thumbColor={isDarkMode ? COLORS.accent : '#f4f3f4'}
+            />
+          </View>
         </View>
 
         {/* App Info */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Información</Text>
+          <Text style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>Información</Text>
 
           <SettingItem
             icon="information"
             label="Acerca de Labia.AI"
             onPress={() => Alert.alert('Labia.AI', 'Versión 1.0.0 (Beta)\n\nTu asistente de conversación con sabor latino')}
+            theme={theme}
           />
 
           <SettingItem
             icon="shield-check"
             label="Privacidad y Seguridad"
             onPress={() => Alert.alert('Privacidad', 'Tus conversaciones no se almacenan permanentemente')}
+            theme={theme}
           />
 
           <SettingItem
             icon="help-circle"
             label="Ayuda y Soporte"
             onPress={() => Alert.alert('Ayuda', 'Contacto: support@labia.ai')}
+            theme={theme}
           />
         </View>
 
         {/* Coming Soon Features */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Próximamente</Text>
+          <Text style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>Próximamente</Text>
 
           <SettingItem
             icon="chart-line"
             label="Estadísticas de Uso"
             value="🚧"
             disabled={true}
+            theme={theme}
           />
 
           <SettingItem
@@ -116,6 +161,7 @@ export default function ProfileScreen() {
             label="Historial de Conversaciones"
             value="🚧"
             disabled={true}
+            theme={theme}
           />
 
           <SettingItem
@@ -123,6 +169,7 @@ export default function ProfileScreen() {
             label="Logros y Progreso"
             value="🚧"
             disabled={true}
+            theme={theme}
           />
         </View>
 
@@ -165,25 +212,26 @@ interface SettingItemProps {
   value?: string;
   onPress?: () => void;
   disabled?: boolean;
+  theme: any;
 }
 
-function SettingItem({ icon, label, value, onPress, disabled }: SettingItemProps) {
+function SettingItem({ icon, label, value, onPress, disabled, theme }: SettingItemProps) {
   return (
     <TouchableOpacity
-      style={[styles.settingItem, disabled && styles.settingItemDisabled]}
+      style={[styles.settingItem, { backgroundColor: theme.colors.surface }, disabled && styles.settingItemDisabled]}
       onPress={onPress}
       disabled={disabled || !onPress}
     >
       <View style={styles.settingLeft}>
-        <MaterialCommunityIcons name={icon} size={24} color={disabled ? COLORS.text.disabled : COLORS.text.primary} />
-        <Text style={[styles.settingLabel, disabled && styles.settingLabelDisabled]}>
+        <MaterialCommunityIcons name={icon} size={24} color={disabled ? COLORS.text.disabled : theme.colors.onSurface} />
+        <Text style={[styles.settingLabel, { color: theme.colors.onSurface }, disabled && styles.settingLabelDisabled]}>
           {label}
         </Text>
       </View>
       <View style={styles.settingRight}>
-        {value && <Text style={styles.settingValue}>{value}</Text>}
+        {value && <Text style={[styles.settingValue, { color: theme.colors.onSurfaceVariant }]}>{value}</Text>}
         {onPress && !disabled && (
-          <MaterialCommunityIcons name="chevron-right" size={20} color={COLORS.text.secondary} />
+          <MaterialCommunityIcons name="chevron-right" size={20} color={theme.colors.onSurfaceVariant} />
         )}
       </View>
     </TouchableOpacity>
