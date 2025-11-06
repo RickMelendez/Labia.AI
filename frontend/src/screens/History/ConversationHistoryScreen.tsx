@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AppBackground from '../../components/common/AppBackground';
 import { useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useConversationHistoryStore, loadConversationMessages } from '../../store/conversationHistoryStore';
 import { Conversation, Message } from '../../types';
-import { COLORS } from '../../constants';
+import { COLORS } from '../../core/constants';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -67,7 +68,7 @@ export default function ConversationHistoryScreen() {
       onPress={() => handleConversationPress(item)}
     >
       <View style={styles.conversationLeft}>
-        <MaterialCommunityIcons name="message-text" size={24} color={COLORS.primary} />
+        <MaterialCommunityIcons name="message-text" size={24} color={COLORS.primary} style={{ marginRight: 12 }} />
         <View style={styles.conversationInfo}>
           <Text style={[styles.conversationTitle, { color: theme.colors.onSurface }]} numberOfLines={1}>
             {item.title}
@@ -85,12 +86,13 @@ export default function ConversationHistoryScreen() {
 
   if (selectedConversation) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['top']}>
+      <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]} edges={['top']}>
+        <AppBackground />
         <View style={styles.header}>
           <TouchableOpacity onPress={() => setSelectedConversation(null)}>
             <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onBackground} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: theme.colors.onBackground }]} numberOfLines={1}>
+          <Text style={[styles.headerTitle, { color: theme.colors.onBackground, marginHorizontal: 12 }]} numberOfLines={1}>
             {selectedConversation.conversation.title}
           </Text>
           <View style={{ width: 24 }} />
@@ -124,10 +126,11 @@ export default function ConversationHistoryScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]} edges={['top']}>
+      <AppBackground />
       <View style={styles.header}>
         <MaterialCommunityIcons name="history" size={32} color={COLORS.primary} />
-        <Text style={[styles.headerTitle, { color: theme.colors.onBackground }]}>Historial</Text>
+        <Text style={[styles.headerTitle, { color: theme.colors.onBackground, marginHorizontal: 12 }]}>Historial</Text>
         {conversations.length > 0 && (
           <TouchableOpacity onPress={handleClearAll}>
             <MaterialCommunityIcons name="delete-sweep" size={24} color={COLORS.error} />
@@ -167,7 +170,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 24,
     paddingVertical: 16,
-    gap: 12,
   },
   headerTitle: {
     fontSize: 24,
@@ -189,7 +191,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    gap: 12,
   },
   conversationInfo: {
     flex: 1,

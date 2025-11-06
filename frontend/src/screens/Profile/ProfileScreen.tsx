@@ -1,20 +1,58 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Switch } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Switch, Image, Modal, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AppBackground from '../../components/common/AppBackground';
+import NeonButton from '../../components/common/NeonButton';
 import { useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { COLORS, CULTURAL_STYLES, TONES } from '../../constants';
+import { COLORS, CULTURAL_STYLES, TONES } from '../../core/constants';
 import { useAppStore } from '../../store/appStore';
-import { showToast } from '../../services/toast';
+import { container } from '../../infrastructure/di/Container';
 import CulturalStyleModal from '../../components/common/CulturalStyleModal';
 import ToneModal from '../../components/common/ToneModal';
 import UsageCard from '../../components/common/UsageCard';
+import * as ImagePicker from 'expo-image-picker';
+import { ProfileStorage } from '../../infrastructure/storage/ProfileStorage';
+import type { DatingProfile } from '../../types';
 
 export default function ProfileScreen() {
   const theme = useTheme();
   const { user, culturalStyle, setCulturalStyle, defaultTone, setDefaultTone, isDarkMode, setDarkMode, logout } = useAppStore();
   const [showCultureModal, setShowCultureModal] = useState(false);
   const [showToneModal, setShowToneModal] = useState(false);
+  const [editVisible, setEditVisible] = useState(false);
+  const [profile, setProfile] = useState<DatingProfile | null>(null);
+
+  // Edit form state
+  const [displayName, setDisplayName] = useState('');
+  const [age, setAge] = useState('');
+  const [gender, setGender] = useState('');
+  const [jobTitle, setJobTitle] = useState('');
+  const [company, setCompany] = useState('');
+  const [education, setEducation] = useState('');
+  const [heightCm, setHeightCm] = useState('');
+  const [bio, setBio] = useState('');
+  const [interestsText, setInterestsText] = useState('');
+  const [photos, setPhotos] = useState<string[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const existing = await ProfileStorage.get();
+      if (existing) {
+        setProfile(existing);
+        setDisplayName(existing.display_name || '');
+        setAge(existing.age ? String(existing.age) : '');
+        setGender(existing.gender || '');
+        setJobTitle(existing.job_title || '');
+        setCompany(existing.company || '');
+        setEducation(existing.education || '');
+        setHeightCm(existing.height_cm ? String(existing.height_cm) : '');
+        setBio(existing.bio || '');
+        setInterestsText((existing.interests || []).join(', '));
+        setPhotos(existing.photos || []);
+      }
+    })();
+  }, []);
 
   const currentCulture = CULTURAL_STYLES.find((s) => s.value === culturalStyle);
   const currentToneInfo = TONES.find((t) => t.value === defaultTone);
@@ -34,14 +72,90 @@ export default function ProfileScreen() {
     );
   };
 
+  const openImagePicker = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (perm.status !== 'granted') {
+      container.toast.info('Permiso requerido', 'Habilita acceso a fotos para agregar imágenes');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
+      selectionLimit: 6 - photos.length,
+      quality: 0.8
+    });
+    if (!result.canceled) {
+      const uris = result.assets?.map(a => a.uri) || [];
+      setPhotos((prev) => Array.from(new Set([...prev, ...uris])).slice(0, 6));
+    }
+  };
+
+  const removePhoto = (uri: string) => {
+    setPhotos(prev => prev.filter(p => p !== uri));
+  };
+
+  const saveProfile = async () => {
+    if (!displayName.trim()) {
+      container.toast.info('Nombre requerido', 'Agrega tu nombre para mostrar');
+      return;
+    }
+    const updated: DatingProfile = {
+      display_name: displayName.trim(),
+      age: age ? Number(age) : undefined,
+      gender: (gender as any) || undefined,
+      job_title: jobTitle || undefined,
+      company: company || undefined,
+      education: education || undefined,
+      height_cm: heightCm ? Number(heightCm) : undefined,
+      bio: bio || undefined,
+      interests: interestsText
+        ? interestsText.split(',').map(s => s.trim()).filter(Boolean)
+        : undefined,
+      photos,
+    };
+    await ProfileStorage.save(updated);
+    setProfile(updated);
+    setEditVisible(false);
+    container.toast.success('Perfil guardado', 'Tus datos se han actualizado');
+  };
+
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]} edges={['top']}>
+      <AppBackground />
       <View style={styles.header}>
         <MaterialCommunityIcons name="account-heart" size={48} color={COLORS.primary} />
         <Text style={[styles.headerTitle, { color: theme.colors.onBackground }]}>Mi Perfil</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Dating Profile Section */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>Mi Perfil de Citas</Text>
+          <View style={[styles.planCard, { backgroundColor: theme.colors.surface }]}> 
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+              <MaterialCommunityIcons name="account" size={20} color={theme.colors.primary} />
+              <Text style={[styles.settingLabel, { marginLeft: 8, color: theme.colors.onSurface }]}>
+                {profile?.display_name || 'Sin nombre'}
+              </Text>
+            </View>
+            {/* Photos preview */}
+            <View style={styles.photoGridPreview}>
+              {photos.slice(0, 3).map((uri) => (
+                <Image key={uri} source={{ uri }} style={styles.photoPreview} />
+              ))}
+              {photos.length === 0 && (
+                <View style={[styles.photoEmpty, { borderColor: '#E5E7EB' }]}>
+                  <MaterialCommunityIcons name="image-plus" size={24} color={theme.colors.onSurfaceVariant} />
+                </View>
+              )}
+            </View>
+            <NeonButton
+              label={profile ? 'Editar Perfil' : 'Crear Perfil'}
+              onPress={() => setEditVisible(true)}
+              leftIcon={<MaterialCommunityIcons name="pencil" size={20} color="#FFF" />}
+            />
+          </View>
+        </View>
         {/* Usage Tracking */}
         {user && (
           <View style={styles.section}>
@@ -65,10 +179,11 @@ export default function ProfileScreen() {
             </View>
             <Text style={[styles.planDescription, { color: theme.colors.onSurfaceVariant }]}>10 sugerencias por día</Text>
 
-            <TouchableOpacity style={styles.upgradeButton}>
-              <MaterialCommunityIcons name="crown-outline" size={20} color={COLORS.primary} />
-              <Text style={styles.upgradeText}>Mejorar a Pro</Text>
-            </TouchableOpacity>
+            <NeonButton
+              label="Mejorar a Pro"
+              onPress={() => container.toast.info('Pronto', 'Opciones de suscripción próximamente')}
+              leftIcon={<MaterialCommunityIcons name="crown-outline" size={20} color="#FFF" />}
+            />
           </View>
         </View>
 
@@ -107,7 +222,7 @@ export default function ProfileScreen() {
               value={isDarkMode}
               onValueChange={(value) => {
                 setDarkMode(value);
-                showToast.success(
+                container.toast.success(
                   'Tema actualizado',
                   `Modo ${value ? 'oscuro' : 'claro'} activado`
                 );
@@ -139,7 +254,7 @@ export default function ProfileScreen() {
           <SettingItem
             icon="help-circle"
             label="Ayuda y Soporte"
-            onPress={() => Alert.alert('Ayuda', 'Contacto: support@labia.ai')}
+            onPress={() => Alert.alert('Ayuda', 'Contacto: support@labia.chat')}
             theme={theme}
           />
         </View>
@@ -174,10 +289,12 @@ export default function ProfileScreen() {
         </View>
 
         {/* Logout */}
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <MaterialCommunityIcons name="logout" size={20} color={COLORS.error} />
-          <Text style={styles.logoutText}>Reiniciar App</Text>
-        </TouchableOpacity>
+        <NeonButton
+          label="Reiniciar App"
+          onPress={handleLogout}
+          leftIcon={<MaterialCommunityIcons name="logout" size={20} color="#FFF" />}
+          style={{ marginTop: 8 }}
+        />
 
         <Text style={styles.version}>Versión 1.0.0 (Beta)</Text>
       </ScrollView>
@@ -188,7 +305,7 @@ export default function ProfileScreen() {
         selectedStyle={culturalStyle}
         onSelect={(style) => {
           setCulturalStyle(style);
-          showToast.success('Estilo actualizado', `Ahora usas el estilo ${CULTURAL_STYLES.find(s => s.value === style)?.label}`);
+          container.toast.success('Estilo actualizado', `Ahora usas el estilo ${CULTURAL_STYLES.find(s => s.value === style)?.label}`);
         }}
         onClose={() => setShowCultureModal(false)}
       />
@@ -198,10 +315,54 @@ export default function ProfileScreen() {
         selectedTone={defaultTone}
         onSelect={(tone) => {
           setDefaultTone(tone);
-          showToast.success('Tono actualizado', `Ahora tu tono predeterminado es ${TONES.find(t => t.value === tone)?.label}`);
+          container.toast.success('Tono actualizado', `Ahora tu tono predeterminado es ${TONES.find(t => t.value === tone)?.label}`);
         }}
         onClose={() => setShowToneModal(false)}
       />
+
+      {/* Edit Profile Modal */}
+      <Modal visible={editVisible} animationType="slide" onRequestClose={() => setEditVisible(false)}>
+        <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}>
+          <AppBackground />
+          <ScrollView style={styles.content}>
+            <Text style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>Editar Perfil</Text>
+
+            {/* Photos grid */}
+            <Text style={[styles.settingLabel, { color: theme.colors.onSurface }]}>Fotos (hasta 6)</Text>
+            <View style={styles.photoGrid}>
+              {photos.map((uri) => (
+                <View key={uri} style={styles.photoItem}>
+                  <Image source={{ uri }} style={styles.photo} />
+                  <TouchableOpacity style={styles.photoRemove} onPress={() => removePhoto(uri)}>
+                    <MaterialCommunityIcons name="close-circle" size={20} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+              {photos.length < 6 && (
+                <TouchableOpacity style={[styles.photoAdd, { borderColor: '#E5E7EB' }]} onPress={openImagePicker}>
+                  <MaterialCommunityIcons name="image-plus" size={28} color={theme.colors.onSurfaceVariant} />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* Fields */}
+            <TextInput placeholder="Nombre para mostrar" value={displayName} onChangeText={setDisplayName} style={styles.input} />
+            <TextInput placeholder="Edad" keyboardType="number-pad" value={age} onChangeText={setAge} style={styles.input} />
+            <TextInput placeholder="Género (male/female/nonbinary/other)" value={gender} onChangeText={setGender} style={styles.input} />
+            <TextInput placeholder="Puesto" value={jobTitle} onChangeText={setJobTitle} style={styles.input} />
+            <TextInput placeholder="Empresa" value={company} onChangeText={setCompany} style={styles.input} />
+            <TextInput placeholder="Educación" value={education} onChangeText={setEducation} style={styles.input} />
+            <TextInput placeholder="Altura (cm)" keyboardType="number-pad" value={heightCm} onChangeText={setHeightCm} style={styles.input} />
+            <TextInput placeholder="Bio" multiline numberOfLines={4} value={bio} onChangeText={setBio} style={[styles.input, { minHeight: 100 }]} />
+            <TextInput placeholder="Intereses (separados por coma)" value={interestsText} onChangeText={setInterestsText} style={styles.input} />
+
+            <NeonButton label="Guardar" onPress={saveProfile} leftIcon={<MaterialCommunityIcons name="content-save" size={20} color="#FFF" />} />
+            <TouchableOpacity style={{ marginTop: 12, alignItems: 'center' }} onPress={() => setEditVisible(false)}>
+              <Text style={{ color: theme.colors.primary, fontWeight: '600' }}>Cancelar</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -305,6 +466,69 @@ const styles = StyleSheet.create({
     color: COLORS.text.secondary,
     marginBottom: 16
   },
+  photoGridPreview: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 12
+  },
+  photoPreview: {
+    width: 64,
+    height: 64,
+    borderRadius: 8,
+    backgroundColor: '#F3F4F6'
+  },
+  photoEmpty: {
+    width: 64,
+    height: 64,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  photoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: 16
+  },
+  photoItem: {
+    width: '30%',
+    aspectRatio: 1,
+    borderRadius: 10,
+    overflow: 'hidden',
+    position: 'relative'
+  },
+  photo: {
+    width: '100%',
+    height: '100%'
+  },
+  photoRemove: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 10,
+    padding: 2
+  },
+  photoAdd: {
+    width: '30%',
+    aspectRatio: 1,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F9FAFB'
+  },
+  input: {
+    backgroundColor: COLORS.surface.light,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 16,
+    color: COLORS.text.primary,
+    marginBottom: 12
+  },
   upgradeButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -312,7 +536,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     backgroundColor: '#FFF1F7',
     borderRadius: 12,
-    gap: 8
   },
   upgradeText: {
     fontSize: 16,
@@ -349,7 +572,6 @@ const styles = StyleSheet.create({
   settingRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8
   },
   settingValue: {
     fontSize: 14,
@@ -364,7 +586,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginTop: 24,
     marginBottom: 16,
-    gap: 8
   },
   logoutText: {
     fontSize: 16,

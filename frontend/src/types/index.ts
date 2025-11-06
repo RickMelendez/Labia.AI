@@ -18,11 +18,12 @@ export interface GenerateOpenersRequest {
 }
 
 export interface GenerateResponsesRequest {
-  message: string;
-  context?: string;
+  received_message: string;
   cultural_style?: CulturalStyle;
+  conversation_context?: string[];
+  shared_interests?: string[];
   relationship_stage?: RelationshipStage;
-  tone?: Tone;
+  num_suggestions?: number;
 }
 
 export interface SafetyCheckRequest {
@@ -57,10 +58,11 @@ export interface ResponseSuggestion {
 }
 
 export interface GenerateResponsesResponse {
+  success: boolean;
   suggestions: ResponseSuggestion[];
   cultural_style: CulturalStyle;
   relationship_stage: RelationshipStage;
-  processing_time_ms: number;
+  suggestions_remaining?: number;
 }
 
 export interface SafetyCheckResponse {
@@ -95,6 +97,20 @@ export interface UserProfile {
   daily_suggestions_used: number;
   daily_limit: number;
   created_at: string;
+}
+
+// Dating-app style profile (local, user-authored)
+export interface DatingProfile {
+  display_name: string;
+  age?: number;
+  gender?: 'male' | 'female' | 'nonbinary' | 'other';
+  job_title?: string;
+  company?: string;
+  education?: string;
+  height_cm?: number;
+  bio?: string;
+  interests?: string[];
+  photos: string[]; // local URIs
 }
 
 // Conversation Types

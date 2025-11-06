@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppState, UserProfile, CulturalStyle, Tone } from '../types';
-import { STORAGE_KEYS, DEFAULTS } from '../constants';
+import { STORAGE_KEYS, DEFAULTS } from '../core/constants';
 
 export const useAppStore = create<AppState>((set) => ({
   user: null,
@@ -27,6 +27,9 @@ export const useAppStore = create<AppState>((set) => ({
   setToken: async (token: string) => {
     await AsyncStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
     set({ isAuthenticated: true });
+    // Inject token into API client
+    const { container } = await import('../infrastructure/di/Container');
+    container.apiClient.setAuthToken(token);
   },
 
   setCulturalStyle: (culturalStyle) => {
@@ -57,20 +60,32 @@ export const useAppStore = create<AppState>((set) => ({
       STORAGE_KEYS.CULTURAL_STYLE,
       STORAGE_KEYS.DEFAULT_TONE
     ]);
+    // Clear token from API client
+    import('../infrastructure/di/Container').then(({ container }) => {
+      container.apiClient.setAuthToken(null);
+    });
   }
 }));
 
 // Initialize store from AsyncStorage
 export const initializeAppStore = async () => {
   try {
-    const [userJson, culturalStyle, defaultTone, theme] = await AsyncStorage.multiGet([
+    const [userJson, culturalStyle, defaultTone, theme, authToken] = await AsyncStorage.multiGet([
       STORAGE_KEYS.USER_PROFILE,
       STORAGE_KEYS.CULTURAL_STYLE,
       STORAGE_KEYS.DEFAULT_TONE,
-      STORAGE_KEYS.THEME
+      STORAGE_KEYS.THEME,
+      STORAGE_KEYS.AUTH_TOKEN
     ]);
 
     const user = userJson[1] ? JSON.parse(userJson[1]) : null;
+    const token = authToken[1];
+
+    // Inject auth token into API client if it exists
+    if (token) {
+      const { container } = await import('../infrastructure/di/Container');
+      container.apiClient.setAuthToken(token);
+    }
 
     useAppStore.setState({
       user,

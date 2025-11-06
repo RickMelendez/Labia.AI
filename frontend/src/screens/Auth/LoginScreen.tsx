@@ -13,10 +13,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { COLORS } from '../../constants';
-import { apiClient } from '../../services/api';
+import { COLORS } from '../../core/constants';
+import { container } from '../../infrastructure/di/Container';
 import { useAppStore } from '../../store/appStore';
-import { showToast } from '../../services/toast';
+import AppBackground from '../../components/common/AppBackground';
+import NeonButton from '../../components/common/NeonButton';
 
 type Props = NativeStackScreenProps<any, 'Login'>;
 
@@ -29,26 +30,27 @@ export default function LoginScreen({ navigation }: Props) {
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      showToast.error('Error', 'Por favor ingresa tu email y contraseña');
+      container.toast.error('Error', 'Por favor ingresa tu email y contraseña');
       return;
     }
 
     setIsLoading(true);
     try {
-      const response = await apiClient.login({ email, password });
+      const response = await container.api.login({ email, password });
       setUser(response.user);
-      showToast.success('¡Bienvenido!', `Hola ${response.user.name || 'de nuevo'}`);
+      container.toast.success('¡Bienvenido!', `Hola ${response.user.name || 'de nuevo'}`);
       // Navigation will happen automatically via RootNavigator when user is set
     } catch (error: any) {
       console.error('Login error:', error);
-      showToast.error('Error al iniciar sesión', error.detail || 'Credenciales inválidas');
+      container.toast.error('Error al iniciar sesión', error.detail || 'Credenciales inválidas');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}>
+      <AppBackground />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
@@ -105,15 +107,13 @@ export default function LoginScreen({ navigation }: Props) {
           </TouchableOpacity>
 
           {/* Login Button */}
-          <TouchableOpacity onPress={handleLogin} disabled={isLoading}>
-            <LinearGradient colors={COLORS.gradient.primary} style={styles.loginButton}>
-              {isLoading ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <Text style={styles.loginButtonText}>Iniciar Sesión</Text>
-              )}
-            </LinearGradient>
-          </TouchableOpacity>
+          <NeonButton
+            onPress={handleLogin}
+            disabled={isLoading}
+            label={isLoading ? 'Ingresando…' : 'Iniciar Sesión'}
+            leftIcon={<MaterialCommunityIcons name={isLoading ? 'progress-clock' : 'login'} size={20} color="#FFF" />}
+            style={{ marginBottom: 24 }}
+          />
 
           {/* Divider */}
           <View style={styles.divider}>
@@ -148,7 +148,6 @@ export default function LoginScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background.light
   },
   keyboardView: {
     flex: 1,
@@ -183,7 +182,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     marginBottom: 16,
-    gap: 12
   },
   input: {
     flex: 1,
@@ -199,17 +197,7 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontWeight: '600'
   },
-  loginButton: {
-    paddingVertical: 16,
-    borderRadius: 28,
-    alignItems: 'center',
-    marginBottom: 24
-  },
-  loginButtonText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#FFFFFF'
-  },
+  
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -228,7 +216,6 @@ const styles = StyleSheet.create({
   socialButtons: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 16,
     marginBottom: 32
   },
   socialButton: {

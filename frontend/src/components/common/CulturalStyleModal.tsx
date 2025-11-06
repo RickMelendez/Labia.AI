@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { COLORS, CULTURAL_STYLES } from '../../constants';
+import { COLORS, CULTURAL_STYLES } from '../../core/constants';
 import { CulturalStyle } from '../../types';
 
 interface CulturalStyleModalProps {

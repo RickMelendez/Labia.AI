@@ -1,4 +1,4 @@
-"""
+﻿"""
 Labia.AI FastAPI Application
 Main entry point for the API
 """
@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 import sys
 
-from .presentation.api import openers, responses, health, auth, conversations
+from .presentation.api import openers, responses, health, auth, conversations, agent
 from .presentation.middleware.error_handler import (
     ErrorHandlerMiddleware,
     RequestLoggingMiddleware
@@ -39,6 +39,8 @@ app.add_middleware(RateLimiterMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
+    # Allow any IPv4/IPv6 host (with optional port) like http://192.168.1.10:3000 or http://[::1]:8080
+    allow_origin_regex=r"^https?://(\[[0-9a-fA-F:]+\]|(\d{1,3}\.){3}\d{1,3})(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -50,12 +52,13 @@ app.include_router(auth.router, prefix="/api/v1", tags=["Authentication"])
 app.include_router(openers.router, prefix="/api/v1", tags=["Openers"])
 app.include_router(responses.router, prefix="/api/v1", tags=["Responses"])
 app.include_router(conversations.router, prefix="/api/v1", tags=["Conversations"])
+app.include_router(agent.router, prefix="/api/v1", tags=["Agent"])
 
 
 @app.on_event("startup")
 async def startup_event():
     """Run on application startup"""
-    logger.info("🚀 Starting Labia.AI API")
+    logger.info("ðŸš€ Starting Labia.AI API")
     logger.info(f"Environment: {settings.ENVIRONMENT}")
     logger.info(f"LLM Provider: {settings.LLM_PROVIDER}")
 
@@ -64,33 +67,34 @@ async def startup_event():
     db_connected = await check_database_connection()
     if db_connected:
         db_info = get_database_info()
-        logger.info(f"✅ Database connected: {db_info['url']}")
+        logger.info(f"âœ… Database connected: {db_info['url']}")
     else:
-        logger.warning("⚠️  Database connection failed - running without persistence")
+        logger.warning("âš ï¸  Database connection failed - running without persistence")
 
     # Initialize Redis cache
     logger.info("Initializing Redis cache...")
     try:
         redis_client = get_redis_client()
         if await redis_client.ping():
-            logger.info(f"✅ Redis cache connected: {settings.REDIS_URL.split('@')[-1]}")
+            logger.info(f"âœ… Redis cache connected: {settings.REDIS_URL.split('@')[-1]}")
         else:
-            logger.warning("⚠️  Redis ping failed - caching disabled")
+            logger.warning("âš ï¸  Redis ping failed - caching disabled")
     except Exception as e:
-        logger.warning(f"⚠️  Redis connection failed: {e} - caching disabled")
+        logger.warning(f"âš ï¸  Redis connection failed: {e} - caching disabled")
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Run on application shutdown"""
-    logger.info("👋 Shutting down Labia.AI API")
+    logger.info("ðŸ‘‹ Shutting down Labia.AI API")
 
 
 @app.get("/")
 async def root():
     """Root endpoint"""
     return {
-        "message": "¡Wepa! Bienvenido a Labia.AI 🇵🇷",
+        "message": "Â¡Wepa! Bienvenido a Labia.AI ðŸ‡µðŸ‡·",
         "version": "1.0.0",
         "docs": "/docs"
     }
+

@@ -93,7 +93,7 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 cp .env.example .env      # Configure environment variables
 alembic upgrade head      # Run migrations
-uvicorn app.main:app --reload
+uvicorn src.main:app --reload
 ```
 
 ### Frontend Setup
@@ -139,6 +139,10 @@ This is a private project. Please contact the maintainers for contribution guide
 
 Proprietary - All rights reserved
 
-## Roadmap
+## Documentation
 
-See [docs/roadmap.md](docs/roadmap.md) for the detailed development roadmap.
+- System Design: `docs/system-design.md`
+- Deployment Guide: `docs/DEPLOYMENT-GUIDE.md`
+- Testing Guide: `docs/testing-guide.md`
+- API Usage Examples: `docs/API-USAGE-EXAMPLES.md`
+- Infrastructure: `docs/INFRASTRUCTURE.md`

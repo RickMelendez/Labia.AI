@@ -3,8 +3,10 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import NeonButton from '../../components/common/NeonButton';
+import AppBackground from '../../components/common/AppBackground';
 import { OnboardingStackParamList, CulturalStyle } from '../../types';
-import { COLORS, CULTURAL_STYLES } from '../../constants';
+import { COLORS, CULTURAL_STYLES } from '../../core/constants';
 import { useAppStore } from '../../store/appStore';
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'CountrySelection'>;
@@ -20,6 +22,7 @@ export default function CountrySelectionScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.container}>
+      <AppBackground />
       <View style={styles.header}>
         <Text style={styles.title}>¿De dónde eres?</Text>
         <Text style={styles.subtitle}>
@@ -56,11 +59,7 @@ export default function CountrySelectionScreen({ navigation }: Props) {
       </ScrollView>
 
       <View style={styles.footer}>
-        <TouchableOpacity onPress={handleContinue} disabled={!selectedStyle}>
-          <LinearGradient colors={COLORS.gradient.primary} style={styles.continueButton}>
-            <Text style={styles.continueText}>Continuar</Text>
-          </LinearGradient>
-        </TouchableOpacity>
+        <NeonButton onPress={handleContinue} disabled={!selectedStyle} label="Continuar" />
       </View>
     </SafeAreaView>
   );
@@ -69,8 +68,9 @@ export default function CountrySelectionScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background.light
+    backgroundColor: 'transparent'
   },
+  background: { ...StyleSheet.absoluteFillObject as any, zIndex: -1 },
   header: {
     paddingHorizontal: 24,
     paddingTop: 20,
@@ -151,14 +151,5 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB'
   },
-  continueButton: {
-    paddingVertical: 16,
-    borderRadius: 28,
-    alignItems: 'center'
-  },
-  continueText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#FFFFFF'
-  }
+  
 });

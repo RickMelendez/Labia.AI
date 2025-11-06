@@ -5,8 +5,8 @@ import { useTheme } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { COLORS } from '../../constants';
-import { showToast } from '../../services/toast';
+import { COLORS } from '../../core/constants';
+import { container } from '../../infrastructure/di/Container';
 
 interface Mission {
   id: string;
@@ -125,7 +125,7 @@ export default function TrainerScreen() {
 
     saveProgress(updatedMissions, newXP, newLevel);
 
-    showToast.success('¡Misión Completada!', `+${mission.xp} XP ganados`);
+    container.toast.success('¡Misión Completada!', `+${mission.xp} XP ganados`);
   };
 
   const getDifficultyColor = (difficulty: string) => {
@@ -401,7 +401,6 @@ const styles = StyleSheet.create({
   missionMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
   },
   difficultyBadge: {
     paddingHorizontal: 8,

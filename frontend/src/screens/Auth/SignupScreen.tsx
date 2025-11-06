@@ -14,10 +14,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { COLORS } from '../../constants';
-import { apiClient } from '../../services/api';
+import { COLORS } from '../../core/constants';
+import { container } from '../../infrastructure/di/Container';
 import { useAppStore } from '../../store/appStore';
-import { showToast } from '../../services/toast';
+import AppBackground from '../../components/common/AppBackground';
+import NeonButton from '../../components/common/NeonButton';
 
 type Props = NativeStackScreenProps<any, 'Signup'>;
 
@@ -33,41 +34,42 @@ export default function SignupScreen({ navigation }: Props) {
 
   const handleSignup = async () => {
     if (!name.trim() || !email.trim() || !password.trim()) {
-      showToast.error('Error', 'Por favor completa todos los campos');
+      container.toast.error('Error', 'Por favor completa todos los campos');
       return;
     }
 
     if (password !== confirmPassword) {
-      showToast.error('Error', 'Las contraseñas no coinciden');
+      container.toast.error('Error', 'Las contraseñas no coinciden');
       return;
     }
 
     if (password.length < 6) {
-      showToast.error('Error', 'La contraseña debe tener al menos 6 caracteres');
+      container.toast.error('Error', 'La contraseña debe tener al menos 6 caracteres');
       return;
     }
 
     setIsLoading(true);
     try {
-      const response = await apiClient.register({
+      const response = await container.api.register({
         email,
         password,
         name,
         plan: 'free'
       });
       setUser(response.user);
-      showToast.success('¡Cuenta creada!', `Bienvenido ${name}`);
+      container.toast.success('¡Cuenta creada!', `Bienvenido ${name}`);
       // Will automatically navigate to onboarding
     } catch (error: any) {
       console.error('Signup error:', error);
-      showToast.error('Error al registrarse', error.detail || 'No se pudo crear la cuenta');
+      container.toast.error('Error al registrarse', error.detail || 'No se pudo crear la cuenta');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}>
+      <AppBackground />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
@@ -160,15 +162,12 @@ export default function SignupScreen({ navigation }: Props) {
             </Text>
 
             {/* Signup Button */}
-            <TouchableOpacity onPress={handleSignup} disabled={isLoading}>
-              <LinearGradient colors={COLORS.gradient.primary} style={styles.signupButton}>
-                {isLoading ? (
-                  <ActivityIndicator color="#FFFFFF" />
-                ) : (
-                  <Text style={styles.signupButtonText}>Crear Cuenta</Text>
-                )}
-              </LinearGradient>
-            </TouchableOpacity>
+            <NeonButton
+              onPress={handleSignup}
+              disabled={isLoading}
+              label={isLoading ? 'Creando…' : 'Crear Cuenta'}
+              leftIcon={<MaterialCommunityIcons name={isLoading ? 'progress-clock' : 'account-plus'} size={20} color="#FFF" />}
+            />
 
             {/* Divider */}
             <View style={styles.divider}>
@@ -204,7 +203,6 @@ export default function SignupScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background.light
   },
   keyboardView: {
     flex: 1,
@@ -239,7 +237,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     marginBottom: 16,
-    gap: 12
   },
   input: {
     flex: 1,
@@ -286,7 +283,6 @@ const styles = StyleSheet.create({
   socialButtons: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 16,
     marginBottom: 32
   },
   socialButton: {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { COLORS, CULTURAL_STYLES } from '../../constants';
+import { COLORS, CULTURAL_STYLES, TYPOGRAPHY } from '../../core/constants';
 import { CulturalStyle } from '../../types';
 
 interface CulturalStylePickerProps {
@@ -16,13 +16,21 @@ export default function CulturalStylePicker({ selectedStyle, onSelect }: Cultura
         {CULTURAL_STYLES.map((style) => {
           const isSelected = selectedStyle === style.value;
           return (
-            <TouchableOpacity
-              key={style.value}
-              style={[styles.styleCard, isSelected && styles.styleCardSelected]}
-              onPress={() => onSelect(style.value)}
-            >
-              <Text style={styles.flag}>{style.flag}</Text>
-              <Text style={[styles.label, isSelected && styles.labelSelected]}>{style.label}</Text>
+            <TouchableOpacity key={style.value} onPress={() => onSelect(style.value)}>
+              <View
+                style={[
+                  styles.styleCard, 
+                  isSelected && styles.styleCardSelected
+                ]}
+              >
+                <Text style={styles.flag}>{style.flag}</Text>
+                <Text style={[
+                  styles.label,
+                  isSelected && styles.labelSelected
+                ]}>
+                  {style.label}
+                </Text>
+              </View>
             </TouchableOpacity>
           );
         })}
@@ -36,9 +44,10 @@ const styles = StyleSheet.create({
     marginVertical: 16
   },
   title: {
+    fontFamily: TYPOGRAPHY.fontFamily.bold,        // Poppins Bold
     fontSize: 16,
     fontWeight: '700',
-    color: COLORS.text.primary,
+    color: COLORS.text.strong,
     marginBottom: 12,
     paddingHorizontal: 16
   },
@@ -50,28 +59,37 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     marginRight: 12,
-    backgroundColor: COLORS.background.light,
+    backgroundColor: COLORS.surface.light,
     borderRadius: 16,
     borderWidth: 2,
-    borderColor: '#E5E7EB',
+    borderColor: COLORS.border.light,
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    shadowColor: COLORS.shadow.lavendar,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 3
   },
   styleCardSelected: {
-    borderColor: COLORS.primary,
-    backgroundColor: '#FFF1F7'
+    borderWidth: 3,
+    borderColor: COLORS.brand,
+    backgroundColor: COLORS.brand50,
   },
   flag: {
     fontSize: 28,
     marginBottom: 6
   },
   label: {
+    fontFamily: TYPOGRAPHY.fontFamily.semibold,   // Poppins SemiBold
     fontSize: 13,
     fontWeight: '600',
-    color: COLORS.text.primary,
+    color: COLORS.text.strong,
     textAlign: 'center'
   },
   labelSelected: {
-    color: COLORS.primary
+    fontFamily: TYPOGRAPHY.fontFamily.bold,       // Poppins Bold
+    color: COLORS.brand,
+    fontWeight: '700',
   }
 });

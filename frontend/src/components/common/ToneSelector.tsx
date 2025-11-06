@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { COLORS, TONES } from '../../constants';
+import { LinearGradient } from 'expo-linear-gradient';
+import { COLORS, TONES, TYPOGRAPHY } from '../../core/constants';
 import { Tone } from '../../types';
 
 interface ToneSelectorProps {
@@ -11,18 +12,33 @@ interface ToneSelectorProps {
 export default function ToneSelector({ selectedTone, onSelect }: ToneSelectorProps) {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tono</Text>
+      <Text style={styles.title}>Tono de Conversación</Text>
       <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} style={styles.scrollView}>
         {TONES.map((tone) => {
           const isSelected = selectedTone === tone.value;
+          
+          if (isSelected) {
+            return (
+              <TouchableOpacity key={tone.value} onPress={() => onSelect(tone.value)}>
+                <LinearGradient
+                  colors={COLORS.gradient.magicButton as any}
+                  style={[styles.toneChip, styles.toneChipSelected]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <Text style={styles.iconSelected}>{tone.icon}</Text>
+                  <Text style={styles.labelSelected}>{tone.label}</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            );
+          }
+          
           return (
-            <TouchableOpacity
-              key={tone.value}
-              style={[styles.toneChip, isSelected && styles.toneChipSelected]}
-              onPress={() => onSelect(tone.value)}
-            >
-              <Text style={styles.icon}>{tone.icon}</Text>
-              <Text style={[styles.label, isSelected && styles.labelSelected]}>{tone.label}</Text>
+            <TouchableOpacity key={tone.value} onPress={() => onSelect(tone.value)}>
+              <View style={styles.toneChip}>
+                <Text style={styles.icon}>{tone.icon}</Text>
+                <Text style={styles.label}>{tone.label}</Text>
+              </View>
             </TouchableOpacity>
           );
         })}
@@ -33,14 +49,16 @@ export default function ToneSelector({ selectedTone, onSelect }: ToneSelectorPro
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 8
+    marginVertical: 12,
   },
   title: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.text.primary,
-    marginBottom: 8,
-    paddingHorizontal: 16
+    fontFamily: TYPOGRAPHY.fontFamily.bold,        // Poppins Bold
+    fontSize: 15,
+    fontWeight: '700',
+    color: COLORS.text.strong,
+    marginBottom: 12,
+    paddingHorizontal: 16,
+    letterSpacing: 0.3,
   },
   scrollView: {
     paddingHorizontal: 16
@@ -48,28 +66,50 @@ const styles = StyleSheet.create({
   toneChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    marginRight: 8,
-    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    marginRight: 10,
+    backgroundColor: COLORS.surface.light,
     borderRadius: 24,
     borderWidth: 2,
-    borderColor: 'transparent'
+    borderColor: COLORS.border.light,
+    shadowColor: COLORS.shadow.lavendar,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 2,
   },
   toneChipSelected: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary
+    backgroundColor: 'transparent',
+    borderColor: 'transparent',
+    shadowColor: COLORS.brand,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.5,
+    shadowRadius: 16,
+    elevation: 6,
   },
   icon: {
     fontSize: 18,
-    marginRight: 6
+    marginRight: 8,
+    color: COLORS.text.body,
+  },
+  iconSelected: {
+    fontSize: 18,
+    marginRight: 8,
+    color: COLORS.text.onBrand,
   },
   label: {
+    fontFamily: TYPOGRAPHY.fontFamily.semibold,   // Poppins SemiBold
     fontSize: 14,
     fontWeight: '600',
-    color: COLORS.text.primary
+    color: COLORS.text.body,
+    letterSpacing: 0.2,
   },
   labelSelected: {
-    color: '#FFFFFF'
+    fontFamily: TYPOGRAPHY.fontFamily.bold,       // Poppins Bold
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.text.onBrand,
+    letterSpacing: 0.3,
   }
 });

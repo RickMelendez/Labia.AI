@@ -103,8 +103,9 @@ dump.rdb
 *.sublime-project
 *.sublime-workspace
 
-# Node modules (for future frontend)
+# Node modules (ignore all levels)
 node_modules/
+**/node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { OnboardingStackParamList } from '../../types';
-import { COLORS } from '../../constants';
+import { COLORS } from '../../core/constants';
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'Splash'>;
 

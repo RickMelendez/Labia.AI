@@ -1,4 +1,4 @@
-"""
+﻿"""
 AI Service - High-level interface for conversation generation
 Handles opener and response generation with cultural context
 """
@@ -6,7 +6,9 @@ from typing import List, Optional, Dict
 from loguru import logger
 
 from .llm_provider import BaseLLMProvider, LLMMessage
-from .prompt_templates import PromptBuilder
+from .agent_prompt import build_agent_messages
+# Use the improved, research-backed prompt templates for more genuine, culturally-tuned outputs
+from .prompt_templates_improved import PromptBuilder
 from ...domain.entities.conversation import ToneStyle
 
 
@@ -54,8 +56,9 @@ class AIConversationService:
         bio: str,
         interests: List[str],
         cultural_style: str = "boricua",
+        target_tone: Optional[str] = None,
         user_interests: List[str] = None,
-        num_suggestions: int = 3
+        num_suggestions: int = 5
     ) -> List[ConversationOpener]:
         """
         Generate conversation openers in three different tones
@@ -70,14 +73,24 @@ class AIConversationService:
         Returns:
             List of ConversationOpener objects with different tones
         """
-        openers = []
-        tones = [
-            ("genuino", "Genuine and friendly"),
-            ("coqueto", "Flirty and playful"),
-            ("directo", "Direct and concise")
-        ]
+        openers: List[ConversationOpener] = []
+        tones = ["genuino", "coqueto", "directo"]
 
-        for tone_key, tone_desc in tones[:num_suggestions]:
+        # Distribute suggestions across tones (at least 1 per tone), then fill remaining favoring genuino/coqueto
+        base_per_tone = 1
+        remaining = max(num_suggestions - len(tones), 0)
+        # Favor the UI-selected tone when distributing extras
+        _tone_map = {"chill": "genuino", "elegant": "directo", "minimalist": "directo", "playero": "coqueto", "intellectual": "genuino"}
+        _preferred = _tone_map.get((target_tone or "").lower())
+        extra_order = ([
+            _preferred,
+            *[t for t in tones if t != _preferred],
+        ] if _preferred in tones else ["genuino", "coqueto", "directo"]) 
+        counts = {t: base_per_tone for t in tones}
+        for i in range(remaining):
+            counts[extra_order[i % len(extra_order)]] += 1
+
+        for tone_key in tones:
             try:
                 prompt_messages = PromptBuilder.build_opener_prompt(
                     cultural_style=cultural_style,
@@ -89,24 +102,53 @@ class AIConversationService:
 
                 # Convert to LLMMessage objects
                 llm_messages = [
-                    LLMMessage(role=msg["role"], content=msg["content"])
+                    LLMMessage(role=msg["role"], content=msg["content"]) 
                     for msg in prompt_messages
                 ]
+                # Add tone-aware persona for responses
+                _persona_by_tone_resp = {
+                    "genuino": "PERSONA: Auténtico y empático. 1–3 frases cortas que avancen la conversación con curiosidad.",
+                    "coqueto": "PERSONA: Juguetón con clase. Toque coqueto breve y una invitación ligera.",
+                    "directo": "PERSONA: Claro y seguro. Responde al punto y propone siguiente paso sin presión.",
+                }
+                llm_messages.insert(1, LLMMessage(role="system", content=_persona_by_tone_resp.get(tone_key, _persona_by_tone_resp["genuino"])) )
+                # Add tone-aware persona guidance
+                _persona_by_tone = {
+                    "genuino": "PERSONA: Auténtico, curioso y seguro. Conecta con algo del perfil y haz una pregunta corta.",
+                    "coqueto": "PERSONA: Coqueto con clase. Juega ligero, un guiño, cero cursilería.",
+                    "directo": "PERSONA: Directo y de alto valor. Claro, breve y con intención, sin ser agresivo.",
+                }
+                llm_messages.insert(1, LLMMessage(role="system", content=_persona_by_tone.get(tone_key, _persona_by_tone["genuino"])) )
 
-                # Generate opener
-                text = await self.llm.generate(
+                # Persona guidance (high-value, confident, natural; avoid clichÃ©s)
+                llm_messages.insert(1, LLMMessage(
+                    role="system",
+                    content=(
+                        "PERSONA: High-value, confident, playful-but-respectful masculine voice. "
+                        "Avoid cheesy or generic lines. Keep it natural with a curiosity hook."
+                    )
+                ))
+
+                # Generate multiple openers per tone
+                n = counts[tone_key]
+                texts = await self.llm.generate_multiple(
                     messages=llm_messages,
-                    temperature=0.8,
-                    max_tokens=150
+                    n=n,
+                    temperature=0.9,
+                    max_tokens=120
                 )
 
-                opener = ConversationOpener(
-                    text=text.strip(),
-                    tone=tone_key,
-                    cultural_style=cultural_style,
-                    confidence=0.85
-                )
-                openers.append(opener)
+                for t in texts:
+                    if not t:
+                        continue
+                    openers.append(
+                        ConversationOpener(
+                            text=t.strip(),
+                            tone=tone_key,
+                            cultural_style=cultural_style,
+                            confidence=0.9
+                        )
+                    )
 
                 logger.info(f"Generated {tone_key} opener for {cultural_style} style")
 
@@ -115,7 +157,19 @@ class AIConversationService:
                 # Add fallback opener
                 openers.append(self._get_fallback_opener(tone_key, cultural_style))
 
-        return openers
+        # Rank, dedupe, and take top-N
+        seen = set()
+        ranked: list[tuple[float, ConversationOpener]] = []
+        for op in openers:
+            txt = op.text.strip()
+            key = txt.lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            score = self._score_text(txt, cultural_style, op.tone, set((interests or [])))
+            ranked.append((score, op))
+        ranked.sort(key=lambda x: x[0], reverse=True)
+        return [op for _, op in ranked[:num_suggestions]]
 
     async def generate_responses(
         self,
@@ -124,7 +178,8 @@ class AIConversationService:
         conversation_context: List[str] = None,
         shared_interests: List[str] = None,
         relationship_stage: str = "early",
-        num_suggestions: int = 3
+        num_suggestions: int = 5,
+        target_tone: Optional[str] = None
     ) -> List[ConversationResponse]:
         """
         Generate conversation responses in different tones
@@ -140,14 +195,19 @@ class AIConversationService:
         Returns:
             List of ConversationResponse objects
         """
-        responses = []
-        tones = [
-            ("genuino", "Genuine and warm"),
-            ("coqueto", "Flirty and playful"),
-            ("directo", "Direct and clear")
-        ]
+        responses: List[ConversationResponse] = []
+        tones = ["genuino", "coqueto", "directo"]
 
-        for tone_key, tone_desc in tones[:num_suggestions]:
+        tone_map = {"chill": "genuino", "elegant": "directo", "minimalist": "directo", "playero": "coqueto", "intellectual": "genuino"}
+        preferred = tone_map.get((target_tone or "").lower())
+        base_per_tone = 1
+        remaining = max(num_suggestions - len(tones), 0)
+        counts = {t: base_per_tone for t in tones}
+        order = [preferred] + [t for t in tones if t != preferred] if preferred in tones else tones
+        for i in range(remaining):
+            counts[order[i % len(order)]] += 1
+
+        for tone_key in tones:
             try:
                 prompt_messages = PromptBuilder.build_response_prompt(
                     cultural_style=cultural_style,
@@ -160,23 +220,38 @@ class AIConversationService:
 
                 # Convert to LLMMessage objects
                 llm_messages = [
-                    LLMMessage(role=msg["role"], content=msg["content"])
+                    LLMMessage(role=msg["role"], content=msg["content"]) 
                     for msg in prompt_messages
                 ]
 
-                # Generate response
-                text = await self.llm.generate(
+                # Persona guidance (high-value, authentic; avoid generic lists)
+                llm_messages.insert(1, LLMMessage(
+                    role="system",
+                    content=(
+                        "PERSONA: High-value, seguro y auténtico. 1-3 short sentences to move the chat forward. "
+                        "Avoid generic replies and long lists."
+                    )
+                ))
+
+                # Generate multiple responses per tone
+                n = counts[tone_key]
+                texts = await self.llm.generate_multiple(
                     messages=llm_messages,
-                    temperature=0.8,
-                    max_tokens=200
+                    n=n,
+                    temperature=0.85,
+                    max_tokens=180
                 )
 
-                response = ConversationResponse(
-                    text=text.strip(),
-                    tone=tone_key,
-                    cultural_style=cultural_style
-                )
-                responses.append(response)
+                for t in texts:
+                    if not t:
+                        continue
+                    responses.append(
+                        ConversationResponse(
+                            text=t.strip(),
+                            tone=tone_key,
+                            cultural_style=cultural_style
+                        )
+                    )
 
                 logger.info(f"Generated {tone_key} response for {cultural_style} style")
 
@@ -185,7 +260,50 @@ class AIConversationService:
                 # Add fallback response
                 responses.append(self._get_fallback_response(tone_key, cultural_style))
 
-        return responses
+        seen = set()
+        ranked_resp: list[tuple[float, ConversationResponse]] = []
+        for r in responses:
+            txt = r.text.strip()
+            key = txt.lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            score = self._score_text(txt, cultural_style, r.tone, set((shared_interests or [])))
+            ranked_resp.append((score, r))
+        ranked_resp.sort(key=lambda x: x[0], reverse=True)
+        return [r for _, r in ranked_resp[:num_suggestions]]
+
+    def _score_text(self, text: str, cultural_style: str, tone: str, interest_words: set[str]) -> float:
+        """Heuristic scoring: brevity, curiosity, relevance, light country flavor."""
+        t = (text or '').strip()
+        length = len(t)
+        score = 0.0
+        if 40 <= length <= 200:
+            score += 1.0
+        elif 15 <= length < 40:
+            score += 0.6
+        if '?' in t:
+            score += 0.5
+        flavor = {
+            'boricua': ['wepa', 'brutal', 'jangue'],
+            'mexicano': ['wey', 'chido', 'neta'],
+            'colombiano': ['parce', 'bacano', 'chimba'],
+            'argentino': ['che', 'copado', 'vos'],
+            'espanol': ['tio', 'mola', 'guay'],
+        }
+        for w in flavor.get(cultural_style, []):
+            if w in t.lower():
+                score += 0.4
+                break
+        words = set(t.lower().replace('\n', ' ').split())
+        iw = set(w.lower() for w in interest_words if isinstance(w, str))
+        if words.intersection(iw):
+            score += 0.6
+        if not t.lower().startswith('hola'):
+            score += 0.2
+        if t.count('ðŸ˜Š') + t.count('ðŸ˜') + t.count('ðŸ˜‰') > 2:
+            score -= 0.3
+        return score
 
     async def check_content_safety(self, text: str) -> Dict[str, any]:
         """
@@ -261,14 +379,14 @@ class AIConversationService:
 
         except Exception as e:
             logger.error(f"Error rewriting message: {e}")
-            return "Hola, ¿cómo estás? Me gustaría conocerte mejor."
+            return "Hola, Â¿cÃ³mo estÃ¡s? Me gustarÃ­a conocerte mejor."
 
     def _get_fallback_opener(self, tone: str, cultural_style: str) -> ConversationOpener:
         """Get fallback opener when generation fails"""
         fallbacks = {
-            "genuino": "Hola! Vi tu perfil y me pareció interesante. ¿Cómo estuvo tu día?",
-            "coqueto": "¡Ey! Tu perfil me llamó la atención 👀 ¿Qué tal si nos conocemos?",
-            "directo": "Hola, me gustó tu perfil. ¿Te gustaría chatear?"
+            "genuino": "Hola! Vi tu perfil y me pareciÃ³ interesante. Â¿CÃ³mo estuvo tu dÃ­a?",
+            "coqueto": "Â¡Ey! Tu perfil me llamÃ³ la atenciÃ³n ðŸ‘€ Â¿QuÃ© tal si nos conocemos?",
+            "directo": "Hola, me gustÃ³ tu perfil. Â¿Te gustarÃ­a chatear?"
         }
 
         text = fallbacks.get(tone, fallbacks["genuino"])
@@ -283,9 +401,9 @@ class AIConversationService:
     def _get_fallback_response(self, tone: str, cultural_style: str) -> ConversationResponse:
         """Get fallback response when generation fails"""
         fallbacks = {
-            "genuino": "¡Qué interesante! Cuéntame más sobre eso.",
-            "coqueto": "Me gusta cómo piensas 😏 ¿Qué más puedes contarme?",
-            "directo": "Entiendo. ¿Y tú qué opinas?"
+            "genuino": "Â¡QuÃ© interesante! CuÃ©ntame mÃ¡s sobre eso.",
+            "coqueto": "Me gusta cÃ³mo piensas ðŸ˜ Â¿QuÃ© mÃ¡s puedes contarme?",
+            "directo": "Entiendo. Â¿Y tÃº quÃ© opinas?"
         }
 
         text = fallbacks.get(tone, fallbacks["genuino"])
@@ -295,3 +413,33 @@ class AIConversationService:
             tone=tone,
             cultural_style=cultural_style
         )
+
+    async def assist(
+        self,
+        query: str,
+        cultural_style: str = "boricua",
+        mode: str = "coach",
+        conversation_context: List[str] | None = None,
+        goal: str | None = None,
+        n: int = 3,
+    ) -> List[str]:
+        try:
+            msgs = build_agent_messages(
+                cultural_style=cultural_style,
+                mode=mode,
+                query=query,
+                conversation_context=conversation_context,
+                goal=goal,
+            )
+            llm_messages = [LLMMessage(role=m["role"], content=m["content"]) for m in msgs]
+            texts = await self.llm.generate_multiple(messages=llm_messages, n=max(1, n), temperature=0.8, max_tokens=220)
+            return [t.strip() for t in texts if t]
+        except Exception as e:
+            logger.error(f"Assistant error: {e}")
+            return [
+                "Puedo ayudarte con ideas, mejores respuestas o reescrituras mÃ¡s naturales. "
+                "CuÃ©ntame el contexto y tu objetivo."
+            ]
+
+
+

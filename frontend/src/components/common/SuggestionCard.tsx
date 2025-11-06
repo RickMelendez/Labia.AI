@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Clipboard } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
+import * as Haptics from 'expo-haptics';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS, TONES } from '../../constants';
+import { COLORS, TONES, TYPOGRAPHY } from '../../core/constants';
+import { TONE_GRADIENTS } from '../../core/constants/theme.constants';
 import { Tone } from '../../types';
-import { showToast } from '../../services/toast';
+import { container } from '../../infrastructure/di/Container';
 
 interface SuggestionCardProps {
   text: string;
@@ -23,89 +26,115 @@ export default function SuggestionCard({
 }: SuggestionCardProps) {
   const toneInfo = TONES.find((t) => t.value === tone);
   const [liked, setLiked] = useState<boolean | null>(null);
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
-  const handleCopy = () => {
-    Clipboard.setString(text);
-    showToast.success('¡Copiado!', 'El texto ha sido copiado al portapapeles');
+  const handleCopy = async () => {
+    await Clipboard.setStringAsync(text);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    container.toast.success('¡Copiado!', 'El texto ha sido copiado al portapapeles');
     onCopy?.();
+
+    Animated.sequence([
+      Animated.spring(scaleAnim, {
+        toValue: 0.95,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+      }),
+    ]).start();
   };
 
   const handleLike = () => {
     setLiked(true);
-    showToast.success('¡Gracias!', 'Nos alegra que te guste esta sugerencia');
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    container.toast.success('¡Gracias!', 'Nos alegra que te guste esta sugerencia');
   };
 
   const handleDislike = () => {
     setLiked(false);
-    showToast.info('Gracias por tu feedback', 'Trabajaremos en generar mejores sugerencias');
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    container.toast.info('Gracias por tu feedback', 'Trabajaremos en generar mejores sugerencias');
   };
 
   return (
-    <View style={styles.container}>
-      <LinearGradient colors={['#FFFFFF', '#F9FAFB']} style={styles.card}>
-        {/* Tone Badge */}
+    <Animated.View style={[styles.container, { transform: [{ scale: scaleAnim }] }]}>
+      <View style={styles.card}>
         <View style={styles.header}>
-          <View style={styles.toneBadge}>
+          <LinearGradient 
+            colors={(TONE_GRADIENTS[tone] || TONE_GRADIENTS['chill']) as any} 
+            style={styles.toneBadge}
+          >
             <Text style={styles.toneIcon}>{toneInfo?.icon}</Text>
             <Text style={styles.toneLabel}>{toneInfo?.label}</Text>
-          </View>
+          </LinearGradient>
         </View>
 
-        {/* Main Text */}
-        <Text style={styles.mainText}>{text}</Text>
+        <Text style={styles.mainText} selectable={true}>{text}</Text>
 
-        {/* Explanation */}
         {explanation && (
           <View style={styles.explanationContainer}>
-            <Ionicons name="information-circle-outline" size={16} color={COLORS.text.secondary} />
+            <Ionicons name="information-circle-outline" size={16} color={COLORS.text.muted} />
             <Text style={styles.explanationText}>{explanation}</Text>
           </View>
         )}
 
-        {/* Actions */}
         <View style={styles.actions}>
-          <TouchableOpacity style={styles.actionButton} onPress={handleCopy}>
-            <MaterialCommunityIcons name="content-copy" size={18} color={COLORS.primary} />
-            <Text style={styles.actionText}>Copiar</Text>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={handleCopy}
+            activeOpacity={0.7}
+          >
+            <MaterialCommunityIcons name="content-copy" size={18} color={COLORS.brand} />
+            <Text style={[styles.actionText, { marginLeft: 6, color: COLORS.brand }]}>Copiar</Text>
           </TouchableOpacity>
 
           <View style={styles.divider} />
 
-          {/* Feedback Buttons */}
           <TouchableOpacity
             style={[styles.feedbackButton, liked === true && styles.feedbackButtonActive]}
             onPress={handleLike}
+            activeOpacity={0.7}
           >
             <MaterialCommunityIcons
               name={liked === true ? "thumb-up" : "thumb-up-outline"}
               size={18}
-              color={liked === true ? COLORS.success : COLORS.text.secondary}
+              color={liked === true ? COLORS.success : COLORS.text.muted}
             />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.feedbackButton, liked === false && styles.feedbackButtonActive]}
             onPress={handleDislike}
+            activeOpacity={0.7}
           >
             <MaterialCommunityIcons
               name={liked === false ? "thumb-down" : "thumb-down-outline"}
               size={18}
-              color={liked === false ? COLORS.error : COLORS.text.secondary}
+              color={liked === false ? COLORS.error : COLORS.text.muted}
             />
           </TouchableOpacity>
 
           {onRegenerate && (
             <>
               <View style={styles.divider} />
-              <TouchableOpacity style={styles.actionButton} onPress={onRegenerate}>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  onRegenerate();
+                }}
+                activeOpacity={0.7}
+              >
                 <MaterialCommunityIcons name="refresh" size={18} color={COLORS.secondary} />
-                <Text style={styles.actionText}>Regenerar</Text>
+                <Text style={[styles.actionText, { marginLeft: 6, color: COLORS.secondary }]}>Regenerar</Text>
               </TouchableOpacity>
             </>
           )}
         </View>
-      </LinearGradient>
-    </View>
+      </View>
+    </Animated.View>
   );
 }
 
@@ -114,15 +143,16 @@ const styles = StyleSheet.create({
     marginBottom: 16
   },
   card: {
-    borderRadius: 16,
+    backgroundColor: COLORS.surface.light,
+    borderRadius: 20,
     padding: 16,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2
+    borderWidth: 2,
+    borderColor: COLORS.border.light,
+    shadowColor: COLORS.shadow.colored,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 20,
+    elevation: 6
   },
   header: {
     flexDirection: 'row',
@@ -133,61 +163,67 @@ const styles = StyleSheet.create({
   toneBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F3F4F6',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
     borderRadius: 20
   },
   toneIcon: {
     fontSize: 16,
-    marginRight: 6
+    marginRight: 6,
+    color: COLORS.text.onBrand,
   },
   toneLabel: {
+    fontFamily: TYPOGRAPHY.fontFamily.semibold,   // Poppins SemiBold
     fontSize: 12,
     fontWeight: '600',
-    color: COLORS.text.primary
+    color: COLORS.text.onBrand,
   },
   mainText: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular,    // Poppins Regular
     fontSize: 16,
     lineHeight: 24,
-    color: COLORS.text.primary,
+    color: COLORS.text.body,
     marginBottom: 12
   },
   explanationContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#FEF3C7',
+    backgroundColor: COLORS.surface.tinted,
     padding: 12,
     borderRadius: 8,
-    marginBottom: 12
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border.light,
   },
   explanationText: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular,    // Poppins Regular
     flex: 1,
     fontSize: 13,
     lineHeight: 18,
-    color: COLORS.text.secondary,
+    color: COLORS.text.body,
     marginLeft: 8
   },
   actions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingVertical: 4
+    paddingVertical: 4,
+    marginRight: 12,
   },
   actionText: {
+    fontFamily: TYPOGRAPHY.fontFamily.semibold,   // Poppins SemiBold
     fontSize: 13,
     fontWeight: '600',
-    color: COLORS.text.primary
+    color: COLORS.text.muted
   },
   divider: {
     width: 1,
     height: 20,
-    backgroundColor: '#E5E7EB'
+    backgroundColor: COLORS.border.light,
+    marginRight: 12,
   },
   feedbackButton: {
     padding: 6,
@@ -195,6 +231,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent'
   },
   feedbackButtonActive: {
-    backgroundColor: '#F3F4F6'
+    backgroundColor: COLORS.surface.tinted,
   }
 });

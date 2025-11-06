@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { AppState, AppStateStatus } from 'react-native';
 import { RootStackParamList } from '../types';
 import { useAppStore, initializeAppStore } from '../store/appStore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { STORAGE_KEYS } from '../constants';
+import { STORAGE_KEYS } from '../core/constants';
 
 // Navigators
 import MainNavigator from './MainNavigator';
@@ -30,10 +31,18 @@ export default function RootNavigator() {
 
     initialize();
 
-    // Listen for focus events to re-check onboarding status
-    // This allows the app to update when returning from background
-    const interval = setInterval(checkOnboardingStatus, 1000);
-    return () => clearInterval(interval);
+    // Listen for app state changes (when app comes back to foreground)
+    const appStateSubscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
+      if (nextAppState === 'active') {
+        // Re-check onboarding status when app becomes active
+        checkOnboardingStatus();
+      }
+    });
+
+    // Cleanup listener on unmount
+    return () => {
+      appStateSubscription.remove();
+    };
   }, [checkOnboardingStatus]);
 
   if (isLoading || hasCompletedOnboarding === null) {

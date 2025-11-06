@@ -3,9 +3,11 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import NeonButton from '../../components/common/NeonButton';
+import AppBackground from '../../components/common/AppBackground';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { OnboardingStackParamList, Tone } from '../../types';
-import { COLORS, TONES, STORAGE_KEYS } from '../../constants';
+import { COLORS, TONES, STORAGE_KEYS } from '../../core/constants';
 import { useAppStore } from '../../store/appStore';
 import ToneSelector from '../../components/common/ToneSelector';
 
@@ -28,6 +30,7 @@ export default function ProfileSetupScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.container}>
+      <AppBackground />
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Text style={styles.title}>Personaliza tu experiencia</Text>
@@ -69,11 +72,7 @@ export default function ProfileSetupScreen({ navigation }: Props) {
       </ScrollView>
 
       <View style={styles.footer}>
-        <TouchableOpacity onPress={handleComplete}>
-          <LinearGradient colors={COLORS.gradient.primary} style={styles.completeButton}>
-            <Text style={styles.completeText}>Comenzar a usar Labia.AI</Text>
-          </LinearGradient>
-        </TouchableOpacity>
+        <NeonButton onPress={handleComplete} label="Comenzar a usar Labia.AI" />
       </View>
     </SafeAreaView>
   );
@@ -82,8 +81,9 @@ export default function ProfileSetupScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background.light
+    backgroundColor: 'transparent'
   },
+  background: { ...StyleSheet.absoluteFillObject as any, zIndex: -1 },
   content: {
     flex: 1,
     paddingHorizontal: 24
@@ -144,14 +144,5 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB'
   },
-  completeButton: {
-    paddingVertical: 16,
-    borderRadius: 28,
-    alignItems: 'center'
-  },
-  completeText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#FFFFFF'
-  }
+  
 });

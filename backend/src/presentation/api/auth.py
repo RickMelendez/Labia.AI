@@ -333,6 +333,92 @@ async def login(request: LoginRequest, db: AsyncSession = Depends(get_async_db))
         raise HTTPException(status_code=500, detail="Login failed")
 
 
+@router.post("/dev-login", response_model=AuthResponse)
+async def dev_login(request: LoginRequest):
+    """
+    Development login endpoint - bypasses database requirement
+
+    **ONLY WORKS IN DEVELOPMENT ENVIRONMENT**
+
+    Test credentials:
+    - Email: rickmelendez001@gmail.com
+    - Password: password123
+
+    **Steps**:
+    1. Check if environment is development
+    2. Verify credentials match test user
+    3. Generate JWT tokens
+    4. Return user info + tokens (no database required)
+
+    **Returns**:
+    - User information
+    - Access token (30 min)
+    - Refresh token (7 days)
+    """
+    from ...core.config import settings
+
+    # Only allow in development
+    if settings.ENVIRONMENT != "development":
+        raise HTTPException(
+            status_code=404,
+            detail="This endpoint is only available in development mode"
+        )
+
+    # Test user credentials (must match test_credentials.txt)
+    TEST_USER_EMAIL = "rickmelendez001@gmail.com"
+    TEST_USER_PASSWORD = "password123"
+    TEST_USER_ID = "test-user-001"
+    TEST_USER_NAME = "Rick Melendez"
+
+    try:
+        # Verify credentials match test user
+        if request.email != TEST_USER_EMAIL:
+            raise AuthenticationException("Invalid email or password")
+
+        if request.password != TEST_USER_PASSWORD:
+            logger.log_warning(f"Failed dev login attempt for: {request.email}")
+            raise AuthenticationException("Invalid email or password")
+
+        # Generate tokens (same as regular login)
+        access_token = create_access_token({
+            "sub": TEST_USER_EMAIL,
+            "user_id": TEST_USER_ID,
+            "plan": "free",
+            "email": TEST_USER_EMAIL
+        })
+
+        refresh_token = create_refresh_token({
+            "sub": TEST_USER_EMAIL,
+            "user_id": TEST_USER_ID
+        })
+
+        logger.log_info(f"Development login successful: {TEST_USER_EMAIL}")
+
+        return AuthResponse(
+            user=UserResponse(
+                id=1,  # Mock ID
+                email=TEST_USER_EMAIL,
+                name=TEST_USER_NAME,
+                country="PR",
+                plan="free",
+                cultural_style="boricua",
+                is_verified=True,
+                created_at=datetime.utcnow(),
+            ),
+            tokens=TokenResponse(
+                access_token=access_token,
+                refresh_token=refresh_token,
+                expires_in=30 * 60,  # 30 minutes
+            ),
+        )
+
+    except AuthenticationException:
+        raise
+    except Exception as e:
+        logger.log_error("dev_login", e, {"email": request.email})
+        raise HTTPException(status_code=500, detail="Development login failed")
+
+
 @router.post("/refresh", response_model=TokenResponse)
 async def refresh_tokens(request: RefreshTokenRequest, db: AsyncSession = Depends(get_async_db)):
     """

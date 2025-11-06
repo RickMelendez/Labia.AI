@@ -2,8 +2,10 @@ import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, FlatList } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
+import NeonButton from '../../components/common/NeonButton';
+import AppBackground from '../../components/common/AppBackground';
 import { OnboardingStackParamList } from '../../types';
-import { COLORS } from '../../constants';
+import { COLORS } from '../../core/constants';
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'Tutorial'>;
 
@@ -58,6 +60,7 @@ export default function TutorialScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
+      <AppBackground />
       <FlatList
         ref={flatListRef}
         data={TUTORIAL_SLIDES}
@@ -88,13 +91,10 @@ export default function TutorialScreen({ navigation }: Props) {
           <Text style={styles.skipText}>Saltar</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={handleNext}>
-          <LinearGradient colors={COLORS.gradient.primary} style={styles.nextButton}>
-            <Text style={styles.nextText}>
-              {currentIndex === TUTORIAL_SLIDES.length - 1 ? 'Comenzar' : 'Siguiente'}
-            </Text>
-          </LinearGradient>
-        </TouchableOpacity>
+        <NeonButton
+          onPress={handleNext}
+          label={currentIndex === TUTORIAL_SLIDES.length - 1 ? 'Comenzar' : 'Siguiente'}
+        />
       </View>
     </View>
   );
@@ -103,8 +103,9 @@ export default function TutorialScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background.light
+    backgroundColor: 'transparent'
   },
+  background: { ...StyleSheet.absoluteFillObject as any, zIndex: -1 },
   slide: {
     width,
     flex: 1,
@@ -158,14 +159,5 @@ const styles = StyleSheet.create({
     color: COLORS.text.secondary,
     fontWeight: '600'
   },
-  nextButton: {
-    paddingHorizontal: 32,
-    paddingVertical: 14,
-    borderRadius: 28
-  },
-  nextText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#FFFFFF'
-  }
+  
 });

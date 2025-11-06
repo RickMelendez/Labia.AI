@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Bash(find:*)",
+      "Bash(for file in /c/Users/Rickm/Personal-Projects/Labia.AI/frontend/CLEAN-ARCHITECTURE-*.md)",
+      "Bash(done)",
+      "Bash(if [ -f \"App.broken.tsx\" ])",
+      "Bash(then rm \"App.broken.tsx\")",
+      "Bash(else echo \"⚠️  App.broken.tsx not found\")",
+      "Bash(fi)",
+      "Bash(if [ -f \"App.minimal.tsx\" ])",
+      "Bash(then rm \"App.minimal.tsx\")",
+      "Bash(else echo \"⚠️  App.minimal.tsx not found\")",
+      "Bash(if [ -f \"src/components/common/EnhancedSuggestionCard.example.tsx\" ])",
+      "Bash(then rm \"src/components/common/EnhancedSuggestionCard.example.tsx\")",
+      "Bash(else echo \"⚠️  EnhancedSuggestionCard.example.tsx not found\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

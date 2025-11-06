@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from 'react-native-paper';
-import { COLORS } from '../../constants';
+import { COLORS, TYPOGRAPHY } from '../../core/constants';
 import { UserPlan } from '../../types';
 
 interface UsageCardProps {
@@ -25,7 +25,7 @@ export default function UsageCard({ used, limit, plan }: UsageCardProps) {
 
   const getStatusText = () => {
     if (limit === -1) return 'Ilimitado';
-    if (remaining === 0) return 'Límite alcanzado';
+    if (remaining === 0) return 'Limite alcanzado';
     if (remaining === 1) return '1 sugerencia restante';
     return `${remaining} sugerencias restantes`;
   };
@@ -53,7 +53,10 @@ export default function UsageCard({ used, limit, plan }: UsageCardProps) {
               <View
                 style={[
                   styles.progressFill,
-                  { width: `${Math.min(percentage, 100)}%`, backgroundColor: getLimitColor() }
+                  {
+                    width: `${Math.min(100, Math.max(0, percentage))}%`,
+                    backgroundColor: getLimitColor()
+                  }
                 ]}
               />
             </View>
@@ -74,7 +77,7 @@ export default function UsageCard({ used, limit, plan }: UsageCardProps) {
         <View style={[styles.warningBanner, { backgroundColor: '#FEF2F2' }]}>
           <MaterialCommunityIcons name="alert-circle" size={16} color={COLORS.error} />
           <Text style={[styles.warningText, { color: COLORS.error }]}>
-            Te estás quedando sin sugerencias. Mejora a Pro para más.
+            Te estas quedando sin sugerencias. Mejora a Pro para mas.
           </Text>
         </View>
       )}
@@ -93,28 +96,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
-    gap: 8,
   },
   title: {
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 18,
     fontWeight: '700',
   },
   stats: {
-    gap: 12,
   },
   statItem: {
     alignItems: 'center',
   },
   statValue: {
+    fontFamily: TYPOGRAPHY.fontFamily.extrabold,
     fontSize: 32,
     fontWeight: '800',
   },
   statLabel: {
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
     fontSize: 14,
     marginTop: 4,
   },
   progressContainer: {
-    gap: 8,
   },
   progressBar: {
     height: 8,
@@ -126,11 +129,13 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   statusText: {
+    fontFamily: TYPOGRAPHY.fontFamily.semibold,
     fontSize: 14,
     fontWeight: '600',
     textAlign: 'center',
   },
   unlimitedText: {
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
     fontSize: 14,
     textAlign: 'center',
     fontStyle: 'italic',
@@ -138,12 +143,12 @@ const styles = StyleSheet.create({
   warningBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
     padding: 12,
     borderRadius: 8,
     marginTop: 12,
   },
   warningText: {
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
     fontSize: 12,
     flex: 1,
   },

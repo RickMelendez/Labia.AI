@@ -1,0 +1,26 @@
+{
+  "name": "labiaai-repo-root",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Repo root package.json with convenience scripts for frontend",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "front:install": "npm --prefix frontend install",
+    "front:start": "npm --prefix frontend run start",
+    "front:android": "npm --prefix frontend run android",
+    "front:ios": "npm --prefix frontend run ios",
+    "front:web": "npm --prefix frontend run web",
+    "front:test": "npm --prefix frontend run test",
+    "front:typecheck": "npm --prefix frontend run typecheck"
+  },
+  "dependencies": {
+    "expo": "^54.0.22"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.10",
+    "typescript": "~5.9.2"
+  }
+}

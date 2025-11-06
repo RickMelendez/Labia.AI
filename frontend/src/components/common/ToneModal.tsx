@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView } from 'react';
+import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { COLORS, TONES } from '../../constants';
+import { COLORS, TONES, TYPOGRAPHY } from '../../core/constants';
 import { Tone } from '../../types';
 
 interface ToneModalProps {
@@ -32,9 +32,9 @@ export default function ToneModal({
       <View style={styles.overlay}>
         <View style={styles.container}>
           <View style={styles.header}>
-            <Text style={styles.title}>Selecciona tu Tono Preferido</Text>
+            <Text style={styles.title}>Selecciona Tu Tono Preferido</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <MaterialCommunityIcons name="close" size={24} color={COLORS.text.primary} />
+              <MaterialCommunityIcons name="close" size={24} color={COLORS.text.strong} />
             </TouchableOpacity>
           </View>
 
@@ -57,7 +57,7 @@ export default function ToneModal({
                     </View>
                   </View>
                   {isSelected && (
-                    <MaterialCommunityIcons name="check-circle" size={24} color={COLORS.primary} />
+                    <MaterialCommunityIcons name="check-circle" size={24} color={COLORS.brand} />
                   )}
                 </TouchableOpacity>
               );
@@ -72,11 +72,11 @@ export default function ToneModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(45, 27, 78, 0.6)',
     justifyContent: 'flex-end'
   },
   container: {
-    backgroundColor: COLORS.background.light,
+    backgroundColor: COLORS.surface.light,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '70%',
@@ -89,12 +89,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB'
+    borderBottomColor: COLORS.border.light,
   },
   title: {
+    fontFamily: TYPOGRAPHY.fontFamily.bold,        // Poppins Bold
     fontSize: 18,
     fontWeight: '700',
-    color: COLORS.text.primary
+    color: COLORS.text.strong,
   },
   closeButton: {
     padding: 4
@@ -112,11 +113,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 12,
     borderWidth: 2,
-    borderColor: 'transparent'
+    borderColor: COLORS.border.light,
   },
   toneItemSelected: {
-    borderColor: COLORS.primary,
-    backgroundColor: '#FFF1F7'
+    borderColor: COLORS.brand,
+    backgroundColor: COLORS.brand50,
   },
   toneLeft: {
     flexDirection: 'row',
@@ -131,17 +132,21 @@ const styles = StyleSheet.create({
     flex: 1
   },
   toneLabel: {
+    fontFamily: TYPOGRAPHY.fontFamily.semibold,   // Poppins SemiBold
     fontSize: 16,
     fontWeight: '600',
-    color: COLORS.text.primary,
+    color: COLORS.text.strong,
     marginBottom: 4
   },
   toneLabelSelected: {
-    color: COLORS.primary
+    fontFamily: TYPOGRAPHY.fontFamily.bold,       // Poppins Bold
+    color: COLORS.brand,
+    fontWeight: '700',
   },
   toneDescription: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular,    // Poppins Regular
     fontSize: 13,
-    color: COLORS.text.secondary,
+    color: COLORS.text.muted,
     lineHeight: 18
   }
 });
