@@ -1,5 +1,5 @@
 import { ApiClient } from '../ApiClient';
-import { DatingProfileRemote, DiscoverProfile, LikeResponse } from '../../../types';
+import { DatingProfileRemote, DiscoverProfile, LikeResponse, MatchSummary, MatchDetail, MatchReveal, MatchDecision } from '../../../types';
 
 export class MatchApi {
   constructor(private client: ApiClient) {}
@@ -18,5 +18,25 @@ export class MatchApi {
 
   async likeUser(userId: number): Promise<LikeResponse> {
     return this.client.post<LikeResponse>(`/discover/like/${userId}`);
+  }
+
+  async getMatches(): Promise<{ matches: MatchSummary[] }> {
+    return this.client.get('/matches');
+  }
+
+  async getMatchDetail(matchId: number): Promise<MatchDetail> {
+    return this.client.get(`/matches/${matchId}`);
+  }
+
+  async submitAnswers(matchId: number, answers: Record<string, string>): Promise<MatchDetail> {
+    return this.client.post(`/matches/${matchId}/answers`, { answers });
+  }
+
+  async getReveal(matchId: number): Promise<MatchReveal> {
+    return this.client.get(`/matches/${matchId}/reveal`);
+  }
+
+  async submitDecision(matchId: number, decision: MatchDecision): Promise<MatchDetail> {
+    return this.client.post(`/matches/${matchId}/decision`, { decision });
   }
 }

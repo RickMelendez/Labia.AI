@@ -9,7 +9,6 @@ from .llm_provider import BaseLLMProvider, LLMMessage
 from .agent_prompt import build_agent_messages
 # Use the improved, research-backed prompt templates for more genuine, culturally-tuned outputs
 from .prompt_templates_improved import PromptBuilder
-from ...domain.entities.conversation import ToneStyle
 
 
 class ConversationOpener:
@@ -85,7 +84,7 @@ class AIConversationService:
         extra_order = ([
             _preferred,
             *[t for t in tones if t != _preferred],
-        ] if _preferred in tones else ["genuino", "coqueto", "directo"]) 
+        ] if _preferred in tones else ["genuino", "coqueto", "directo"])
         counts = {t: base_per_tone for t in tones}
         for i in range(remaining):
             counts[extra_order[i % len(extra_order)]] += 1
@@ -102,7 +101,7 @@ class AIConversationService:
 
                 # Convert to LLMMessage objects
                 llm_messages = [
-                    LLMMessage(role=msg["role"], content=msg["content"]) 
+                    LLMMessage(role=msg["role"], content=msg["content"])
                     for msg in prompt_messages
                 ]
                 # Add tone-aware persona for responses
@@ -220,7 +219,7 @@ class AIConversationService:
 
                 # Convert to LLMMessage objects
                 llm_messages = [
-                    LLMMessage(role=msg["role"], content=msg["content"]) 
+                    LLMMessage(role=msg["role"], content=msg["content"])
                     for msg in prompt_messages
                 ]
 
@@ -315,7 +314,7 @@ class AIConversationService:
         Returns:
             Dict with 'is_safe' boolean and optional 'reason' for unsafe content
         """
-        from .prompt_templates import PromptTemplates
+        from .prompt_templates_improved import PromptTemplates
 
         try:
             messages = [
@@ -361,7 +360,7 @@ class AIConversationService:
         Returns:
             Rewritten appropriate message
         """
-        from .prompt_templates import PromptTemplates
+        from .prompt_templates_improved import PromptTemplates
 
         try:
             messages = [
@@ -414,6 +413,87 @@ class AIConversationService:
             cultural_style=cultural_style
         )
 
+    async def generate_match_questions(
+        self,
+        user1_profile: dict,
+        user2_profile: dict,
+        num_questions: int = 4
+    ) -> list:
+        """
+        Generate AI-powered compatibility questions for a new match.
+
+        Args:
+            user1_profile: {name, age, interests, bio, cultural_style}
+            user2_profile: same structure
+            num_questions: number of questions to generate (default 4)
+
+        Returns:
+            List of dicts: [{"id": "q1", "text": "..."}, ...]
+        """
+        fallback = [
+            {"id": "q1", "text": "¿Cuál es tu comida favorita y qué dice eso de ti?"},
+            {"id": "q2", "text": "¿A dónde irías de viaje si pudieras mañana mismo?"},
+            {"id": "q3", "text": "¿Qué haces en tu tiempo libre que más te define?"},
+            {"id": "q4", "text": "¿Cuál es el valor más importante en una relación para ti?"},
+        ]
+
+        try:
+            # Find shared interests for context
+            interests1 = set(user1_profile.get("interests") or [])
+            interests2 = set(user2_profile.get("interests") or [])
+            shared = list(interests1 & interests2)
+
+            system_msg = (
+                "Eres un matchmaker creativo para una app de citas latinoamericana. "
+                "Genera preguntas personales y reveladoras para dos personas que acaban de hacer match. "
+                "Las preguntas deben: ser específicas a sus intereses, revelar personalidad y valores, "
+                "estar en español con tono cálido y juguetón, NO ser de entrevista formal. "
+                f"Responde SOLO con JSON válido: [{{'\"id\":\"q1\",\"text\":\"...\"'}}, ...]"
+            )
+
+            user_msg = (
+                f"Usuario A: Nombre={user1_profile.get('name')}, "
+                f"Edad={user1_profile.get('age')}, "
+                f"Intereses={user1_profile.get('interests')}, "
+                f"Bio={user1_profile.get('bio') or 'no especificada'}\n\n"
+                f"Usuario B: Nombre={user2_profile.get('name')}, "
+                f"Edad={user2_profile.get('age')}, "
+                f"Intereses={user2_profile.get('interests')}, "
+                f"Bio={user2_profile.get('bio') or 'no especificada'}\n\n"
+                f"Intereses en común: {shared if shared else 'ninguno todavía'}\n\n"
+                f"Genera exactamente {num_questions} preguntas que revelen compatibilidad. "
+                "Responde SOLO con el array JSON."
+            )
+
+            messages = [
+                LLMMessage(role="system", content=system_msg),
+                LLMMessage(role="user", content=user_msg),
+            ]
+
+            raw = await self.llm.generate(messages=messages, temperature=0.85, max_tokens=400)
+            raw = raw.strip()
+
+            # Extract JSON array from response
+            import json, re
+            json_match = re.search(r'\[.*\]', raw, re.DOTALL)
+            if json_match:
+                questions = json.loads(json_match.group())
+                # Validate structure
+                valid = [
+                    {"id": q.get("id", f"q{i+1}"), "text": q.get("text", "")}
+                    for i, q in enumerate(questions)
+                    if isinstance(q, dict) and q.get("text")
+                ]
+                if len(valid) >= 3:
+                    return valid[:num_questions]
+
+            logger.warning("Could not parse match questions from LLM, using fallback")
+            return fallback[:num_questions]
+
+        except Exception as e:
+            logger.error(f"Error generating match questions: {e}")
+            return fallback[:num_questions]
+
     async def assist(
         self,
         query: str,
@@ -440,6 +520,5 @@ class AIConversationService:
                 "Puedo ayudarte con ideas, mejores respuestas o reescrituras mÃ¡s naturales. "
                 "CuÃ©ntame el contexto y tu objetivo."
             ]
-
 
 

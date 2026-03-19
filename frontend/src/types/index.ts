@@ -179,6 +179,52 @@ export interface LikeResponse {
   match_id: number | null;
 }
 
+// Match Types
+export type MatchStatus =
+  | 'pending_questions'
+  | 'questions_ready'
+  | 'user1_answered'
+  | 'user2_answered'
+  | 'both_answered'
+  | 'confirmed'
+  | 'cancelled';
+
+export type MatchDecision = 'accept' | 'cancel';
+
+export interface MatchQuestion {
+  id: string;
+  text: string;
+}
+
+export interface MatchOtherUser {
+  user_id: number;
+  display_name: string;
+  photo_urls: string[];
+}
+
+export interface MatchSummary {
+  match_id: number;
+  status: MatchStatus;
+  other_user: MatchOtherUser;
+  i_have_answered: boolean;
+  partner_has_answered: boolean;
+  created_at: string;
+}
+
+export interface MatchDetail extends MatchSummary {
+  questions?: MatchQuestion[];
+  my_decision?: MatchDecision | null;
+}
+
+export interface MatchReveal {
+  match_id: number;
+  questions: MatchQuestion[];
+  my_answers: Record<string, string>;
+  partner_answers: Record<string, string>;
+  my_decision: MatchDecision | null;
+  partner_decided: boolean;
+}
+
 // Navigation Types
 export type RootStackParamList = {
   Auth: undefined;

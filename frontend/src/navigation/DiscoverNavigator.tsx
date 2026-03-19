@@ -3,9 +3,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { DiscoverStackParamList } from '../types';
 
 import DiscoverFeedScreen from '../screens/Discover/DiscoverFeedScreen';
+import MatchOnboardingScreen from '../screens/Discover/MatchOnboardingScreen';
+import MatchAnswersScreen from '../screens/Discover/MatchAnswersScreen';
 
-// These screens are implemented in subsequent branches.
-// Placeholder until then.
+// Implemented in Branch 4 — placeholder until then
 function ComingSoonScreen() {
   const { View, Text } = require('react-native');
   return (
@@ -21,8 +22,8 @@ export default function DiscoverNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="DiscoverFeed" component={DiscoverFeedScreen} />
-      <Stack.Screen name="MatchOnboarding" component={ComingSoonScreen} />
-      <Stack.Screen name="MatchAnswers" component={ComingSoonScreen} />
+      <Stack.Screen name="MatchOnboarding" component={MatchOnboardingScreen} />
+      <Stack.Screen name="MatchAnswers" component={MatchAnswersScreen} />
       <Stack.Screen name="MatchReveal" component={ComingSoonScreen} />
       <Stack.Screen name="MatchConfirmed" component={ComingSoonScreen} />
     </Stack.Navigator>
