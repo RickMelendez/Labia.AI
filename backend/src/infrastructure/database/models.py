@@ -51,6 +51,17 @@ class GenderEnum(str, enum.Enum):
     OTHER = "other"
 
 
+class MatchStatusEnum(str, enum.Enum):
+    """Match lifecycle statuses"""
+    PENDING_QUESTIONS = "pending_questions"
+    QUESTIONS_READY = "questions_ready"
+    USER1_ANSWERED = "user1_answered"
+    USER2_ANSWERED = "user2_answered"
+    BOTH_ANSWERED = "both_answered"
+    CONFIRMED = "confirmed"
+    CANCELLED = "cancelled"
+
+
 # ==================== User & Profile Models ====================
 
 class UserModel(Base):
@@ -380,3 +391,59 @@ class UsageStatsModel(Base):
 
     def __repr__(self):
         return f"<UsageStats(id={self.id}, endpoint={self.endpoint}, status_code={self.status_code})>"
+
+
+# ==================== Discover / Match Models ====================
+
+class LikeModel(Base):
+    """Likes table - one-directional likes between users"""
+    __tablename__ = "likes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    liker_user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    liked_user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint('liker_user_id', 'liked_user_id', name='uq_like_pair'),
+        Index('idx_likes_liker', 'liker_user_id'),
+        Index('idx_likes_liked', 'liked_user_id'),
+    )
+
+    def __repr__(self):
+        return f"<Like(liker={self.liker_user_id}, liked={self.liked_user_id})>"
+
+
+class MatchModel(Base):
+    """Matches table - mutual likes with onboarding state machine"""
+    __tablename__ = "matches"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user1_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)  # lower user_id
+    user2_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)  # higher user_id
+    status = Column(SQLEnum(MatchStatusEnum), default=MatchStatusEnum.PENDING_QUESTIONS, nullable=False)
+
+    # AI-generated questions stored as JSON: [{"id": "q1", "text": "..."}]
+    questions = Column(JSON, default=list)
+
+    # Answers stored as JSON: {"q1": "answer text", ...}
+    user1_answers = Column(JSON)
+    user2_answers = Column(JSON)
+
+    # Decisions: "accept" | "cancel"
+    user1_decision = Column(String(10))
+    user2_decision = Column(String(10))
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        UniqueConstraint('user1_id', 'user2_id', name='uq_match_pair'),
+        Index('idx_matches_user1', 'user1_id'),
+        Index('idx_matches_user2', 'user2_id'),
+        Index('idx_matches_status', 'status'),
+    )
+
+    def __repr__(self):
+        return f"<Match(id={self.id}, user1={self.user1_id}, user2={self.user2_id}, status={self.status})>"

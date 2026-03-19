@@ -1,5 +1,5 @@
 import { ApiClient } from '../ApiClient';
-import { DatingProfileRemote } from '../../../types';
+import { DatingProfileRemote, DiscoverProfile, LikeResponse } from '../../../types';
 
 export class MatchApi {
   constructor(private client: ApiClient) {}
@@ -10,5 +10,13 @@ export class MatchApi {
 
   async getMyDatingProfile(): Promise<DatingProfileRemote> {
     return this.client.get<DatingProfileRemote>('/dating-profile/me');
+  }
+
+  async getDiscoverFeed(limit: number, offset: number): Promise<{ profiles: DiscoverProfile[]; has_more: boolean }> {
+    return this.client.get(`/discover?limit=${limit}&offset=${offset}`);
+  }
+
+  async likeUser(userId: number): Promise<LikeResponse> {
+    return this.client.post<LikeResponse>(`/discover/like/${userId}`);
   }
 }

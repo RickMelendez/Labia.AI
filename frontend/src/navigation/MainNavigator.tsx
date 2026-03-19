@@ -10,6 +10,7 @@ import ChatScreen from '../screens/Chat/ChatScreen';
 import ConversationHistoryScreen from '../screens/History/ConversationHistoryScreen';
 import TrainerScreen from '../screens/Trainer/TrainerScreen';
 import ProfileScreen from '../screens/Profile/ProfileScreen';
+import DiscoverNavigator from './DiscoverNavigator';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -23,16 +24,14 @@ export default function MainNavigator() {
           let iconName: keyof typeof MaterialCommunityIcons.glyphMap;
 
           if (route.name === 'Chat') {
-            // Heart-message icon for dating conversations
             iconName = focused ? 'heart-circle' : 'heart-circle-outline';
           } else if (route.name === 'History') {
-            // History icon for conversation history
             iconName = focused ? 'message-text-clock' : 'message-text-clock-outline';
+          } else if (route.name === 'Discover') {
+            iconName = focused ? 'fire-circle' : 'fire';
           } else if (route.name === 'Trainer') {
-            // Diamond icon for trainer/missions
             iconName = focused ? 'diamond-stone' : 'diamond-outline';
           } else {
-            // Account icon for profile
             iconName = focused ? 'account-heart' : 'account-heart-outline';
           }
 
@@ -73,6 +72,11 @@ export default function MainNavigator() {
         name="History"
         component={ConversationHistoryScreen}
         options={{ tabBarLabel: 'Historial' }}
+      />
+      <Tab.Screen
+        name="Discover"
+        component={DiscoverNavigator}
+        options={{ tabBarLabel: 'Descubrir' }}
       />
       <Tab.Screen
         name="Trainer"

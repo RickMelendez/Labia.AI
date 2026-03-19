@@ -163,6 +163,22 @@ export interface DatingProfileRemote {
   is_discoverable: boolean;
 }
 
+// Discover / Match Types
+export interface DiscoverProfile {
+  user_id: number;
+  display_name: string;
+  age?: number;
+  bio?: string;
+  interests?: string[];
+  photo_urls: string[];
+}
+
+export interface LikeResponse {
+  liked: boolean;
+  is_mutual_match: boolean;
+  match_id: number | null;
+}
+
 // Navigation Types
 export type RootStackParamList = {
   Auth: undefined;
@@ -178,8 +194,17 @@ export type AuthStackParamList = {
 export type MainTabParamList = {
   Chat: undefined;
   History: undefined;
+  Discover: undefined;
   Trainer: undefined;
   Profile: undefined;
+};
+
+export type DiscoverStackParamList = {
+  DiscoverFeed: undefined;
+  MatchOnboarding: { match_id: number };
+  MatchAnswers: { match_id: number };
+  MatchReveal: { match_id: number };
+  MatchConfirmed: { match_id: number };
 };
 
 export type OnboardingStackParamList = {
