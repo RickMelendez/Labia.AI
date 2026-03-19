@@ -11,6 +11,7 @@ import { GenerateOpenersUseCase } from '../../application/use-cases/openers/Gene
 import { GenerateResponsesUseCase } from '../../application/use-cases/responses/GenerateResponses.usecase';
 import { AgentApi } from '../api/endpoints/AgentApi';
 import { AssistUseCase } from '../../application/use-cases/assistant/Assist.usecase';
+import { MatchApi } from '../api/endpoints/MatchApi';
 import { toastService } from '../device/ToastService';
 import { hapticsService } from '../device/HapticsService';
 import { clipboardService } from '../device/ClipboardService';
@@ -25,6 +26,7 @@ class DependencyContainer {
   private _openerApi?: OpenerApi;
   private _responseApi?: ResponseApi;
   private _agentApi?: AgentApi;
+  private _matchApi?: MatchApi;
 
   // Repositories
   private _suggestionRepository?: SuggestionRepository;
@@ -54,6 +56,13 @@ class DependencyContainer {
       this._agentApi = new AgentApi(apiClient);
     }
     return this._agentApi;
+  }
+
+  get matchApi(): MatchApi {
+    if (!this._matchApi) {
+      this._matchApi = new MatchApi(apiClient);
+    }
+    return this._matchApi;
   }
 
   // Repositories

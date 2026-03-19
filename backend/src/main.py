@@ -5,18 +5,18 @@ Main entry point for the API
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
-import sys
 
-from .presentation.api import openers, responses, health, auth, conversations, agent
+from .presentation.api import openers, responses, health, auth, conversations, agent, dating_profile
 from .presentation.middleware.error_handler import (
     ErrorHandlerMiddleware,
     RequestLoggingMiddleware
 )
 from .presentation.middleware.rate_limiter import RateLimiterMiddleware
+from .presentation.middleware.security_headers import SecurityHeadersMiddleware
 from .core.config import settings
 from .core.logging import StructuredLogger
 from .infrastructure.database.database import check_database_connection, get_database_info
-from .infrastructure.cache.redis_client import RedisClient, get_redis_client
+from .infrastructure.cache.redis_client import get_redis_client
 
 # Configure structured logger
 structured_logger = StructuredLogger(service_name="labia-ai")
@@ -33,6 +33,7 @@ app = FastAPI(
 # Add middleware (order matters - first added is executed last)
 app.add_middleware(ErrorHandlerMiddleware)
 app.add_middleware(RequestLoggingMiddleware)
+app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RateLimiterMiddleware)
 
 # CORS configuration
@@ -53,6 +54,7 @@ app.include_router(openers.router, prefix="/api/v1", tags=["Openers"])
 app.include_router(responses.router, prefix="/api/v1", tags=["Responses"])
 app.include_router(conversations.router, prefix="/api/v1", tags=["Conversations"])
 app.include_router(agent.router, prefix="/api/v1", tags=["Agent"])
+app.include_router(dating_profile.router, prefix="/api/v1", tags=["Dating Profile"])
 
 
 @app.on_event("startup")
@@ -97,4 +99,3 @@ async def root():
         "version": "1.0.0",
         "docs": "/docs"
     }
-

@@ -35,26 +35,72 @@ Labia.AI helps users craft **authentic, culturally-adapted** conversation opener
 
 ## Project Structure
 
+Built with **Clean Architecture** principles for maintainability and testability.
+
 ```
 labia-ai/
-├── backend/           # FastAPI backend
-│   ├── app/
-│   │   ├── api/      # API routes
-│   │   ├── core/     # Config, security
-│   │   ├── models/   # SQLAlchemy models
-│   │   ├── services/ # Business logic
-│   │   └── llm/      # LLM provider layer
-│   ├── alembic/      # Database migrations
-│   └── tests/
-├── frontend/          # React Native app
+├── backend/                    # FastAPI backend (Clean Architecture)
 │   ├── src/
-│   │   ├── screens/  # App screens
-│   │   ├── components/
-│   │   ├── services/ # API calls
-│   │   ├── store/    # State management
-│   │   └── utils/
-│   └── assets/
-└── docs/              # Documentation
+│   │   ├── presentation/       # API routes, middleware, dependencies
+│   │   │   ├── api/           # FastAPI routers (auth, openers, responses, etc.)
+│   │   │   ├── middleware/    # Request processing (CORS, rate limiting, logging)
+│   │   │   └── dependencies/  # Dependency injection
+│   │   ├── application/        # Use cases and service protocols
+│   │   │   └── services/      # Service interfaces (ports)
+│   │   ├── domain/            # Core business logic (no external dependencies)
+│   │   │   ├── entities/      # Business entities (User, Profile, Conversation)
+│   │   │   ├── value_objects/ # Immutable values (Email, Country)
+│   │   │   └── repositories/  # Repository interfaces
+│   │   ├── infrastructure/    # External concerns & implementations
+│   │   │   ├── database/      # SQLAlchemy models, migrations
+│   │   │   ├── cache/         # Redis caching
+│   │   │   └── external_services/  # LLM providers (OpenAI, Anthropic)
+│   │   ├── core/              # Cross-cutting concerns
+│   │   │   ├── config.py      # Environment configuration
+│   │   │   ├── security.py    # Authentication, JWT, password hashing
+│   │   │   ├── logging.py     # Structured logging
+│   │   │   └── exceptions.py  # Custom exceptions
+│   │   └── main.py            # FastAPI application entry point
+│   ├── tests/                 # Unit and integration tests
+│   ├── alembic/               # Database migrations
+│   └── requirements.txt
+├── frontend/                  # React Native app (Clean Architecture)
+│   ├── src/
+│   │   ├── presentation/      # UI layer
+│   │   │   └── hooks/        # Custom React hooks
+│   │   ├── screens/           # App screens (Chat, Profile, Trainer, etc.)
+│   │   ├── components/        # Reusable UI components
+│   │   ├── navigation/        # React Navigation setup
+│   │   ├── application/       # Use cases and business logic
+│   │   │   ├── use-cases/    # Business operations
+│   │   │   ├── dto/          # Data transfer objects
+│   │   │   └── ports/        # Service interfaces
+│   │   ├── domain/            # Core domain logic
+│   │   │   ├── entities/     # Domain models
+│   │   │   ├── repositories/ # Repository interfaces
+│   │   │   ├── services/     # Domain services
+│   │   │   └── value-objects/ # Immutable values
+│   │   ├── infrastructure/    # External integrations
+│   │   │   ├── api/          # Backend API clients
+│   │   │   ├── storage/      # AsyncStorage wrappers
+│   │   │   ├── device/       # Device services (haptics, clipboard)
+│   │   │   └── di/           # Dependency injection container
+│   │   ├── store/             # Zustand state management
+│   │   ├── core/              # Constants, configuration
+│   │   ├── theme/             # App theming
+│   │   └── types/             # TypeScript types
+│   ├── assets/                # Images, fonts
+│   └── package.json
+├── infrastructure/             # Deployment configurations
+│   ├── docker/                # Dockerfiles
+│   ├── kubernetes/            # K8s manifests
+│   └── terraform/             # Infrastructure as Code
+└── docs/                      # Documentation
+    ├── API-USAGE-EXAMPLES.md
+    ├── DEPLOYMENT-GUIDE.md
+    ├── INFRASTRUCTURE.md
+    ├── system-design.md
+    └── testing-guide.md
 ```
 
 ## Key Features

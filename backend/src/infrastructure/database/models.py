@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import List
 from sqlalchemy import (
     Column, Integer, String, Boolean, Float, DateTime,
-    ForeignKey, Text, Enum as SQLEnum, JSON, Index
+    ForeignKey, Text, Enum as SQLEnum, JSON, Index, UniqueConstraint
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -43,6 +43,14 @@ class MissionStatusEnum(str, enum.Enum):
     COMPLETED = "completed"
 
 
+class GenderEnum(str, enum.Enum):
+    """Gender options for dating profile"""
+    MALE = "male"
+    FEMALE = "female"
+    NONBINARY = "nonbinary"
+    OTHER = "other"
+
+
 # ==================== User & Profile Models ====================
 
 class UserModel(Base):
@@ -71,6 +79,7 @@ class UserModel(Base):
 
     # Relationships
     profile = relationship("ProfileModel", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    dating_profile = relationship("DatingProfileModel", back_populates="user", uselist=False, cascade="all, delete-orphan")
     conversations = relationship("ConversationModel", back_populates="user", cascade="all, delete-orphan")
     user_missions = relationship("UserMissionModel", back_populates="user", cascade="all, delete-orphan")
     feedbacks = relationship("FeedbackModel", back_populates="user", cascade="all, delete-orphan")
@@ -109,6 +118,40 @@ class ProfileModel(Base):
 
     def __repr__(self):
         return f"<Profile(id={self.id}, user_id={self.user_id}, name={self.name})>"
+
+
+# ==================== Dating Profile Model ====================
+
+class DatingProfileModel(Base):
+    """Dating Profile table - discoverable dating identity for users"""
+    __tablename__ = "dating_profiles"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
+    display_name = Column(String(100), nullable=False)
+    age = Column(Integer)
+    gender = Column(SQLEnum(GenderEnum))
+    bio = Column(Text)
+    job_title = Column(String(100))
+    interests = Column(JSON, default=list)
+    photo_urls = Column(JSON, default=list)
+    is_discoverable = Column(Boolean, default=False, nullable=False)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationship
+    user = relationship("UserModel", back_populates="dating_profile")
+
+    # Indexes
+    __table_args__ = (
+        Index('idx_dating_profile_user_id', 'user_id'),
+        Index('idx_dating_profile_discoverable', 'is_discoverable'),
+    )
+
+    def __repr__(self):
+        return f"<DatingProfile(id={self.id}, user_id={self.user_id}, display_name={self.display_name})>"
 
 
 # ==================== Conversation Models ====================

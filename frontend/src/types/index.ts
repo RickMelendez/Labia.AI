@@ -150,6 +150,19 @@ export interface UserMission {
   completed_at?: string;
 }
 
+// Dating Profile (backend-persisted version for discovery)
+export interface DatingProfileRemote {
+  user_id: number;
+  display_name: string;
+  age?: number;
+  gender?: 'male' | 'female' | 'nonbinary' | 'other';
+  bio?: string;
+  job_title?: string;
+  interests?: string[];
+  photo_urls: string[];
+  is_discoverable: boolean;
+}
+
 // Navigation Types
 export type RootStackParamList = {
   Auth: undefined;

@@ -117,6 +117,22 @@ export default function ProfileScreen() {
     setProfile(updated);
     setEditVisible(false);
     container.toast.success('Perfil guardado', 'Tus datos se han actualizado');
+
+    // Sync to backend (silent failure — local profile is source of truth for UI)
+    try {
+      await container.matchApi.upsertDatingProfile({
+        display_name: updated.display_name,
+        age: updated.age,
+        gender: updated.gender,
+        bio: updated.bio,
+        job_title: updated.job_title,
+        interests: updated.interests,
+        photo_urls: [],  // Local URIs not synced; CDN upload handled separately
+        is_discoverable: false,
+      });
+    } catch {
+      // Ignore — profile saved locally
+    }
   };
 
   return (
