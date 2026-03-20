@@ -47,7 +47,7 @@ export default function MatchRevealScreen({ route, navigation }: Props) {
           if (result?.status === 'confirmed') {
             navigation.replace('MatchConfirmed', { match_id });
           } else {
-            navigation.navigate('DiscoverFeed');
+            navigation.navigate('DualDiscover');
           }
         },
       },

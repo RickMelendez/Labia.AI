@@ -7,6 +7,7 @@ export const useAppStore = create<AppState>((set) => ({
   user: null,
   isAuthenticated: false,
   isLoading: true,
+  hasCompletedOnboarding: false,
   culturalStyle: DEFAULTS.culturalStyle,
   defaultTone: DEFAULTS.tone,
   isDarkMode: false,
@@ -47,6 +48,11 @@ export const useAppStore = create<AppState>((set) => ({
     AsyncStorage.setItem(STORAGE_KEYS.THEME, isDarkMode ? 'dark' : 'light');
   },
 
+  setOnboardingCompleted: async () => {
+    await AsyncStorage.setItem(STORAGE_KEYS.ONBOARDING_COMPLETED, 'true');
+    set({ hasCompletedOnboarding: true });
+  },
+
   logout: () => {
     set({
       user: null,
@@ -70,12 +76,13 @@ export const useAppStore = create<AppState>((set) => ({
 // Initialize store from AsyncStorage
 export const initializeAppStore = async () => {
   try {
-    const [userJson, culturalStyle, defaultTone, theme, authToken] = await AsyncStorage.multiGet([
+    const [userJson, culturalStyle, defaultTone, theme, authToken, onboarding] = await AsyncStorage.multiGet([
       STORAGE_KEYS.USER_PROFILE,
       STORAGE_KEYS.CULTURAL_STYLE,
       STORAGE_KEYS.DEFAULT_TONE,
       STORAGE_KEYS.THEME,
-      STORAGE_KEYS.AUTH_TOKEN
+      STORAGE_KEYS.AUTH_TOKEN,
+      STORAGE_KEYS.ONBOARDING_COMPLETED,
     ]);
 
     const user = userJson[1] ? JSON.parse(userJson[1]) : null;
@@ -91,9 +98,10 @@ export const initializeAppStore = async () => {
       user,
       isAuthenticated: !!user,
       isLoading: false,
+      hasCompletedOnboarding: onboarding[1] === 'true',
       culturalStyle: (culturalStyle[1] as CulturalStyle) || DEFAULTS.culturalStyle,
       defaultTone: (defaultTone[1] as Tone) || DEFAULTS.tone,
-      isDarkMode: theme[1] === 'dark'
+      isDarkMode: theme[1] === 'dark',
     });
   } catch (error) {
     console.error('Failed to initialize app store:', error);

@@ -22,7 +22,7 @@ import NeonButton from '../../components/common/NeonButton';
 type Props = NativeStackScreenProps<any, 'Login'>;
 
 export default function LoginScreen({ navigation }: Props) {
-  const { setUser } = useAppStore();
+  const { setUser, setToken } = useAppStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -36,7 +36,8 @@ export default function LoginScreen({ navigation }: Props) {
 
     setIsLoading(true);
     try {
-      const response = await container.api.login({ email, password });
+      const response = await container.authApi.login({ email, password });
+      await setToken(response.token);
       setUser(response.user);
       container.toast.success('¡Bienvenido!', `Hola ${response.user.name || 'de nuevo'}`);
       // Navigation will happen automatically via RootNavigator when user is set

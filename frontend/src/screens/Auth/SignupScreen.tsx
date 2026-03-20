@@ -23,7 +23,7 @@ import NeonButton from '../../components/common/NeonButton';
 type Props = NativeStackScreenProps<any, 'Signup'>;
 
 export default function SignupScreen({ navigation }: Props) {
-  const { setUser } = useAppStore();
+  const { setUser, setToken } = useAppStore();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -43,25 +43,27 @@ export default function SignupScreen({ navigation }: Props) {
       return;
     }
 
-    if (password.length < 6) {
-      container.toast.error('Error', 'La contraseña debe tener al menos 6 caracteres');
+    if (password.length < 8) {
+      container.toast.error('Error', 'La contraseña debe tener al menos 8 caracteres');
       return;
     }
 
     setIsLoading(true);
     try {
-      const response = await container.api.register({
-        email,
-        password,
-        name,
-        plan: 'free'
-      });
+      const response = await container.authApi.register({ email, password, name, country: 'US' });
+      await setToken(response.token);
       setUser(response.user);
       container.toast.success('¡Cuenta creada!', `Bienvenido ${name}`);
       // Will automatically navigate to onboarding
     } catch (error: any) {
       console.error('Signup error:', error);
-      container.toast.error('Error al registrarse', error.detail || 'No se pudo crear la cuenta');
+      const detail = error.detail;
+      const message = Array.isArray(detail)
+        ? detail.map((e: any) => e.msg).join(', ')
+        : typeof detail === 'string'
+        ? detail
+        : 'No se pudo crear la cuenta';
+      container.toast.error('Error al registrarse', message);
     } finally {
       setIsLoading(false);
     }
@@ -117,7 +119,7 @@ export default function SignupScreen({ navigation }: Props) {
               <MaterialCommunityIcons name="lock-outline" size={20} color={COLORS.text.secondary} />
               <TextInput
                 style={styles.input}
-                placeholder="Contraseña (mínimo 6 caracteres)"
+                placeholder="Contraseña (mínimo 8 caracteres)"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}

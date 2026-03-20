@@ -12,11 +12,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS } from '../../constants';
+import { COLORS } from '../../core/constants';
 import { useAppStore } from '../../store/appStore';
 import { useChatStore } from '../../store/chatStore';
-import { apiClient } from '../../services/api';
-import { showToast } from '../../services/toast';
+import { container } from '../../infrastructure/di/Container';
 import SuggestionCard from '../../components/common/SuggestionCard';
 import CulturalStylePicker from '../../components/common/CulturalStylePicker';
 import ToneSelector from '../../components/common/ToneSelector';
@@ -35,7 +34,7 @@ export default function ChatScreen() {
 
   const handleGenerate = async () => {
     if (!inputText.trim()) {
-      showToast.error('Atención', 'Por favor ingresa un texto para generar sugerencias');
+      container.toast.error('Atención', 'Por favor ingresa un texto para generar sugerencias');
       return;
     }
 
@@ -45,28 +44,27 @@ export default function ChatScreen() {
 
     try {
       if (mode === 'openers') {
-        const response = await apiClient.generateOpeners({
+        const response = await container.openerApi.generateOpeners({
           bio: inputText,
           cultural_style: culturalStyle,
           num_suggestions: 3,
           include_follow_ups: true
         });
         setSuggestions(response.suggestions);
-        showToast.success('¡Listo!', `${response.suggestions.length} sugerencias generadas`);
+        container.toast.success('¡Listo!', `${response.suggestions.length} sugerencias generadas`);
       } else {
-        const response = await apiClient.generateResponses({
-          message: inputText,
+        const response = await container.responseApi.generateResponses({
+          received_message: inputText,
           cultural_style: culturalStyle,
-          tone: defaultTone,
           relationship_stage: 'early'
         });
         setSuggestions(response.suggestions);
-        showToast.success('¡Listo!', `${response.suggestions.length} respuestas generadas`);
+        container.toast.success('¡Listo!', `${response.suggestions.length} respuestas generadas`);
       }
     } catch (error: any) {
       console.error('Error generating suggestions:', error);
       setError(error.detail || 'Error al generar sugerencias');
-      showToast.error('Error', error.detail || 'No se pudo generar las sugerencias. Intenta nuevamente.');
+      container.toast.error('Error', error.detail || 'No se pudo generar las sugerencias. Intenta nuevamente.');
     } finally {
       setIsGenerating(false);
     }

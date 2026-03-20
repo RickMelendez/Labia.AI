@@ -225,6 +225,72 @@ export interface MatchReveal {
   partner_decided: boolean;
 }
 
+// ==================== Lobby / Group Discovery Types ====================
+
+export type ActivityType =
+  | 'date_night'
+  | 'road_trip'
+  | 'brunch'
+  | 'adventure'
+  | 'beach'
+  | 'concert'
+  | 'hiking'
+  | 'chill';
+
+export type LobbyStatus = 'open' | 'full' | 'started' | 'expired';
+
+export type EnergyLevel = 'empty' | 'warm' | 'buzzing' | 'full';
+
+export interface LobbyMember {
+  user_id: number;
+  display_name: string;
+  photo_url: string | null;
+  joined_at: string;
+}
+
+export interface LobbyMessage {
+  id: number;
+  lobby_id?: number;
+  user_id: number;
+  sender_name: string;
+  sender_photo: string | null;
+  content: string;
+  created_at: string;
+}
+
+export interface Lobby {
+  id: number;
+  creator_id: number;
+  creator_name: string;
+  creator_photo: string | null;
+  name: string;
+  activity_type: ActivityType;
+  description: string;
+  max_size: number;
+  member_count: number;
+  status: LobbyStatus;
+  energy_level: EnergyLevel;
+  spots_left: number;
+  location_hint?: string | null;
+  time_window_hint?: string | null;
+  expires_at: string;
+  created_at: string;
+  is_member: boolean;
+}
+
+export interface LobbyDetail extends Lobby {
+  members: LobbyMember[];
+}
+
+export interface CreateLobbyInput {
+  name: string;
+  activity_type: ActivityType;
+  description: string;
+  max_size: number;
+  location_hint?: string;
+  time_window_hint?: string;
+}
+
 // Navigation Types
 export type RootStackParamList = {
   Auth: undefined;
@@ -246,7 +312,9 @@ export type MainTabParamList = {
 };
 
 export type DiscoverStackParamList = {
-  DiscoverFeed: undefined;
+  DualDiscover: undefined;
+  LobbyDetail: { lobby_id: number };
+  CreateLobby: undefined;
   MatchOnboarding: { match_id: number };
   MatchAnswers: { match_id: number };
   MatchReveal: { match_id: number };
@@ -254,10 +322,13 @@ export type DiscoverStackParamList = {
 };
 
 export type OnboardingStackParamList = {
-  Splash: undefined;
-  Tutorial: undefined;
-  CountrySelection: undefined;
-  ProfileSetup: undefined;
+  Welcome: undefined;
+  OnboardingName: undefined;
+  OnboardingBirthday: undefined;
+  OnboardingGender: undefined;
+  OnboardingInterests: undefined;
+  OnboardingPhotos: undefined;
+  OnboardingReady: undefined;
 };
 
 // Store Types
@@ -265,6 +336,7 @@ export interface AppState {
   user: UserProfile | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  hasCompletedOnboarding: boolean;
   culturalStyle: CulturalStyle;
   defaultTone: Tone;
   isDarkMode: boolean;
@@ -273,6 +345,7 @@ export interface AppState {
   setCulturalStyle: (style: CulturalStyle) => void;
   setDefaultTone: (tone: Tone) => void;
   setDarkMode: (isDarkMode: boolean) => void;
+  setOnboardingCompleted: () => Promise<void>;
   logout: () => void;
 }
 

@@ -105,11 +105,11 @@ export default function MatchConfirmedScreen({ route, navigation }: Props) {
       <Animated.View style={[styles.actions, { opacity: fadeAnim }]}>
         <NeonButton
           label="Ir a Chat 💬"
-          onPress={() => navigation.navigate('DiscoverFeed')}
+          onPress={() => navigation.navigate('DualDiscover')}
         />
         <TouchableOpacity
           style={styles.discoverBtn}
-          onPress={() => navigation.navigate('DiscoverFeed')}
+          onPress={() => navigation.navigate('DualDiscover')}
         >
           <Text style={[styles.discoverText, { color: theme.colors.onSurfaceVariant }]}>
             Seguir explorando

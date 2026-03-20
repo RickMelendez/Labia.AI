@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
-from .presentation.api import openers, responses, health, auth, conversations, agent, dating_profile, discover, matches
+from .presentation.api import openers, responses, health, auth, conversations, agent, dating_profile, discover, matches, lobbies
 from .presentation.middleware.error_handler import (
     ErrorHandlerMiddleware,
     RequestLoggingMiddleware
@@ -57,6 +57,7 @@ app.include_router(agent.router, prefix="/api/v1", tags=["Agent"])
 app.include_router(dating_profile.router, prefix="/api/v1", tags=["Dating Profile"])
 app.include_router(discover.router, prefix="/api/v1", tags=["Discover"])
 app.include_router(matches.router, prefix="/api/v1", tags=["Matches"])
+app.include_router(lobbies.router, prefix="/api/v1", tags=["Lobbies"])
 
 
 @app.on_event("startup")
