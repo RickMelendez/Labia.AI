@@ -4,6 +4,7 @@
  */
 
 import { apiClient } from '../api/ApiClient';
+import { AuthApi } from '../api/endpoints/AuthApi';
 import { OpenerApi } from '../api/endpoints/OpenerApi';
 import { ResponseApi } from '../api/endpoints/ResponseApi';
 import { SuggestionRepository } from '../repositories/SuggestionRepository';
@@ -12,6 +13,7 @@ import { GenerateResponsesUseCase } from '../../application/use-cases/responses/
 import { AgentApi } from '../api/endpoints/AgentApi';
 import { AssistUseCase } from '../../application/use-cases/assistant/Assist.usecase';
 import { MatchApi } from '../api/endpoints/MatchApi';
+import { LobbyApi } from '../api/endpoints/LobbyApi';
 import { toastService } from '../device/ToastService';
 import { hapticsService } from '../device/HapticsService';
 import { clipboardService } from '../device/ClipboardService';
@@ -23,10 +25,12 @@ import { storageService } from '../storage/AsyncStorageService';
  */
 class DependencyContainer {
   // API Endpoints
+  private _authApi?: AuthApi;
   private _openerApi?: OpenerApi;
   private _responseApi?: ResponseApi;
   private _agentApi?: AgentApi;
   private _matchApi?: MatchApi;
+  private _lobbyApi?: LobbyApi;
 
   // Repositories
   private _suggestionRepository?: SuggestionRepository;
@@ -37,6 +41,13 @@ class DependencyContainer {
   private _assistUseCase?: AssistUseCase;
 
   // API Endpoints
+  get authApi(): AuthApi {
+    if (!this._authApi) {
+      this._authApi = new AuthApi(apiClient);
+    }
+    return this._authApi;
+  }
+
   get openerApi(): OpenerApi {
     if (!this._openerApi) {
       this._openerApi = new OpenerApi(apiClient);
@@ -63,6 +74,13 @@ class DependencyContainer {
       this._matchApi = new MatchApi(apiClient);
     }
     return this._matchApi;
+  }
+
+  get lobbyApi(): LobbyApi {
+    if (!this._lobbyApi) {
+      this._lobbyApi = new LobbyApi(apiClient);
+    }
+    return this._lobbyApi;
   }
 
   // Repositories

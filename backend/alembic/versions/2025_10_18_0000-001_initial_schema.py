@@ -31,11 +31,35 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     """Create all tables"""
 
-    # Create enum types
-    op.execute("CREATE TYPE plantypeenum AS ENUM ('free', 'pro', 'premium')")
-    op.execute("CREATE TYPE tonestyleenum AS ENUM ('genuino', 'coqueto', 'directo')")
-    op.execute("CREATE TYPE messageroleenum AS ENUM ('user', 'assistant', 'system')")
-    op.execute("CREATE TYPE missionstatusenum AS ENUM ('pending', 'in_progress', 'completed')")
+    # Create enum types (idempotent — safe on retry)
+    op.execute("""
+        DO $$ BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'plantypeenum') THEN
+                CREATE TYPE plantypeenum AS ENUM ('free', 'pro', 'premium');
+            END IF;
+        END $$;
+    """)
+    op.execute("""
+        DO $$ BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'tonestyleenum') THEN
+                CREATE TYPE tonestyleenum AS ENUM ('genuino', 'coqueto', 'directo');
+            END IF;
+        END $$;
+    """)
+    op.execute("""
+        DO $$ BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'messageroleenum') THEN
+                CREATE TYPE messageroleenum AS ENUM ('user', 'assistant', 'system');
+            END IF;
+        END $$;
+    """)
+    op.execute("""
+        DO $$ BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'missionstatusenum') THEN
+                CREATE TYPE missionstatusenum AS ENUM ('pending', 'in_progress', 'completed');
+            END IF;
+        END $$;
+    """)
 
     # ==================== Users Table ====================
     op.create_table(
@@ -46,7 +70,7 @@ def upgrade() -> None:
         sa.Column("country", sa.String(length=2), nullable=False),
         sa.Column(
             "plan",
-            sa.Enum("free", "pro", "premium", name="plantypeenum"),
+            sa.Enum("free", "pro", "premium", name="plantypeenum", create_type=False),
             nullable=False,
             server_default="free",
         ),
@@ -107,13 +131,13 @@ def upgrade() -> None:
         sa.Column("conversation_id", sa.Integer(), nullable=False),
         sa.Column(
             "role",
-            sa.Enum("user", "assistant", "system", name="messageroleenum"),
+            sa.Enum("user", "assistant", "system", name="messageroleenum", create_type=False),
             nullable=False,
         ),
         sa.Column("text", sa.Text(), nullable=False),
         sa.Column(
             "tone",
-            sa.Enum("genuino", "coqueto", "directo", name="tonestyleenum"),
+            sa.Enum("genuino", "coqueto", "directo", name="tonestyleenum", create_type=False),
             nullable=True,
         ),
         sa.Column("lang", sa.String(length=10), nullable=False, server_default="es"),
@@ -152,7 +176,7 @@ def upgrade() -> None:
         sa.Column("mission_id", sa.Integer(), nullable=False),
         sa.Column(
             "status",
-            sa.Enum("pending", "in_progress", "completed", name="missionstatusenum"),
+            sa.Enum("pending", "in_progress", "completed", name="missionstatusenum", create_type=False),
             nullable=False,
             server_default="pending",
         ),

@@ -62,6 +62,26 @@ class MatchStatusEnum(str, enum.Enum):
     CANCELLED = "cancelled"
 
 
+class ActivityTypeEnum(str, enum.Enum):
+    """Activity types for group lobbies"""
+    DATE_NIGHT = "date_night"
+    ROAD_TRIP = "road_trip"
+    BRUNCH = "brunch"
+    ADVENTURE = "adventure"
+    BEACH = "beach"
+    CONCERT = "concert"
+    HIKING = "hiking"
+    CHILL = "chill"
+
+
+class LobbyStatusEnum(str, enum.Enum):
+    """Group lobby lifecycle statuses"""
+    OPEN = "open"
+    FULL = "full"
+    STARTED = "started"
+    EXPIRED = "expired"
+
+
 # ==================== User & Profile Models ====================
 
 class UserModel(Base):
@@ -447,3 +467,85 @@ class MatchModel(Base):
 
     def __repr__(self):
         return f"<Match(id={self.id}, user1={self.user1_id}, user2={self.user2_id}, status={self.status})>"
+
+
+# ==================== Lobby / Group Discovery Models ====================
+
+class LobbyModel(Base):
+    """Lobbies table — activity-anchored group discovery rooms (max 10 people)"""
+    __tablename__ = "lobbies"
+
+    id = Column(Integer, primary_key=True, index=True)
+    creator_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    name = Column(String(100), nullable=False)
+    activity_type = Column(SQLEnum(ActivityTypeEnum), nullable=False)
+    description = Column(Text, nullable=False)
+    max_size = Column(Integer, default=10, nullable=False)
+    status = Column(SQLEnum(LobbyStatusEnum), default=LobbyStatusEnum.OPEN, nullable=False)
+
+    # Optional context
+    location_hint = Column(String(200))
+    time_window_hint = Column(String(200))
+
+    # Timestamps
+    expires_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    members = relationship("LobbyMemberModel", back_populates="lobby", cascade="all, delete-orphan")
+    messages = relationship("LobbyMessageModel", back_populates="lobby", cascade="all, delete-orphan")
+
+    __table_args__ = (
+        Index('idx_lobby_creator', 'creator_id'),
+        Index('idx_lobby_status', 'status'),
+        Index('idx_lobby_activity_type', 'activity_type'),
+        Index('idx_lobby_expires_at', 'expires_at'),
+    )
+
+    def __repr__(self):
+        return f"<Lobby(id={self.id}, name={self.name}, status={self.status})>"
+
+
+class LobbyMemberModel(Base):
+    """Lobby members table — tracks who is in which lobby"""
+    __tablename__ = "lobby_members"
+
+    id = Column(Integer, primary_key=True, index=True)
+    lobby_id = Column(Integer, ForeignKey("lobbies.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    joined_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    # Relationships
+    lobby = relationship("LobbyModel", back_populates="members")
+
+    __table_args__ = (
+        UniqueConstraint('lobby_id', 'user_id', name='uq_lobby_member'),
+        Index('idx_lobby_member_lobby_id', 'lobby_id'),
+        Index('idx_lobby_member_user_id', 'user_id'),
+    )
+
+    def __repr__(self):
+        return f"<LobbyMember(lobby={self.lobby_id}, user={self.user_id})>"
+
+
+class LobbyMessageModel(Base):
+    """Lobby messages table — group chat within a lobby"""
+    __tablename__ = "lobby_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    lobby_id = Column(Integer, ForeignKey("lobbies.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    # Relationship
+    lobby = relationship("LobbyModel", back_populates="messages")
+
+    __table_args__ = (
+        Index('idx_lobby_message_lobby_id', 'lobby_id'),
+        Index('idx_lobby_message_created_at', 'created_at'),
+    )
+
+    def __repr__(self):
+        return f"<LobbyMessage(lobby={self.lobby_id}, user={self.user_id})>"

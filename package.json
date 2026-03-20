@@ -16,11 +16,6 @@
     "front:test": "npm --prefix frontend run test",
     "front:typecheck": "npm --prefix frontend run typecheck"
   },
-  "dependencies": {
-    "expo": "^54.0.22"
-  },
-  "devDependencies": {
-    "@types/react": "~19.1.10",
-    "typescript": "~5.9.2"
-  }
+  "dependencies": {},
+  "devDependencies": {}
 }

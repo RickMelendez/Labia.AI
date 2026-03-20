@@ -77,16 +77,15 @@ services:
       SECRET_KEY: ${SECRET_KEY:-dev-secret-key-change-in-production}
 
       # CORS
-      ALLOWED_ORIGINS: http://localhost:3000,http://localhost:8081,http://localhost:19000,http://localhost:19006
+      ALLOWED_ORIGINS: '["http://localhost:3000","http://localhost:8081","http://localhost:19000","http://localhost:19006","http://192.168.0.27:8081","exp://192.168.0.27:8081"]'
     ports:
       - "8000:8000"
     volumes:
       - ./backend/src:/app/src:ro  # Mount source for hot reload (dev only)
-      - ./backend/alembic:/app/alembic:ro
     networks:
       - labiaai-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
       interval: 30s
       timeout: 10s
       retries: 3
