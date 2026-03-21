@@ -48,6 +48,16 @@ export default function SignupScreen({ navigation }: Props) {
       return;
     }
 
+    if (!/[A-Z]/.test(password)) {
+      container.toast.error('Error', 'La contraseña debe tener al menos 1 letra mayúscula');
+      return;
+    }
+
+    if (!/[0-9]/.test(password)) {
+      container.toast.error('Error', 'La contraseña debe tener al menos 1 número');
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await container.authApi.register({ email, password, name, country: 'US' });
@@ -119,7 +129,7 @@ export default function SignupScreen({ navigation }: Props) {
               <MaterialCommunityIcons name="lock-outline" size={20} color={COLORS.text.secondary} />
               <TextInput
                 style={styles.input}
-                placeholder="Contraseña (mínimo 8 caracteres)"
+                placeholder="Contraseña (8+ chars, mayúscula, número)"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
