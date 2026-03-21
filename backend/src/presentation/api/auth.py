@@ -148,7 +148,7 @@ async def get_current_user(
     except AuthenticationException:
         raise
     except Exception as e:
-        logger.error(f"Authentication error: {e}")
+        logger.log_error("get_current_user", str(e))
         raise AuthenticationException("Could not validate credentials")
 
 
@@ -228,7 +228,7 @@ async def register(request: RegisterRequest, db: AsyncSession = Depends(get_asyn
         access_token = create_access_token({"sub": new_user.email, "user_id": new_user.id})
         refresh_token = create_refresh_token({"sub": new_user.email, "user_id": new_user.id})
 
-        logger.info(f"New user registered: {new_user.email} (ID: {new_user.id})")
+        logger.log_info(f"New user registered: {new_user.email} (ID: {new_user.id})")
 
         return AuthResponse(
             user=UserResponse(
@@ -252,7 +252,7 @@ async def register(request: RegisterRequest, db: AsyncSession = Depends(get_asyn
         raise
     except Exception as e:
         await db.rollback()
-        logger.error(f"Registration error: {e}")
+        logger.log_error("register", str(e))
         raise HTTPException(status_code=500, detail="Registration failed")
 
 
@@ -284,7 +284,7 @@ async def login(request: LoginRequest, db: AsyncSession = Depends(get_async_db))
 
         # Verify password
         if not verify_password(request.password, user.hashed_password):
-            logger.warning(f"Failed login attempt for: {request.email}")
+            logger.log_warning(f"Failed login attempt for: {request.email}")
             raise AuthenticationException("Invalid email or password")
 
         # Check if account is active
@@ -306,7 +306,7 @@ async def login(request: LoginRequest, db: AsyncSession = Depends(get_async_db))
         access_token = create_access_token({"sub": user.email, "user_id": user.id})
         refresh_token = create_refresh_token({"sub": user.email, "user_id": user.id})
 
-        logger.info(f"User logged in: {user.email} (ID: {user.id})")
+        logger.log_info(f"User logged in: {user.email} (ID: {user.id})")
 
         return AuthResponse(
             user=UserResponse(
@@ -329,7 +329,7 @@ async def login(request: LoginRequest, db: AsyncSession = Depends(get_async_db))
     except AuthenticationException:
         raise
     except Exception as e:
-        logger.error(f"Login error: {e}")
+        logger.log_error("login", str(e))
         raise HTTPException(status_code=500, detail="Login failed")
 
 
@@ -456,7 +456,7 @@ async def refresh_tokens(request: RefreshTokenRequest, db: AsyncSession = Depend
         # Generate new access token
         access_token = create_access_token({"sub": email, "user_id": user_id})
 
-        logger.info(f"Token refreshed for user: {email} (ID: {user_id})")
+        logger.log_info(f"Token refreshed for user: {email} (ID: {user_id})")
 
         return TokenResponse(
             access_token=access_token,
@@ -467,7 +467,7 @@ async def refresh_tokens(request: RefreshTokenRequest, db: AsyncSession = Depend
     except AuthenticationException:
         raise
     except Exception as e:
-        logger.error(f"Token refresh error: {e}")
+        logger.log_error("refresh", str(e))
         raise HTTPException(status_code=500, detail="Token refresh failed")
 
 
@@ -504,7 +504,7 @@ async def get_current_user_info(current_user: UserModel = Depends(get_current_us
             )
 
     except Exception as e:
-        logger.error(f"Get user info error: {e}")
+        logger.log_error("get_me", str(e))
         raise HTTPException(status_code=500, detail="Failed to get user information")
 
 
@@ -521,7 +521,7 @@ async def logout(current_user: UserModel = Depends(get_current_user)):
     **Returns**:
     - Success message
     """
-    logger.info(f"User logged out: {current_user.email} (ID: {current_user.id})")
+    logger.log_info(f"User logged out: {current_user.email} (ID: {current_user.id})")
 
     return {
         "message": "Successfully logged out",
