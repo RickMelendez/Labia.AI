@@ -6,5 +6,6 @@ export const STORAGE_KEYS = {
   DEFAULT_TONE: '@labia_default_tone',
   AUTH_TOKEN: '@labia_auth_token',
   ONBOARDING_COMPLETED: '@labia_onboarding_completed',
-  THEME: '@labia_theme'
+  THEME: '@labia_theme',
+  LANGUAGE: '@labia_language'
 };

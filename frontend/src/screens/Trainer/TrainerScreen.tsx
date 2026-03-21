@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS } from '../../core/constants';
+import { useStrings } from '../../core/i18n/useStrings';
 import { container } from '../../infrastructure/di/Container';
 
 interface Mission {
@@ -24,8 +24,8 @@ const STATS_STORAGE_KEY = '@labia_trainer_stats';
 const AVAILABLE_MISSIONS: Mission[] = [
   {
     id: '1',
-    title: 'Primera Conexión',
-    description: 'Genera tu primer opener personalizado',
+    title: 'First Connection',
+    description: 'Generate your first personalized opener',
     difficulty: 'easy',
     xp: 10,
     icon: 'message-arrow-right',
@@ -33,8 +33,8 @@ const AVAILABLE_MISSIONS: Mission[] = [
   },
   {
     id: '2',
-    title: 'Maestro Cultural',
-    description: 'Usa 3 estilos culturales diferentes',
+    title: 'Cultural Master',
+    description: 'Use 3 different cultural styles',
     difficulty: 'medium',
     xp: 25,
     icon: 'earth',
@@ -42,8 +42,8 @@ const AVAILABLE_MISSIONS: Mission[] = [
   },
   {
     id: '3',
-    title: 'Políglota del Flow',
-    description: 'Prueba todos los tonos disponibles',
+    title: 'Tone Polyglot',
+    description: 'Try all available tones',
     difficulty: 'medium',
     xp: 30,
     icon: 'palette',
@@ -51,8 +51,8 @@ const AVAILABLE_MISSIONS: Mission[] = [
   },
   {
     id: '4',
-    title: 'Conversador Activo',
-    description: 'Genera 10 sugerencias en un día',
+    title: 'Active Conversationalist',
+    description: 'Generate 10 suggestions in one day',
     difficulty: 'hard',
     xp: 50,
     icon: 'fire',
@@ -60,8 +60,8 @@ const AVAILABLE_MISSIONS: Mission[] = [
   },
   {
     id: '5',
-    title: 'Practicante Constante',
-    description: 'Usa la app 5 días consecutivos',
+    title: 'Consistent Practitioner',
+    description: 'Use the app 5 days in a row',
     difficulty: 'hard',
     xp: 75,
     icon: 'calendar-star',
@@ -70,7 +70,7 @@ const AVAILABLE_MISSIONS: Mission[] = [
 ];
 
 export default function TrainerScreen() {
-  const theme = useTheme();
+  const s = useStrings();
   const [missions, setMissions] = useState<Mission[]>(AVAILABLE_MISSIONS);
   const [totalXP, setTotalXP] = useState(0);
   const [level, setLevel] = useState(1);
@@ -82,11 +82,7 @@ export default function TrainerScreen() {
   const loadProgress = async () => {
     try {
       const [missionsData, statsData] = await AsyncStorage.multiGet([MISSIONS_STORAGE_KEY, STATS_STORAGE_KEY]);
-
-      if (missionsData[1]) {
-        setMissions(JSON.parse(missionsData[1]));
-      }
-
+      if (missionsData[1]) setMissions(JSON.parse(missionsData[1]));
       if (statsData[1]) {
         const stats = JSON.parse(statsData[1]);
         setTotalXP(stats.totalXP || 0);
@@ -115,304 +111,346 @@ export default function TrainerScreen() {
     const updatedMissions = missions.map(m =>
       m.id === missionId ? { ...m, completed: true } : m
     );
-
     const newXP = totalXP + mission.xp;
     const newLevel = Math.floor(newXP / 100) + 1;
 
     setMissions(updatedMissions);
     setTotalXP(newXP);
     setLevel(newLevel);
-
     saveProgress(updatedMissions, newXP, newLevel);
 
-    container.toast.success('¡Misión Completada!', `+${mission.xp} XP ganados`);
+    container.toast.success('Mission Complete!', `+${mission.xp} XP earned`);
   };
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'easy': return COLORS.success;
-      case 'medium': return '#F59E0B';
-      case 'hard': return COLORS.error;
-      default: return COLORS.text.secondary;
+      case 'easy':   return COLORS.success;
+      case 'medium': return COLORS.warning;
+      case 'hard':   return COLORS.error;
+      default:       return COLORS.text.secondary;
+    }
+  };
+
+  const getDifficultyLabel = (difficulty: string) => {
+    switch (difficulty) {
+      case 'easy':   return s.trainer.difficulty.easy;
+      case 'medium': return s.trainer.difficulty.medium;
+      case 'hard':   return s.trainer.difficulty.hard;
+      default:       return difficulty;
     }
   };
 
   const completedMissions = missions.filter(m => m.completed).length;
-  const progressPercentage = (totalXP % 100) / 100;
+  const xpInLevel = totalXP % 100;
+  const progressPct = xpInLevel;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['top']}>
-      <LinearGradient colors={COLORS.gradient.accent} style={styles.header}>
-        <Text style={styles.headerIcon}>🏆</Text>
-        <Text style={styles.headerTitle}>Entrenador de Labia</Text>
-        <Text style={styles.headerSubtitle}>Mejora tus habilidades de conversación</Text>
-      </LinearGradient>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>{s.trainer.title}</Text>
+          <Text style={styles.headerSubtitle}>{s.trainer.subtitle}</Text>
+        </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Stats Card */}
-        <View style={[styles.statsCard, { backgroundColor: theme.colors.surface }]}>
-          <View style={styles.statsHeader}>
-            <View style={styles.levelBadge}>
-              <Text style={styles.levelText}>Nivel {level}</Text>
-            </View>
-            <Text style={[styles.xpText, { color: theme.colors.onSurfaceVariant }]}>
-              {totalXP} XP
+        {/* Hero Stats Card */}
+        <View style={styles.statsCard}>
+          <View style={styles.statsTopRow}>
+            {/* Level badge */}
+            <LinearGradient
+              colors={COLORS.gradient.primary}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.levelBadge}
+            >
+              <MaterialCommunityIcons name="trophy" size={16} color="#FFF" />
+              <Text style={styles.levelText}>{s.trainer.level} {level}</Text>
+            </LinearGradient>
+
+            {/* XP total */}
+            <Text style={styles.xpTotal}>
+              <Text style={styles.xpTotalNumber}>{totalXP}</Text>
+              <Text style={styles.xpTotalLabel}> {s.trainer.xp}</Text>
             </Text>
           </View>
 
-          <View style={styles.progressContainer}>
-            <View style={[styles.progressBar, { backgroundColor: theme.colors.surfaceVariant }]}>
-              <View style={[styles.progressFill, { width: `${progressPercentage * 100}%` }]} />
+          {/* XP Progress bar */}
+          <View style={styles.progressRow}>
+            <View style={styles.progressTrack}>
+              <LinearGradient
+                colors={COLORS.gradient.primary}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={[styles.progressFill, { width: `${progressPct}%` }]}
+              />
             </View>
-            <Text style={[styles.progressText, { color: theme.colors.onSurfaceVariant }]}>
-              {totalXP % 100}/100 XP al siguiente nivel
+            <Text style={styles.progressLabel}>
+              {xpInLevel}/100 XP {s.trainer.toNextLevel}
             </Text>
           </View>
 
+          {/* Stats row */}
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
-              <Text style={[styles.statValue, { color: theme.colors.primary }]}>
-                {completedMissions}/{missions.length}
-              </Text>
-              <Text style={[styles.statLabel, { color: theme.colors.onSurfaceVariant }]}>
-                Misiones
-              </Text>
+              <Text style={styles.statValue}>{completedMissions}/{missions.length}</Text>
+              <Text style={styles.statLabel}>{s.trainer.missionsCompleted}</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
               <Text style={[styles.statValue, { color: COLORS.success }]}>
-                {Math.floor((completedMissions / missions.length) * 100)}%
+                {missions.length > 0 ? Math.floor((completedMissions / missions.length) * 100) : 0}%
               </Text>
-              <Text style={[styles.statLabel, { color: theme.colors.onSurfaceVariant }]}>
-                Progreso
-              </Text>
+              <Text style={styles.statLabel}>{s.trainer.progress}</Text>
             </View>
           </View>
         </View>
 
-        {/* Missions Section */}
-        <Text style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>
-          Misiones Disponibles
-        </Text>
+        {/* Missions */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{s.trainer.missions}</Text>
 
-        {missions.map(mission => (
-          <MissionCard
-            key={mission.id}
-            mission={mission}
-            onComplete={completeMission}
-            getDifficultyColor={getDifficultyColor}
-            theme={theme}
-          />
-        ))}
+          {missions.map(mission => (
+            <TouchableOpacity
+              key={mission.id}
+              style={[styles.missionCard, mission.completed && styles.missionCardDone]}
+              onPress={() => !mission.completed && completeMission(mission.id)}
+              disabled={mission.completed}
+              activeOpacity={0.75}
+            >
+              {/* Left accent strip */}
+              <View style={[styles.missionAccent, { backgroundColor: getDifficultyColor(mission.difficulty) }]} />
 
-        <View style={{ height: 40 }} />
+              <View style={styles.missionIconWrap}>
+                <MaterialCommunityIcons
+                  name={mission.completed ? 'check-circle' : (mission.icon as any)}
+                  size={22}
+                  color={mission.completed ? COLORS.success : COLORS.primary}
+                />
+              </View>
+
+              <View style={styles.missionBody}>
+                <Text style={[styles.missionTitle, mission.completed && styles.missionTitleDone]}>
+                  {mission.title}
+                </Text>
+                <Text style={styles.missionDesc}>{mission.description}</Text>
+                <View style={styles.missionFooter}>
+                  <View style={[styles.difficultyChip, { backgroundColor: getDifficultyColor(mission.difficulty) + '22' }]}>
+                    <Text style={[styles.difficultyLabel, { color: getDifficultyColor(mission.difficulty) }]}>
+                      {getDifficultyLabel(mission.difficulty)}
+                    </Text>
+                  </View>
+                  <Text style={styles.xpChip}>+{mission.xp} {s.trainer.xpReward}</Text>
+                </View>
+              </View>
+
+              {mission.completed && (
+                <MaterialCommunityIcons name="check" size={18} color={COLORS.success} style={styles.doneCheck} />
+              )}
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <View style={{ height: 100 }} />
       </ScrollView>
     </SafeAreaView>
-  );
-}
-
-interface MissionCardProps {
-  mission: Mission;
-  onComplete: (id: string) => void;
-  getDifficultyColor: (difficulty: string) => string;
-  theme: any;
-}
-
-function MissionCard({ mission, onComplete, getDifficultyColor, theme }: MissionCardProps) {
-  return (
-    <TouchableOpacity
-      style={[
-        styles.missionCard,
-        { backgroundColor: theme.colors.surface },
-        mission.completed && styles.missionCardCompleted,
-      ]}
-      onPress={() => !mission.completed && onComplete(mission.id)}
-      disabled={mission.completed}
-    >
-      <View style={styles.missionLeft}>
-        <View style={[styles.missionIcon, mission.completed && styles.missionIconCompleted]}>
-          <MaterialCommunityIcons
-            name={mission.completed ? 'check' : (mission.icon as any)}
-            size={24}
-            color={mission.completed ? COLORS.success : COLORS.primary}
-          />
-        </View>
-        <View style={styles.missionInfo}>
-          <Text style={[styles.missionTitle, { color: theme.colors.onSurface }, mission.completed && styles.missionTitleCompleted]}>
-            {mission.title}
-          </Text>
-          <Text style={[styles.missionDescription, { color: theme.colors.onSurfaceVariant }]}>
-            {mission.description}
-          </Text>
-          <View style={styles.missionMeta}>
-            <View style={[styles.difficultyBadge, { backgroundColor: getDifficultyColor(mission.difficulty) + '20' }]}>
-              <Text style={[styles.difficultyText, { color: getDifficultyColor(mission.difficulty) }]}>
-                {mission.difficulty === 'easy' ? 'Fácil' : mission.difficulty === 'medium' ? 'Media' : 'Difícil'}
-              </Text>
-            </View>
-            <Text style={[styles.xpBadge, { color: COLORS.accent }]}>
-              +{mission.xp} XP
-            </Text>
-          </View>
-        </View>
-      </View>
-    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'transparent',
   },
   header: {
     paddingHorizontal: 24,
-    paddingVertical: 32,
-    alignItems: 'center',
-  },
-  headerIcon: {
-    fontSize: 64,
-    marginBottom: 8,
+    paddingTop: 8,
+    paddingBottom: 20,
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#FFFFFF',
-    marginBottom: 4,
+    color: COLORS.text.primary,
+    letterSpacing: -0.5,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#FFFFFF',
-    opacity: 0.9,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 24,
+    color: COLORS.text.secondary,
+    marginTop: 2,
   },
   statsCard: {
-    padding: 20,
-    borderRadius: 16,
+    marginHorizontal: 24,
     marginBottom: 24,
+    backgroundColor: COLORS.surface.light,
+    borderRadius: 20,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: COLORS.border.light,
+    shadowColor: COLORS.shadow.card,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 16,
+    elevation: 8,
   },
-  statsHeader: {
+  statsTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
   },
   levelBadge: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
+    gap: 6,
   },
   levelText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
     color: '#FFFFFF',
   },
-  xpText: {
-    fontSize: 18,
-    fontWeight: '700',
+  xpTotal: {
+    textAlign: 'right',
   },
-  progressContainer: {
+  xpTotalNumber: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: COLORS.primary,
+  },
+  xpTotalLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text.secondary,
+  },
+  progressRow: {
     marginBottom: 20,
   },
-  progressBar: {
-    height: 12,
-    borderRadius: 6,
+  progressTrack: {
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: COLORS.surface.dark2,
     overflow: 'hidden',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   progressFill: {
     height: '100%',
-    backgroundColor: COLORS.primary,
-    borderRadius: 6,
+    borderRadius: 4,
+    minWidth: 8,
   },
-  progressText: {
+  progressLabel: {
     fontSize: 12,
-    textAlign: 'center',
+    color: COLORS.text.secondary,
+    textAlign: 'right',
   },
   statsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    alignItems: 'center',
   },
   statItem: {
-    alignItems: 'center',
     flex: 1,
+    alignItems: 'center',
   },
   statValue: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '800',
+    color: COLORS.primary,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
+    color: COLORS.text.secondary,
   },
   statDivider: {
     width: 1,
-    backgroundColor: '#E5E7EB',
+    height: 40,
+    backgroundColor: COLORS.border.light,
     marginHorizontal: 16,
   },
+  section: {
+    paddingHorizontal: 24,
+  },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
-    marginBottom: 16,
+    color: COLORS.text.primary,
+    marginBottom: 14,
+    letterSpacing: -0.3,
   },
   missionCard: {
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-  },
-  missionCardCompleted: {
-    opacity: 0.6,
-  },
-  missionLeft: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    backgroundColor: COLORS.surface.light,
+    borderRadius: 14,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: COLORS.border.light,
+    overflow: 'hidden',
+    shadowColor: COLORS.shadow.card,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  missionIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: COLORS.primary + '20',
+  missionCardDone: {
+    opacity: 0.55,
+  },
+  missionAccent: {
+    width: 3,
+    alignSelf: 'stretch',
+  },
+  missionIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: COLORS.surface.tinted,
     alignItems: 'center',
     justifyContent: 'center',
+    marginLeft: 12,
     marginRight: 12,
+    marginVertical: 16,
   },
-  missionIconCompleted: {
-    backgroundColor: COLORS.success + '20',
-  },
-  missionInfo: {
+  missionBody: {
     flex: 1,
+    paddingVertical: 14,
+    paddingRight: 12,
   },
   missionTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
-    marginBottom: 4,
+    color: COLORS.text.primary,
+    marginBottom: 3,
   },
-  missionTitleCompleted: {
+  missionTitleDone: {
     textDecorationLine: 'line-through',
+    color: COLORS.text.secondary,
   },
-  missionDescription: {
-    fontSize: 14,
+  missionDesc: {
+    fontSize: 13,
+    color: COLORS.text.secondary,
     marginBottom: 8,
+    lineHeight: 18,
   },
-  missionMeta: {
+  missionFooter: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
   },
-  difficultyBadge: {
+  difficultyChip: {
     paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingVertical: 3,
     borderRadius: 6,
   },
-  difficultyText: {
+  difficultyLabel: {
     fontSize: 11,
-    fontWeight: '600',
-  },
-  xpBadge: {
-    fontSize: 13,
     fontWeight: '700',
+  },
+  xpChip: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+  doneCheck: {
+    marginRight: 14,
   },
 });

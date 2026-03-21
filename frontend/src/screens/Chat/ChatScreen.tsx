@@ -10,11 +10,12 @@ import {
   Platform
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS } from '../../core/constants';
 import { useAppStore } from '../../store/appStore';
 import { useChatStore } from '../../store/chatStore';
+import { useStrings } from '../../core/i18n/useStrings';
 import { container } from '../../infrastructure/di/Container';
 import SuggestionCard from '../../components/common/SuggestionCard';
 import CulturalStylePicker from '../../components/common/CulturalStylePicker';
@@ -25,6 +26,7 @@ import type { OpenerSuggestion, ResponseSuggestion } from '../../types';
 type Mode = 'openers' | 'responses';
 
 export default function ChatScreen() {
+  const s = useStrings();
   const { culturalStyle, setCulturalStyle, defaultTone, setDefaultTone } = useAppStore();
   const { isGenerating, setIsGenerating, setError } = useChatStore();
 
@@ -34,7 +36,7 @@ export default function ChatScreen() {
 
   const handleGenerate = async () => {
     if (!inputText.trim()) {
-      container.toast.error('Atención', 'Por favor ingresa un texto para generar sugerencias');
+      container.toast.error('Heads up', 'Enter some text to generate suggestions');
       return;
     }
 
@@ -50,26 +52,22 @@ export default function ChatScreen() {
           num_suggestions: 3,
         });
         setSuggestions(response.suggestions as any);
-        container.toast.success('¡Listo!', `${response.suggestions.length} sugerencias generadas`);
+        container.toast.success('Done!', `${response.suggestions.length} ${s.chat.successOpeners}`);
       } else {
         const response = await container.responseApi.generateResponses({
           received_message: inputText,
           cultural_style: culturalStyle,
         });
         setSuggestions(response.suggestions as any);
-        container.toast.success('¡Listo!', `${response.suggestions.length} respuestas generadas`);
+        container.toast.success('Done!', `${response.suggestions.length} ${s.chat.successResponses}`);
       }
     } catch (error: any) {
       console.error('Error generating suggestions:', error);
-      setError(error.detail || 'Error al generar sugerencias');
-      container.toast.error('Error', error.detail || 'No se pudo generar las sugerencias. Intenta nuevamente.');
+      setError(error.detail || s.chat.errorGenerate);
+      container.toast.error('Error', error.detail || s.chat.errorGenerate);
     } finally {
       setIsGenerating(false);
     }
-  };
-
-  const handleCopy = () => {
-    // Toast is shown in SuggestionCard component
   };
 
   const handleRegenerate = () => {
@@ -84,30 +82,50 @@ export default function ChatScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <LinearGradient colors={COLORS.gradient.primary} style={styles.headerGradient}>
-            <Text style={styles.headerTitle}>Labia.AI</Text>
-            <Text style={styles.headerSubtitle}>Tu asistente de conversación</Text>
-          </LinearGradient>
+          <Text style={styles.headerTitle}>{s.chat.title}</Text>
+          <Text style={styles.headerSubtitle}>{s.chat.subtitle}</Text>
         </View>
 
-        {/* Mode Selector */}
-        <View style={styles.modeSelector}>
-          <TouchableOpacity
-            style={[styles.modeButton, mode === 'openers' && styles.modeButtonActive]}
-            onPress={() => setMode('openers')}
-          >
-            <Text style={[styles.modeText, mode === 'openers' && styles.modeTextActive]}>
-              Aperturas
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.modeButton, mode === 'responses' && styles.modeButtonActive]}
-            onPress={() => setMode('responses')}
-          >
-            <Text style={[styles.modeText, mode === 'responses' && styles.modeTextActive]}>
-              Respuestas
-            </Text>
-          </TouchableOpacity>
+        {/* Mode Selector — dark pill tabs */}
+        <View style={styles.modeSelectorWrapper}>
+          <View style={styles.modeSelector}>
+            <TouchableOpacity
+              style={[styles.modeButton, mode === 'openers' && styles.modeButtonActive]}
+              onPress={() => setMode('openers')}
+              activeOpacity={0.8}
+            >
+              {mode === 'openers' ? (
+                <LinearGradient
+                  colors={COLORS.gradient.primary}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.modeButtonGradient}
+                >
+                  <Text style={styles.modeTextActive}>{s.chat.modeOpeners}</Text>
+                </LinearGradient>
+              ) : (
+                <Text style={styles.modeText}>{s.chat.modeOpeners}</Text>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.modeButton, mode === 'responses' && styles.modeButtonActive]}
+              onPress={() => setMode('responses')}
+              activeOpacity={0.8}
+            >
+              {mode === 'responses' ? (
+                <LinearGradient
+                  colors={COLORS.gradient.primary}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.modeButtonGradient}
+                >
+                  <Text style={styles.modeTextActive}>{s.chat.modeResponses}</Text>
+                </LinearGradient>
+              ) : (
+                <Text style={styles.modeText}>{s.chat.modeResponses}</Text>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Cultural Style Picker */}
@@ -118,18 +136,10 @@ export default function ChatScreen() {
 
         {/* Input Section */}
         <View style={styles.inputSection}>
-          <Text style={styles.inputLabel}>
-            {mode === 'openers'
-              ? '¿Qué dice su bio o qué intereses tiene?'
-              : '¿Qué mensaje recibiste?'}
-          </Text>
           <TextInput
             style={styles.input}
-            placeholder={
-              mode === 'openers'
-                ? 'Ej: Le gusta Bad Bunny, la playa, y los perritos...'
-                : 'Ej: Hey! Qué tal? Vi que también te gusta el reggaetón...'
-            }
+            placeholder={mode === 'openers' ? s.chat.placeholderOpeners : s.chat.placeholderResponses}
+            placeholderTextColor={COLORS.text.muted}
             value={inputText}
             onChangeText={setInputText}
             multiline={true}
@@ -141,34 +151,36 @@ export default function ChatScreen() {
           <TouchableOpacity
             onPress={handleGenerate}
             disabled={isGenerating || !inputText.trim()}
+            activeOpacity={0.85}
           >
             <LinearGradient
-              colors={isGenerating || !inputText.trim() ? ['#D1D5DB', '#9CA3AF'] : COLORS.gradient.primary}
+              colors={isGenerating || !inputText.trim()
+                ? ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.05)']
+                : COLORS.gradient.primary}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
               style={styles.generateButton}
             >
-              {isGenerating ? (
-                <>
-                  <MaterialCommunityIcons name="heart-pulse" size={22} color="#FFFFFF" />
-                  <Text style={styles.generateButtonText}>Generando...</Text>
-                </>
-              ) : (
-                <>
-                  <MaterialCommunityIcons name="magic-staff" size={22} color="#FFFFFF" />
-                  <Text style={styles.generateButtonText}>Generar Sugerencias</Text>
-                </>
-              )}
+              <MaterialCommunityIcons
+                name={isGenerating ? 'loading' : 'magic-staff'}
+                size={20}
+                color="#FFFFFF"
+              />
+              <Text style={styles.generateButtonText}>
+                {isGenerating ? s.chat.generating : s.chat.generateBtn}
+              </Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
 
         {/* Suggestions */}
         <ScrollView style={styles.suggestionsContainer} showsVerticalScrollIndicator={false}>
-          {isGenerating && <LoadingIndicator message="Generando sugerencias culturalmente adaptadas..." />}
+          {isGenerating && <LoadingIndicator message="Generating culturally-adapted suggestions..." />}
 
           {suggestions.length > 0 && (
             <View style={styles.suggestionsContent}>
               <Text style={styles.suggestionsTitle}>
-                {mode === 'openers' ? 'Aperturas Sugeridas' : 'Respuestas Sugeridas'}
+                {mode === 'openers' ? 'Suggested Openers' : 'Suggested Responses'}
               </Text>
               {suggestions.map((suggestion, index) => (
                 <SuggestionCard
@@ -176,7 +188,7 @@ export default function ChatScreen() {
                   text={suggestion.text}
                   tone={suggestion.tone}
                   explanation={suggestion.explanation}
-                  onCopy={handleCopy}
+                  onCopy={() => {}}
                   onRegenerate={handleRegenerate}
                 />
               ))}
@@ -185,22 +197,25 @@ export default function ChatScreen() {
 
           {!isGenerating && suggestions.length === 0 && (
             <View style={styles.emptyState}>
-              <MaterialCommunityIcons
-                name={mode === 'openers' ? 'heart-outline' : 'message-reply-text'}
-                size={80}
-                color={COLORS.primary}
-                style={styles.emptyStateIcon}
-              />
+              <View style={styles.emptyIconWrapper}>
+                <MaterialCommunityIcons
+                  name={mode === 'openers' ? 'message-plus-outline' : 'message-reply-text-outline'}
+                  size={48}
+                  color={COLORS.primary}
+                />
+              </View>
               <Text style={styles.emptyTitle}>
-                {mode === 'openers' ? 'Crea Aperturas Épicas' : 'Genera Respuestas Inteligentes'}
+                {mode === 'openers' ? 'Craft the perfect opener' : 'Find the right response'}
               </Text>
               <Text style={styles.emptyDescription}>
                 {mode === 'openers'
-                  ? 'Ingresa la bio o intereses de la persona y te ayudaré a crear mensajes iniciales irresistibles'
-                  : 'Ingresa el mensaje que recibiste y te daré 3 opciones de respuesta con diferentes tonos'}
+                  ? 'Describe their profile or interests and get culturally-tuned openers'
+                  : 'Paste the message they sent and get 3 response options with different vibes'}
               </Text>
             </View>
           )}
+          {/* Bottom padding for tab bar */}
+          <View style={{ height: 100 }} />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -210,123 +225,142 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background.light
+    backgroundColor: 'transparent',
   },
   keyboardView: {
-    flex: 1
+    flex: 1,
   },
   header: {
-    overflow: 'hidden'
-  },
-  headerGradient: {
     paddingHorizontal: 24,
-    paddingVertical: 20,
-    alignItems: 'center'
+    paddingTop: 8,
+    paddingBottom: 16,
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#FFFFFF',
-    marginBottom: 4
+    color: COLORS.text.primary,
+    letterSpacing: -0.5,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#FFFFFF',
-    opacity: 0.9
+    color: COLORS.text.secondary,
+    marginTop: 2,
+  },
+  modeSelectorWrapper: {
+    paddingHorizontal: 24,
+    marginBottom: 8,
   },
   modeSelector: {
     flexDirection: 'row',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    gap: 12
+    backgroundColor: COLORS.surface.dark,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: COLORS.border.light,
+    padding: 4,
+    gap: 4,
   },
   modeButton: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
-    backgroundColor: COLORS.surface.light,
-    alignItems: 'center'
+    borderRadius: 10,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
   },
-  modeButtonActive: {
-    backgroundColor: COLORS.primary
+  modeButtonActive: {},
+  modeButtonGradient: {
+    ...StyleSheet.absoluteFillObject as any,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 10,
   },
   modeText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
-    color: COLORS.text.primary
+    color: COLORS.text.secondary,
   },
   modeTextActive: {
-    color: '#FFFFFF'
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   inputSection: {
     paddingHorizontal: 24,
-    paddingVertical: 16
-  },
-  inputLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.text.primary,
-    marginBottom: 12
+    paddingVertical: 12,
   },
   input: {
-    backgroundColor: COLORS.surface.light,
+    backgroundColor: COLORS.surface.inputBg,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 12,
+    borderColor: COLORS.border.light,
+    borderRadius: 14,
     padding: 16,
-    fontSize: 16,
+    fontSize: 15,
     color: COLORS.text.primary,
-    minHeight: 100,
-    marginBottom: 16
+    minHeight: 96,
+    marginBottom: 12,
   },
   generateButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
+    paddingVertical: 15,
     borderRadius: 28,
-    gap: 8
+    gap: 8,
+    shadowColor: COLORS.shadow.colored,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 16,
+    elevation: 8,
   },
   generateButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#FFFFFF'
+    color: '#FFFFFF',
+    letterSpacing: 0.3,
   },
   suggestionsContainer: {
     flex: 1,
-    paddingHorizontal: 24
+    paddingHorizontal: 24,
   },
   suggestionsContent: {
-    paddingBottom: 24
+    paddingTop: 8,
+    paddingBottom: 24,
   },
   suggestionsTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     color: COLORS.text.primary,
-    marginBottom: 16
+    marginBottom: 16,
+    letterSpacing: -0.3,
   },
   emptyState: {
-    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 48,
+    paddingHorizontal: 32,
+  },
+  emptyIconWrapper: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: COLORS.surface.tinted,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 40
-  },
-  emptyStateIcon: {
     marginBottom: 20,
-    opacity: 0.8
+    borderWidth: 1,
+    borderColor: COLORS.border.lavendar,
   },
   emptyTitle: {
     fontSize: 20,
     fontWeight: '700',
     color: COLORS.text.primary,
     textAlign: 'center',
-    marginBottom: 8
+    marginBottom: 10,
+    letterSpacing: -0.3,
   },
   emptyDescription: {
     fontSize: 14,
     color: COLORS.text.secondary,
     textAlign: 'center',
-    lineHeight: 20
-  }
+    lineHeight: 22,
+  },
 });

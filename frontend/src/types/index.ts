@@ -332,6 +332,8 @@ export type OnboardingStackParamList = {
 };
 
 // Store Types
+export type Language = 'en' | 'es';
+
 export interface AppState {
   user: UserProfile | null;
   isAuthenticated: boolean;
@@ -340,11 +342,13 @@ export interface AppState {
   culturalStyle: CulturalStyle;
   defaultTone: Tone;
   isDarkMode: boolean;
+  language: Language;
   setUser: (user: UserProfile | null) => void;
   setToken: (token: string) => Promise<void>;
   setCulturalStyle: (style: CulturalStyle) => void;
   setDefaultTone: (tone: Tone) => void;
   setDarkMode: (isDarkMode: boolean) => void;
+  setLanguage: (language: Language) => void;
   setOnboardingCompleted: () => Promise<void>;
   logout: () => void;
 }

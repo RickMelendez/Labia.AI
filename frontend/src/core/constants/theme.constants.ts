@@ -1,144 +1,162 @@
-// Theme Colors - Lavendar & Magic Dating App Palette
+// Theme Colors — Premium Dark Elevated
+// Visual direction: warm near-black background, violet→rose gradient accents,
+// glassmorphism cards, photo-first discover screen (Matcha/Hinge/Modern Dating references)
+
 export const COLORS = {
-  // === BRAND: Lavendar & Magic === //
-  brand: '#5e429c',        // Magic purple (buttons)
-  brand600: '#4d3680',     // Magic darker
-  brand700: '#3d2a66',     // Magic darkest
-  brand50: '#f3e8ff',      // Magic very light tint
-  
-  lavendar: '#f492f0',     // Lavendar main (backgrounds)
-  lavandarLight: '#f7b3f5', // Lavendar light
-  lavandarDark: '#e071db',  // Lavendar dark
-  lavandarPale: '#fce8fb',  // Lavendar very pale
+  // === BRAND: Electric Violet & Rose === //
+  brand: '#A855F7',          // Electric violet (primary CTA, active tabs)
+  brand600: '#9333EA',       // Violet darker
+  brand700: '#7C3AED',       // Deep violet
+  brand50: 'rgba(168,85,247,0.12)',  // Violet tint (chip backgrounds)
 
-  // Primary Colors (Magic for interactive elements)
-  primary: '#5e429c',
-  primaryLight: '#7a5db8',
-  primaryDark: '#3d2a66',
+  rose: '#EC4899',           // Rose/pink (like button, secondary CTA)
+  roseDark: '#DB2777',       // Rose darker
 
-  // Secondary Colors (Lavendar variations)
-  secondary: '#f492f0',
-  secondaryLight: '#f7b3f5',
-  secondaryDark: '#e071db',
+  // Primary / Secondary
+  primary: '#A855F7',
+  primaryLight: '#C084FC',
+  primaryDark: '#7C3AED',
 
-  // Accent Colors
-  accent: '#b794f6',       // Purple accent
-  accentLight: '#d4bbff',
-  accentDark: '#9370db',
+  secondary: '#EC4899',
+  secondaryLight: '#F472B6',
+  secondaryDark: '#DB2777',
 
-  // Semantic Colors
+  // Action colors (for discover screen buttons)
+  like: '#EC4899',           // Heart / like
+  pass: '#6B7280',           // X / pass (grey, not aggressive)
+  superlike: '#A855F7',      // Superlike / message
+
+  // Accent
+  accent: '#A855F7',
+  accentLight: '#C084FC',
+  accentDark: '#7C3AED',
+
+  // Semantic
   success: '#10B981',
   error: '#EF4444',
   warning: '#F59E0B',
   info: '#3B82F6',
 
-  // === TEXT COLORS === //
+  // === TEXT === //
   text: {
-    strong: '#2d1b4e',       // Dark purple for text
-    body: '#4a3568',         // Medium purple
-    muted: '#8b7ba8',        // Light purple
-    disabled: '#D1D5DB',
-    inverse: '#FFFFFF',      // White text
-    onBrand: '#FFFFFF',      // White on Magic purple
-    onDark: '#E5EAF0',       // Light text on dark
-    onDarkMuted: '#B8C1CC',
-    link: '#5e429c',         // Magic for links
-    accent: '#7a5db8',
-    
+    primary: '#FFFFFF',
+    secondary: '#A1A1AA',    // zinc-400 — secondary labels
+    muted: '#52525B',        // zinc-600 — placeholder, disabled
+    disabled: '#3F3F46',     // zinc-700
+    inverse: '#0D0B0A',      // dark text on light surfaces
+    onBrand: '#FFFFFF',
+    onDark: '#FFFFFF',
+    onDarkMuted: '#A1A1AA',
+    onPhoto: '#FFFFFF',      // always white when over photo backgrounds
+    link: '#C084FC',         // lighter violet for links
+
     // Legacy aliases
-    primary: '#2d1b4e',
-    secondary: '#8b7ba8',
-    tertiary: '#9CA3AF',
+    strong: '#FFFFFF',
+    body: '#A1A1AA',
+    onBrandDark: '#FFFFFF',
+    accent: '#C084FC',
   },
 
-  // === BACKGROUND & SURFACE === //
+  // === BACKGROUNDS === //
   background: {
-    app: '#fce8fb',          // Very pale lavendar
-    light: '#fce8fb',
-    lightSecondary: '#f7b3f5',
-    dark: '#0B0F17',
-    darkSecondary: '#111827',
+    app: '#0D0B0A',          // warm near-black (brown undertone, cinematic)
+    light: '#0D0B0A',
+    lightSecondary: '#161311',
+    dark: '#0D0B0A',
+    darkSecondary: '#161311',
+    card: 'rgba(255,255,255,0.06)',   // glassmorphism base
   },
 
+  // === SURFACES === //
   surface: {
-    light: '#FFFFFF',        // White cards
-    lightElevated: '#fce8fb', // Pale lavendar elevated
-    tinted: '#f3e8ff',       // Magic tinted (very light purple)
-    lavendar: '#f492f0',     // Lavendar surface
-    
-    // Dark surfaces
-    dark: '#2d1b4e',
-    dark2: '#3d2a66',
-    darkElevated: '#4a3568',
+    light: 'rgba(255,255,255,0.06)',        // glass card — low elevation
+    lightElevated: 'rgba(255,255,255,0.10)', // glass card — elevated
+    tinted: 'rgba(168,85,247,0.08)',         // violet-tinted glass
+    border: 'rgba(255,255,255,0.10)',        // glass card border
+    photoOverlay: 'rgba(0,0,0,0.45)',        // overlay on top of photos
+    inputBg: 'rgba(255,255,255,0.07)',       // text input background
+
+    // Dark surfaces (keep aliases for existing code)
+    dark: 'rgba(255,255,255,0.06)',
+    dark2: 'rgba(255,255,255,0.10)',
+    darkElevated: 'rgba(255,255,255,0.14)',
+    lavendar: 'rgba(168,85,247,0.12)',
   },
 
   // === BORDERS === //
   border: {
-    light: '#e9d5f5',        // Light purple border
-    medium: '#d4bbff',
-    dark: 'rgba(255, 255, 255, 0.12)',
-    focus: '#5e429c',        // Magic for focus
-    brand: '#5e429c',
-    lavendar: '#f492f0',     // Lavendar border
+    light: 'rgba(255,255,255,0.10)',
+    medium: 'rgba(255,255,255,0.15)',
+    dark: 'rgba(255,255,255,0.08)',
+    focus: '#A855F7',
+    brand: '#A855F7',
+    lavendar: 'rgba(168,85,247,0.30)',
   },
 
   // === GRADIENTS === //
   gradient: {
-    // Magic purple gradients
-    magic: ['#5e429c', '#4d3680', '#3d2a66'] as const,
-    magicButton: ['#5e429c', '#4d3680'] as const,
-    
-    // Lavendar gradients
-    lavendar: ['#f492f0', '#f7b3f5', '#fce8fb'] as const,
-    lavandarHero: ['#f492f0', '#e071db'] as const,
-    
-    // Combined gradients
-    romantic: ['#f492f0', '#b794f6', '#5e429c'] as const,
-    dreamy: ['#fce8fb', '#f7b3f5', '#f492f0'] as const,
-    
-    // Legacy (updated to new colors)
-    primary: ['#5e429c', '#4d3680'] as const,
-    secondary: ['#f492f0', '#f7b3f5'] as const,
-    accent: ['#b794f6', '#9370db'] as const,
-    night: ['#0B0F17', '#111827'] as const,
-    card: ['#FFFFFF', '#fce8fb'] as const,
-    button: ['#5e429c', '#4d3680'] as const,
-    neon: ['#5e429c', '#4d3680'] as const,
+    // Primary gradient — violet → rose (buttons, active badges, progress bars)
+    primary: ['#A855F7', '#EC4899'] as const,
+    button: ['#A855F7', '#EC4899'] as const,
+    magicButton: ['#A855F7', '#EC4899'] as const,
+
+    // Deeper gradients
+    accent: ['#7C3AED', '#A855F7'] as const,
+    deep: ['#4C1D95', '#7C3AED'] as const,
+
+    // Photo scrim — transparent to dark, for text legibility over photos
+    photoScrim: ['transparent', 'rgba(0,0,0,0.90)'] as const,
+    photoScrimMid: ['rgba(0,0,0,0)', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,0.92)'] as const,
+
+    // Background glow (AppBackground)
+    appBg: ['#1A0530', '#0D0B0A', '#0D0B0A'] as const,
+
+    // Legacy aliases (keep for existing code that uses them)
+    magic: ['#A855F7', '#9333EA', '#7C3AED'] as const,
+    romantic: ['#EC4899', '#A855F7', '#7C3AED'] as const,
+    dreamy: ['#A855F7', '#EC4899'] as const,
+    night: ['#0D0B0A', '#161311'] as const,
+    card: ['rgba(255,255,255,0.06)', 'rgba(255,255,255,0.03)'] as const,
+    lavendar: ['#A855F7', '#C084FC'] as const,
+    lavandarHero: ['#A855F7', '#EC4899'] as const,
+    secondary: ['#EC4899', '#F472B6'] as const,
+    neon: ['#A855F7', '#EC4899'] as const,
   },
 
-  // === OVERLAY === //
+  // === OVERLAYS === //
   overlay: {
-    light: 'rgba(0, 0, 0, 0.5)',
-    dark: 'rgba(0, 0, 0, 0.7)',
-    gradient: 'rgba(244, 146, 240, 0.1)', // Lavendar overlay
-    lavendar: 'rgba(244, 146, 240, 0.2)',
+    light: 'rgba(0,0,0,0.5)',
+    dark: 'rgba(0,0,0,0.75)',
+    gradient: 'rgba(168,85,247,0.08)',
+    lavendar: 'rgba(168,85,247,0.15)',
   },
 
   // === SHADOWS === //
   shadow: {
-    light: 'rgba(0, 0, 0, 0.1)',
-    medium: 'rgba(0, 0, 0, 0.15)',
-    heavy: 'rgba(0, 0, 0, 0.25)',
-    colored: 'rgba(94, 66, 156, 0.3)',    // Magic shadow
-    lavendar: 'rgba(244, 146, 240, 0.4)', // Lavendar shadow
-    card: 'rgba(94, 66, 156, 0.08)',      // Subtle Magic shadow for cards
+    light: 'rgba(0,0,0,0.3)',
+    medium: 'rgba(0,0,0,0.5)',
+    heavy: 'rgba(0,0,0,0.7)',
+    colored: 'rgba(168,85,247,0.4)',   // violet glow — use on primary buttons
+    card: 'rgba(0,0,0,0.6)',           // deep card shadow
+    photo: 'rgba(0,0,0,0.8)',          // under photo cards
+    lavendar: 'rgba(168,85,247,0.35)',
   },
 
-  // === ESTADOS === //
+  // === STATES === //
   states: {
     hover: {
-      brand: '#4d3680',      // Magic darker
-      surface: '#f7b3f5',    // Lavendar light
-      lavendar: '#e071db',   // Lavendar dark
+      brand: '#9333EA',
+      surface: 'rgba(255,255,255,0.10)',
+      lavendar: 'rgba(168,85,247,0.20)',
     },
     active: {
-      brand: '#3d2a66',      // Magic darkest
-      surface: '#f492f0',    // Lavendar
-      lavendar: '#d65fcc',   // Lavendar darker
+      brand: '#7C3AED',
+      surface: 'rgba(255,255,255,0.14)',
+      lavendar: 'rgba(168,85,247,0.25)',
     },
     disabled: {
-      background: '#F3F4F6',
-      text: '#D1D5DB',
+      background: 'rgba(255,255,255,0.04)',
+      text: '#3F3F46',
     },
   },
 };
@@ -153,17 +171,17 @@ export const ANIMATION_DURATION = {
 // Focus Ring Style
 export const FOCUS_RING = {
   color: COLORS.brand,
-  width: 3,
-  opacity: 0.35,
+  width: 2,
+  opacity: 0.5,
   shadowOffset: { width: 0, height: 0 },
-  shadowRadius: 6,
+  shadowRadius: 8,
 };
 
-// Tone-based gradients for badges/cards
+// Tone-based gradients — updated for dark theme
 export const TONE_GRADIENTS: Record<string, readonly [string, string]> = {
-  chill: ['#b794f6', '#9370db'],
-  elegant: ['#5e429c', '#4d3680'],
+  chill: ['#A855F7', '#9333EA'],
+  elegant: ['#7C3AED', '#4C1D95'],
   intellectual: ['#64748B', '#94A3B8'],
-  playero: ['#f492f0', '#e071db'],
-  minimalist: ['#8b7ba8', '#a89cc5'],
+  playero: ['#EC4899', '#DB2777'],
+  minimalist: ['#52525B', '#71717A'],
 } as const;

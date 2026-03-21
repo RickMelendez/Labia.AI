@@ -1,23 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Switch, Image, Modal, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Image, Modal, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AppBackground from '../../components/common/AppBackground';
 import NeonButton from '../../components/common/NeonButton';
-import { useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, CULTURAL_STYLES, TONES } from '../../core/constants';
 import { useAppStore } from '../../store/appStore';
+import { useStrings } from '../../core/i18n/useStrings';
 import { container } from '../../infrastructure/di/Container';
 import CulturalStyleModal from '../../components/common/CulturalStyleModal';
 import ToneModal from '../../components/common/ToneModal';
 import UsageCard from '../../components/common/UsageCard';
 import * as ImagePicker from 'expo-image-picker';
 import { ProfileStorage } from '../../infrastructure/storage/ProfileStorage';
-import type { DatingProfile } from '../../types';
+import type { DatingProfile, Language } from '../../types';
 
 export default function ProfileScreen() {
-  const theme = useTheme();
-  const { user, culturalStyle, setCulturalStyle, defaultTone, setDefaultTone, isDarkMode, setDarkMode, logout } = useAppStore();
+  const s = useStrings();
+  const {
+    user, culturalStyle, setCulturalStyle, defaultTone, setDefaultTone,
+    language, setLanguage, logout
+  } = useAppStore();
+
   const [showCultureModal, setShowCultureModal] = useState(false);
   const [showToneModal, setShowToneModal] = useState(false);
   const [editVisible, setEditVisible] = useState(false);
@@ -54,20 +59,16 @@ export default function ProfileScreen() {
     })();
   }, []);
 
-  const currentCulture = CULTURAL_STYLES.find((s) => s.value === culturalStyle);
+  const currentCulture = CULTURAL_STYLES.find((cs) => cs.value === culturalStyle);
   const currentToneInfo = TONES.find((t) => t.value === defaultTone);
 
   const handleLogout = () => {
     Alert.alert(
-      'Cerrar Sesión',
-      '¿Estás seguro que quieres salir?',
+      s.profile.logout,
+      s.profile.logoutConfirm,
       [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Salir',
-          style: 'destructive',
-          onPress: () => logout()
-        }
+        { text: s.profile.logoutCancel, style: 'cancel' },
+        { text: s.profile.logout, style: 'destructive', onPress: () => logout() }
       ]
     );
   };
@@ -75,14 +76,14 @@ export default function ProfileScreen() {
   const openImagePicker = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (perm.status !== 'granted') {
-      container.toast.info('Permiso requerido', 'Habilita acceso a fotos para agregar imágenes');
+      container.toast.info('Permission needed', 'Enable photo access to add images');
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsMultipleSelection: true,
       selectionLimit: 6 - photos.length,
-      quality: 0.8
+      quality: 0.8,
     });
     if (!result.canceled) {
       const uris = result.assets?.map(a => a.uri) || [];
@@ -96,7 +97,7 @@ export default function ProfileScreen() {
 
   const saveProfile = async () => {
     if (!displayName.trim()) {
-      container.toast.info('Nombre requerido', 'Agrega tu nombre para mostrar');
+      container.toast.info('Name required', 'Add your display name');
       return;
     }
     const updated: DatingProfile = {
@@ -109,16 +110,15 @@ export default function ProfileScreen() {
       height_cm: heightCm ? Number(heightCm) : undefined,
       bio: bio || undefined,
       interests: interestsText
-        ? interestsText.split(',').map(s => s.trim()).filter(Boolean)
+        ? interestsText.split(',').map(item => item.trim()).filter(Boolean)
         : undefined,
       photos,
     };
     await ProfileStorage.save(updated);
     setProfile(updated);
     setEditVisible(false);
-    container.toast.success('Perfil guardado', 'Tus datos se han actualizado');
+    container.toast.success('Profile saved', 'Your details have been updated');
 
-    // Sync to backend (silent failure — local profile is source of truth for UI)
     try {
       await container.matchApi.upsertDatingProfile({
         display_name: updated.display_name,
@@ -127,7 +127,7 @@ export default function ProfileScreen() {
         bio: updated.bio,
         job_title: updated.job_title,
         interests: updated.interests,
-        photo_urls: [],  // Local URIs not synced; CDN upload handled separately
+        photo_urls: [],
         is_discoverable: false,
       });
     } catch {
@@ -136,45 +136,53 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <AppBackground />
+
+      {/* Header */}
       <View style={styles.header}>
-        <MaterialCommunityIcons name="account-heart" size={48} color={COLORS.primary} />
-        <Text style={[styles.headerTitle, { color: theme.colors.onBackground }]}>Mi Perfil</Text>
+        <LinearGradient
+          colors={COLORS.gradient.primary}
+          style={styles.avatarRing}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <View style={styles.avatarInner}>
+            <MaterialCommunityIcons name="account" size={36} color={COLORS.text.secondary} />
+          </View>
+        </LinearGradient>
+        <Text style={styles.headerName}>{user?.name || s.profile.noName}</Text>
+        <Text style={styles.headerEmail}>{user?.email || ''}</Text>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Dating Profile Section */}
+      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
+        {/* Dating Profile */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>Mi Perfil de Citas</Text>
-          <View style={[styles.planCard, { backgroundColor: theme.colors.surface }]}> 
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-              <MaterialCommunityIcons name="account" size={20} color={theme.colors.primary} />
-              <Text style={[styles.settingLabel, { marginLeft: 8, color: theme.colors.onSurface }]}>
-                {profile?.display_name || 'Sin nombre'}
-              </Text>
+          <Text style={styles.sectionTitle}>{s.profile.datingProfile}</Text>
+          <View style={styles.card}>
+            <View style={styles.cardRow}>
+              <MaterialCommunityIcons name="account-heart" size={20} color={COLORS.primary} />
+              <Text style={styles.cardRowText}>{profile?.display_name || s.profile.noName}</Text>
             </View>
-            {/* Photos preview */}
-            <View style={styles.photoGridPreview}>
-              {photos.slice(0, 3).map((uri) => (
-                <Image key={uri} source={{ uri }} style={styles.photoPreview} />
-              ))}
-              {photos.length === 0 && (
-                <View style={[styles.photoEmpty, { borderColor: '#E5E7EB' }]}>
-                  <MaterialCommunityIcons name="image-plus" size={24} color={theme.colors.onSurfaceVariant} />
-                </View>
-              )}
-            </View>
+            {photos.length > 0 && (
+              <View style={styles.photoPreviewRow}>
+                {photos.slice(0, 3).map((uri) => (
+                  <Image key={uri} source={{ uri }} style={styles.photoPreview} />
+                ))}
+              </View>
+            )}
             <NeonButton
-              label={profile ? 'Editar Perfil' : 'Crear Perfil'}
+              label={profile ? s.profile.editProfile : s.profile.createProfile}
               onPress={() => setEditVisible(true)}
-              leftIcon={<MaterialCommunityIcons name="pencil" size={20} color="#FFF" />}
+              leftIcon={<MaterialCommunityIcons name="pencil" size={18} color="#FFF" />}
             />
           </View>
         </View>
-        {/* Usage Tracking */}
+
+        {/* Usage */}
         {user && (
           <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{s.profile.dailyUsage}</Text>
             <UsageCard
               used={user.daily_suggestions_used || 0}
               limit={user.daily_limit || 10}
@@ -183,136 +191,86 @@ export default function ProfileScreen() {
           </View>
         )}
 
-        {/* Plan Info */}
+        {/* Plan */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>Plan Actual</Text>
-          <View style={[styles.planCard, { backgroundColor: theme.colors.surface }]}>
-            <View style={styles.planHeader}>
-              <Text style={[styles.planName, { color: theme.colors.onSurface }]}>Free</Text>
+          <Text style={styles.sectionTitle}>{s.profile.currentPlan}</Text>
+          <View style={styles.card}>
+            <View style={styles.planRow}>
+              <Text style={styles.planName}>{s.profile.free}</Text>
               <View style={styles.planBadge}>
-                <Text style={styles.planBadgeText}>Gratis</Text>
+                <Text style={styles.planBadgeText}>{s.profile.free}</Text>
               </View>
             </View>
-            <Text style={[styles.planDescription, { color: theme.colors.onSurfaceVariant }]}>10 sugerencias por día</Text>
-
+            <Text style={styles.planDesc}>10 {s.profile.freePerDay}</Text>
             <NeonButton
-              label="Mejorar a Pro"
-              onPress={() => container.toast.info('Pronto', 'Opciones de suscripción próximamente')}
-              leftIcon={<MaterialCommunityIcons name="crown-outline" size={20} color="#FFF" />}
+              label="Upgrade to Pro"
+              onPress={() => container.toast.info('Coming soon', 'Subscription options coming soon')}
+              leftIcon={<MaterialCommunityIcons name="crown-outline" size={18} color="#FFF" />}
             />
           </View>
         </View>
 
-        {/* Preferences */}
+        {/* Settings */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>Preferencias</Text>
+          <Text style={styles.sectionTitle}>{s.profile.settings}</Text>
 
-          <SettingItem
+          {/* Language toggle */}
+          <View style={styles.settingItem}>
+            <View style={styles.settingLeft}>
+              <MaterialCommunityIcons name="translate" size={22} color={COLORS.primary} />
+              <Text style={styles.settingLabel}>{s.profile.language}</Text>
+            </View>
+            <View style={styles.langToggle}>
+              {(['en', 'es'] as Language[]).map((lang) => (
+                <TouchableOpacity
+                  key={lang}
+                  onPress={() => setLanguage(lang)}
+                  activeOpacity={0.8}
+                >
+                  {language === lang ? (
+                    <LinearGradient
+                      colors={COLORS.gradient.primary}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={styles.langChipActive}
+                    >
+                      <Text style={styles.langChipTextActive}>{lang.toUpperCase()}</Text>
+                    </LinearGradient>
+                  ) : (
+                    <View style={styles.langChip}>
+                      <Text style={styles.langChipText}>{lang.toUpperCase()}</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          <SettingRow
             icon="flag-variant"
-            label="Estilo Cultural"
+            label={s.profile.culturalStyle}
             value={`${currentCulture?.flag} ${currentCulture?.label}`}
             onPress={() => setShowCultureModal(true)}
-            theme={theme}
           />
 
-          <SettingItem
+          <SettingRow
             icon="palette"
-            label="Tono Predeterminado"
+            label={s.profile.defaultTone}
             value={`${currentToneInfo?.icon} ${currentToneInfo?.label}`}
             onPress={() => setShowToneModal(true)}
-            theme={theme}
-          />
-
-          <View style={[styles.settingItem, { backgroundColor: theme.colors.surface }]}>
-            <View style={styles.settingLeft}>
-              <MaterialCommunityIcons
-                name={isDarkMode ? "weather-night" : "weather-sunny"}
-                size={24}
-                color={theme.colors.primary}
-              />
-              <Text style={[styles.settingLabel, { color: theme.colors.onSurface }]}>
-                Modo Oscuro
-              </Text>
-            </View>
-            <Switch
-              value={isDarkMode}
-              onValueChange={(value) => {
-                setDarkMode(value);
-                container.toast.success(
-                  'Tema actualizado',
-                  `Modo ${value ? 'oscuro' : 'claro'} activado`
-                );
-              }}
-              trackColor={{ false: '#E5E7EB', true: COLORS.primary }}
-              thumbColor={isDarkMode ? COLORS.accent : '#f4f3f4'}
-            />
-          </View>
-        </View>
-
-        {/* App Info */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>Información</Text>
-
-          <SettingItem
-            icon="information"
-            label="Acerca de Labia.AI"
-            onPress={() => Alert.alert('Labia.AI', 'Versión 1.0.0 (Beta)\n\nTu asistente de conversación con sabor latino')}
-            theme={theme}
-          />
-
-          <SettingItem
-            icon="shield-check"
-            label="Privacidad y Seguridad"
-            onPress={() => Alert.alert('Privacidad', 'Tus conversaciones no se almacenan permanentemente')}
-            theme={theme}
-          />
-
-          <SettingItem
-            icon="help-circle"
-            label="Ayuda y Soporte"
-            onPress={() => Alert.alert('Ayuda', 'Contacto: support@labia.chat')}
-            theme={theme}
-          />
-        </View>
-
-        {/* Coming Soon Features */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>Próximamente</Text>
-
-          <SettingItem
-            icon="chart-line"
-            label="Estadísticas de Uso"
-            value="🚧"
-            disabled={true}
-            theme={theme}
-          />
-
-          <SettingItem
-            icon="message-text-clock"
-            label="Historial de Conversaciones"
-            value="🚧"
-            disabled={true}
-            theme={theme}
-          />
-
-          <SettingItem
-            icon="trophy-award"
-            label="Logros y Progreso"
-            value="🚧"
-            disabled={true}
-            theme={theme}
           />
         </View>
 
         {/* Logout */}
-        <NeonButton
-          label="Reiniciar App"
-          onPress={handleLogout}
-          leftIcon={<MaterialCommunityIcons name="logout" size={20} color="#FFF" />}
-          style={{ marginTop: 8 }}
-        />
+        <View style={styles.section}>
+          <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.75}>
+            <MaterialCommunityIcons name="logout" size={20} color={COLORS.error} />
+            <Text style={styles.logoutText}>{s.profile.logout}</Text>
+          </TouchableOpacity>
+        </View>
 
-        <Text style={styles.version}>Versión 1.0.0 (Beta)</Text>
+        <Text style={styles.version}>Version 1.0.0 (Beta)</Text>
+        <View style={{ height: 100 }} />
       </ScrollView>
 
       {/* Modals */}
@@ -321,7 +279,7 @@ export default function ProfileScreen() {
         selectedStyle={culturalStyle}
         onSelect={(style) => {
           setCulturalStyle(style);
-          container.toast.success('Estilo actualizado', `Ahora usas el estilo ${CULTURAL_STYLES.find(s => s.value === style)?.label}`);
+          container.toast.success('Style updated', `Now using ${CULTURAL_STYLES.find(cs => cs.value === style)?.label} style`);
         }}
         onClose={() => setShowCultureModal(false)}
       />
@@ -331,20 +289,19 @@ export default function ProfileScreen() {
         selectedTone={defaultTone}
         onSelect={(tone) => {
           setDefaultTone(tone);
-          container.toast.success('Tono actualizado', `Ahora tu tono predeterminado es ${TONES.find(t => t.value === tone)?.label}`);
+          container.toast.success('Tone updated', `Default tone is now ${TONES.find(t => t.value === tone)?.label}`);
         }}
         onClose={() => setShowToneModal(false)}
       />
 
       {/* Edit Profile Modal */}
       <Modal visible={editVisible} animationType="slide" onRequestClose={() => setEditVisible(false)}>
-        <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}>
+        <SafeAreaView style={styles.container}>
           <AppBackground />
-          <ScrollView style={styles.content}>
-            <Text style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>Editar Perfil</Text>
+          <ScrollView style={styles.scroll}>
+            <Text style={[styles.sectionTitle, { marginBottom: 16 }]}>Edit Profile</Text>
 
-            {/* Photos grid */}
-            <Text style={[styles.settingLabel, { color: theme.colors.onSurface }]}>Fotos (hasta 6)</Text>
+            <Text style={styles.inputLabel}>Photos (up to 6)</Text>
             <View style={styles.photoGrid}>
               {photos.map((uri) => (
                 <View key={uri} style={styles.photoItem}>
@@ -355,27 +312,31 @@ export default function ProfileScreen() {
                 </View>
               ))}
               {photos.length < 6 && (
-                <TouchableOpacity style={[styles.photoAdd, { borderColor: '#E5E7EB' }]} onPress={openImagePicker}>
-                  <MaterialCommunityIcons name="image-plus" size={28} color={theme.colors.onSurfaceVariant} />
+                <TouchableOpacity style={styles.photoAdd} onPress={openImagePicker}>
+                  <MaterialCommunityIcons name="image-plus" size={28} color={COLORS.text.secondary} />
                 </TouchableOpacity>
               )}
             </View>
 
-            {/* Fields */}
-            <TextInput placeholder="Nombre para mostrar" value={displayName} onChangeText={setDisplayName} style={styles.input} />
-            <TextInput placeholder="Edad" keyboardType="number-pad" value={age} onChangeText={setAge} style={styles.input} />
-            <TextInput placeholder="Género (male/female/nonbinary/other)" value={gender} onChangeText={setGender} style={styles.input} />
-            <TextInput placeholder="Puesto" value={jobTitle} onChangeText={setJobTitle} style={styles.input} />
-            <TextInput placeholder="Empresa" value={company} onChangeText={setCompany} style={styles.input} />
-            <TextInput placeholder="Educación" value={education} onChangeText={setEducation} style={styles.input} />
-            <TextInput placeholder="Altura (cm)" keyboardType="number-pad" value={heightCm} onChangeText={setHeightCm} style={styles.input} />
-            <TextInput placeholder="Bio" multiline numberOfLines={4} value={bio} onChangeText={setBio} style={[styles.input, { minHeight: 100 }]} />
-            <TextInput placeholder="Intereses (separados por coma)" value={interestsText} onChangeText={setInterestsText} style={styles.input} />
+            <TextInput placeholder="Display name" placeholderTextColor={COLORS.text.muted} value={displayName} onChangeText={setDisplayName} style={styles.input} />
+            <TextInput placeholder="Age" placeholderTextColor={COLORS.text.muted} keyboardType="number-pad" value={age} onChangeText={setAge} style={styles.input} />
+            <TextInput placeholder="Gender (male/female/nonbinary/other)" placeholderTextColor={COLORS.text.muted} value={gender} onChangeText={setGender} style={styles.input} />
+            <TextInput placeholder="Job title" placeholderTextColor={COLORS.text.muted} value={jobTitle} onChangeText={setJobTitle} style={styles.input} />
+            <TextInput placeholder="Company" placeholderTextColor={COLORS.text.muted} value={company} onChangeText={setCompany} style={styles.input} />
+            <TextInput placeholder="Education" placeholderTextColor={COLORS.text.muted} value={education} onChangeText={setEducation} style={styles.input} />
+            <TextInput placeholder="Height (cm)" placeholderTextColor={COLORS.text.muted} keyboardType="number-pad" value={heightCm} onChangeText={setHeightCm} style={styles.input} />
+            <TextInput placeholder="Bio" placeholderTextColor={COLORS.text.muted} multiline numberOfLines={4} value={bio} onChangeText={setBio} style={[styles.input, { minHeight: 96, textAlignVertical: 'top' }]} />
+            <TextInput placeholder="Interests (comma separated)" placeholderTextColor={COLORS.text.muted} value={interestsText} onChangeText={setInterestsText} style={styles.input} />
 
-            <NeonButton label="Guardar" onPress={saveProfile} leftIcon={<MaterialCommunityIcons name="content-save" size={20} color="#FFF" />} />
-            <TouchableOpacity style={{ marginTop: 12, alignItems: 'center' }} onPress={() => setEditVisible(false)}>
-              <Text style={{ color: theme.colors.primary, fontWeight: '600' }}>Cancelar</Text>
+            <NeonButton
+              label={s.common.save}
+              onPress={saveProfile}
+              leftIcon={<MaterialCommunityIcons name="content-save" size={18} color="#FFF" />}
+            />
+            <TouchableOpacity style={styles.cancelBtn} onPress={() => setEditVisible(false)}>
+              <Text style={styles.cancelText}>{s.common.cancel}</Text>
             </TouchableOpacity>
+            <View style={{ height: 60 }} />
           </ScrollView>
         </SafeAreaView>
       </Modal>
@@ -383,33 +344,23 @@ export default function ProfileScreen() {
   );
 }
 
-interface SettingItemProps {
+interface SettingRowProps {
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
   label: string;
   value?: string;
   onPress?: () => void;
-  disabled?: boolean;
-  theme: any;
 }
 
-function SettingItem({ icon, label, value, onPress, disabled, theme }: SettingItemProps) {
+function SettingRow({ icon, label, value, onPress }: SettingRowProps) {
   return (
-    <TouchableOpacity
-      style={[styles.settingItem, { backgroundColor: theme.colors.surface }, disabled && styles.settingItemDisabled]}
-      onPress={onPress}
-      disabled={disabled || !onPress}
-    >
+    <TouchableOpacity style={styles.settingItem} onPress={onPress} disabled={!onPress} activeOpacity={0.7}>
       <View style={styles.settingLeft}>
-        <MaterialCommunityIcons name={icon} size={24} color={disabled ? COLORS.text.disabled : theme.colors.onSurface} />
-        <Text style={[styles.settingLabel, { color: theme.colors.onSurface }, disabled && styles.settingLabelDisabled]}>
-          {label}
-        </Text>
+        <MaterialCommunityIcons name={icon} size={22} color={COLORS.primary} />
+        <Text style={styles.settingLabel}>{label}</Text>
       </View>
       <View style={styles.settingRight}>
-        {value && <Text style={[styles.settingValue, { color: theme.colors.onSurfaceVariant }]}>{value}</Text>}
-        {onPress && !disabled && (
-          <MaterialCommunityIcons name="chevron-right" size={20} color={theme.colors.onSurfaceVariant} />
-        )}
+        {value && <Text style={styles.settingValue}>{value}</Text>}
+        {onPress && <MaterialCommunityIcons name="chevron-right" size={18} color={COLORS.text.muted} />}
       </View>
     </TouchableOpacity>
   );
@@ -418,200 +369,255 @@ function SettingItem({ icon, label, value, onPress, disabled, theme }: SettingIt
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background.light
+    backgroundColor: 'transparent',
   },
   header: {
+    alignItems: 'center',
+    paddingTop: 8,
+    paddingBottom: 20,
     paddingHorizontal: 24,
-    paddingTop: 20,
-    paddingBottom: 24,
-    alignItems: 'center'
   },
-  headerIcon: {
-    fontSize: 64,
-    marginBottom: 8
+  avatarRing: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
   },
-  headerTitle: {
-    fontSize: 28,
+  avatarInner: {
+    width: 78,
+    height: 78,
+    borderRadius: 39,
+    backgroundColor: COLORS.surface.dark2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerName: {
+    fontSize: 22,
     fontWeight: '800',
-    color: COLORS.text.primary
+    color: COLORS.text.primary,
+    marginBottom: 2,
+    letterSpacing: -0.3,
   },
-  content: {
+  headerEmail: {
+    fontSize: 13,
+    color: COLORS.text.secondary,
+  },
+  scroll: {
     flex: 1,
-    paddingHorizontal: 24
+    paddingHorizontal: 24,
   },
   section: {
-    marginBottom: 32
+    marginBottom: 24,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
-    color: COLORS.text.primary,
-    marginBottom: 12
+    color: COLORS.text.secondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginBottom: 10,
   },
-  planCard: {
+  card: {
     backgroundColor: COLORS.surface.light,
-    padding: 20,
     borderRadius: 16,
+    padding: 16,
     borderWidth: 1,
-    borderColor: '#E5E7EB'
+    borderColor: COLORS.border.light,
+    shadowColor: COLORS.shadow.card,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 12,
+    elevation: 6,
+    gap: 12,
   },
-  planHeader: {
+  cardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  cardRowText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text.primary,
+  },
+  photoPreviewRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  photoPreview: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    backgroundColor: COLORS.surface.dark2,
+  },
+  planRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8
   },
   planName: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: COLORS.text.primary
+    fontSize: 20,
+    fontWeight: '800',
+    color: COLORS.text.primary,
   },
   planBadge: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 12,
+    backgroundColor: COLORS.surface.tinted,
+    borderWidth: 1,
+    borderColor: COLORS.border.lavendar,
+    paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 12
+    borderRadius: 10,
   },
   planBadgeText: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#FFFFFF'
+    fontWeight: '700',
+    color: COLORS.primary,
   },
-  planDescription: {
-    fontSize: 14,
+  planDesc: {
+    fontSize: 13,
     color: COLORS.text.secondary,
-    marginBottom: 16
   },
-  photoGridPreview: {
+  settingItem: {
     flexDirection: 'row',
-    gap: 8,
-    marginBottom: 12
-  },
-  photoPreview: {
-    width: 64,
-    height: 64,
-    borderRadius: 8,
-    backgroundColor: '#F3F4F6'
-  },
-  photoEmpty: {
-    width: 64,
-    height: 64,
-    borderRadius: 8,
-    borderWidth: 1,
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.surface.light,
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: COLORS.border.light,
   },
+  settingLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 12,
+  },
+  settingLabel: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.text.primary,
+  },
+  settingRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  settingValue: {
+    fontSize: 13,
+    color: COLORS.text.secondary,
+  },
+  langToggle: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  langChipActive: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  langChipTextActive: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  langChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: COLORS.surface.dark2,
+    borderWidth: 1,
+    borderColor: COLORS.border.light,
+  },
+  langChipText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.text.secondary,
+  },
+  logoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: 'rgba(239,68,68,0.10)',
+    borderWidth: 1,
+    borderColor: 'rgba(239,68,68,0.20)',
+    gap: 8,
+  },
+  logoutText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: COLORS.error,
+  },
+  version: {
+    fontSize: 12,
+    color: COLORS.text.muted,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  // Edit modal
   photoGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
-    marginBottom: 16
+    marginBottom: 16,
   },
   photoItem: {
     width: '30%',
     aspectRatio: 1,
     borderRadius: 10,
     overflow: 'hidden',
-    position: 'relative'
   },
   photo: {
     width: '100%',
-    height: '100%'
+    height: '100%',
   },
   photoRemove: {
     position: 'absolute',
     top: 6,
     right: 6,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
     borderRadius: 10,
-    padding: 2
   },
   photoAdd: {
     width: '30%',
     aspectRatio: 1,
     borderRadius: 10,
     borderWidth: 1,
+    borderColor: COLORS.border.light,
+    backgroundColor: COLORS.surface.dark,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F9FAFB'
+  },
+  inputLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.text.secondary,
+    marginBottom: 8,
   },
   input: {
-    backgroundColor: COLORS.surface.light,
+    backgroundColor: COLORS.surface.inputBg,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: COLORS.border.light,
     borderRadius: 12,
-    padding: 12,
-    fontSize: 16,
+    padding: 14,
+    fontSize: 15,
     color: COLORS.text.primary,
-    marginBottom: 12
+    marginBottom: 10,
   },
-  upgradeButton: {
-    flexDirection: 'row',
+  cancelBtn: {
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    backgroundColor: '#FFF1F7',
-    borderRadius: 12,
+    paddingVertical: 14,
+    marginTop: 8,
   },
-  upgradeText: {
-    fontSize: 16,
+  cancelText: {
+    fontSize: 15,
     fontWeight: '600',
-    color: COLORS.primary
+    color: COLORS.text.secondary,
   },
-  settingItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    backgroundColor: COLORS.surface.light,
-    borderRadius: 12,
-    marginBottom: 8
-  },
-  settingItemDisabled: {
-    opacity: 0.5
-  },
-  settingLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1
-  },
-  settingLabel: {
-    fontSize: 16,
-    color: COLORS.text.primary,
-    marginLeft: 12,
-    flex: 1
-  },
-  settingLabelDisabled: {
-    color: COLORS.text.disabled
-  },
-  settingRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  settingValue: {
-    fontSize: 14,
-    color: COLORS.text.secondary
-  },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    backgroundColor: '#FEF2F2',
-    borderRadius: 12,
-    marginTop: 24,
-    marginBottom: 16,
-  },
-  logoutText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.error
-  },
-  version: {
-    fontSize: 12,
-    color: COLORS.text.disabled,
-    textAlign: 'center',
-    marginBottom: 40
-  }
 });

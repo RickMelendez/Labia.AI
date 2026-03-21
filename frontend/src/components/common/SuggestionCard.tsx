@@ -31,7 +31,7 @@ export default function SuggestionCard({
   const handleCopy = async () => {
     await Clipboard.setStringAsync(text);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    container.toast.success('¡Copiado!', 'El texto ha sido copiado al portapapeles');
+    container.toast.success('Copied!', 'Text copied to clipboard');
     onCopy?.();
 
     Animated.sequence([
@@ -49,13 +49,13 @@ export default function SuggestionCard({
   const handleLike = () => {
     setLiked(true);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    container.toast.success('¡Gracias!', 'Nos alegra que te guste esta sugerencia');
+    container.toast.success('Thanks!', 'Glad you liked this suggestion');
   };
 
   const handleDislike = () => {
     setLiked(false);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    container.toast.info('Gracias por tu feedback', 'Trabajaremos en generar mejores sugerencias');
+    container.toast.info('Got it', 'We\'ll work on generating better suggestions');
   };
 
   return (
@@ -87,7 +87,7 @@ export default function SuggestionCard({
             activeOpacity={0.7}
           >
             <MaterialCommunityIcons name="content-copy" size={18} color={COLORS.brand} />
-            <Text style={[styles.actionText, { marginLeft: 6, color: COLORS.brand }]}>Copiar</Text>
+            <Text style={[styles.actionText, { marginLeft: 6, color: COLORS.brand }]}>Copy</Text>
           </TouchableOpacity>
 
           <View style={styles.divider} />
@@ -128,7 +128,7 @@ export default function SuggestionCard({
                 activeOpacity={0.7}
               >
                 <MaterialCommunityIcons name="refresh" size={18} color={COLORS.secondary} />
-                <Text style={[styles.actionText, { marginLeft: 6, color: COLORS.secondary }]}>Regenerar</Text>
+                <Text style={[styles.actionText, { marginLeft: 6, color: COLORS.secondary }]}>Retry</Text>
               </TouchableOpacity>
             </>
           )}
@@ -144,15 +144,17 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: COLORS.surface.light,
-    borderRadius: 20,
+    borderRadius: 16,
     padding: 16,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: COLORS.border.light,
-    shadowColor: COLORS.shadow.colored,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 20,
-    elevation: 6
+    borderLeftWidth: 3,
+    borderLeftColor: COLORS.primary,
+    shadowColor: COLORS.shadow.card,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 16,
+    elevation: 6,
   },
   header: {
     flexDirection: 'row',
@@ -182,7 +184,7 @@ const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.fontFamily.regular,    // Poppins Regular
     fontSize: 16,
     lineHeight: 24,
-    color: COLORS.text.body,
+    color: COLORS.text.primary,
     marginBottom: 12
   },
   explanationContainer: {

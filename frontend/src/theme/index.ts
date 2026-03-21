@@ -8,8 +8,8 @@ export const lightTheme = {
     ...MD3LightTheme.colors,
     primary: COLORS.brand,              // Magic purple
     primaryContainer: COLORS.brand50,
-    secondary: COLORS.lavendar,         // Lavendar
-    secondaryContainer: COLORS.lavandarPale,
+    secondary: COLORS.primary,
+    secondaryContainer: COLORS.brand50,
     tertiary: COLORS.accent,
     tertiaryContainer: COLORS.accentLight,
     error: COLORS.error,
@@ -43,8 +43,8 @@ export const darkTheme = {
     ...MD3DarkTheme.colors,
     primary: COLORS.brand,
     primaryContainer: COLORS.primaryDark,
-    secondary: COLORS.lavendar,
-    secondaryContainer: COLORS.lavandarDark,
+    secondary: COLORS.primary,
+    secondaryContainer: COLORS.primaryDark,
     tertiary: COLORS.accent,
     tertiaryContainer: COLORS.accentDark,
     error: COLORS.error,

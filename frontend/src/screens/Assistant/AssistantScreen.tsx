@@ -26,7 +26,7 @@ export default function AssistantScreen() {
         <TextInput
           style={styles.input}
           placeholder="Ej: Quiero responderle con algo genuino y coqueto sobre su foto en la playa"
-          placeholderTextColor={COLORS.text.tertiary}
+          placeholderTextColor={COLORS.text.muted}
           value={query}
           onChangeText={setQuery}
           multiline

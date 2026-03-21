@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AppState, UserProfile, CulturalStyle, Tone } from '../types';
+import { AppState, UserProfile, CulturalStyle, Tone, Language } from '../types';
 import { STORAGE_KEYS, DEFAULTS } from '../core/constants';
 
 export const useAppStore = create<AppState>((set) => ({
@@ -10,7 +10,8 @@ export const useAppStore = create<AppState>((set) => ({
   hasCompletedOnboarding: false,
   culturalStyle: DEFAULTS.culturalStyle,
   defaultTone: DEFAULTS.tone,
-  isDarkMode: false,
+  isDarkMode: true,
+  language: 'en' as Language,
 
   setUser: (user) => {
     set({ user, isAuthenticated: !!user });
@@ -48,6 +49,11 @@ export const useAppStore = create<AppState>((set) => ({
     AsyncStorage.setItem(STORAGE_KEYS.THEME, isDarkMode ? 'dark' : 'light');
   },
 
+  setLanguage: (language) => {
+    set({ language });
+    AsyncStorage.setItem(STORAGE_KEYS.LANGUAGE, language);
+  },
+
   setOnboardingCompleted: async () => {
     await AsyncStorage.setItem(STORAGE_KEYS.ONBOARDING_COMPLETED, 'true');
     set({ hasCompletedOnboarding: true });
@@ -76,13 +82,14 @@ export const useAppStore = create<AppState>((set) => ({
 // Initialize store from AsyncStorage
 export const initializeAppStore = async () => {
   try {
-    const [userJson, culturalStyle, defaultTone, theme, authToken, onboarding] = await AsyncStorage.multiGet([
+    const [userJson, culturalStyle, defaultTone, theme, authToken, onboarding, language] = await AsyncStorage.multiGet([
       STORAGE_KEYS.USER_PROFILE,
       STORAGE_KEYS.CULTURAL_STYLE,
       STORAGE_KEYS.DEFAULT_TONE,
       STORAGE_KEYS.THEME,
       STORAGE_KEYS.AUTH_TOKEN,
       STORAGE_KEYS.ONBOARDING_COMPLETED,
+      STORAGE_KEYS.LANGUAGE,
     ]);
 
     const user = userJson[1] ? JSON.parse(userJson[1]) : null;
@@ -101,7 +108,8 @@ export const initializeAppStore = async () => {
       hasCompletedOnboarding: onboarding[1] === 'true',
       culturalStyle: (culturalStyle[1] as CulturalStyle) || DEFAULTS.culturalStyle,
       defaultTone: (defaultTone[1] as Tone) || DEFAULTS.tone,
-      isDarkMode: theme[1] === 'dark',
+      isDarkMode: true,
+      language: (language[1] as Language) || 'en',
     });
   } catch (error) {
     console.error('Failed to initialize app store:', error);

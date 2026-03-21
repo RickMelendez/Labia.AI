@@ -37,21 +37,21 @@ export default function NeonButton({ label, onPress, disabled, leftIcon, style, 
 
 const styles = StyleSheet.create({
   wrapper: {
-    shadowColor: COLORS.brand,
+    shadowColor: COLORS.shadow.colored,
     shadowOffset: { width: 0, height: 0 },
-    shadowRadius: 16,
-    shadowOpacity: 0.5,
-    elevation: 10,
-    borderRadius: 24,
+    shadowRadius: 20,
+    shadowOpacity: 1,
+    elevation: 12,
+    borderRadius: 28,
   },
   touchable: {
-    borderRadius: 24,
+    borderRadius: 28,
   },
   button: {
     minHeight: 56,
     paddingHorizontal: 24,
     paddingVertical: 16,
-    borderRadius: 24,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',

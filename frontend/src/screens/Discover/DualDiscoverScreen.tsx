@@ -12,6 +12,7 @@ import AppBackground from '../../components/common/AppBackground';
 import DiscoverCard from '../../components/discover/DiscoverCard';
 import LobbyCard from '../../components/discover/LobbyCard';
 import { COLORS } from '../../core/constants';
+import { useStrings } from '../../core/i18n/useStrings';
 import { container } from '../../infrastructure/di/Container';
 import { useLobbyStore } from '../../store/lobbyStore';
 import type { DiscoverProfile, DiscoverStackParamList } from '../../types';
@@ -20,6 +21,7 @@ type DiscoverNav = NativeStackNavigationProp<DiscoverStackParamList>;
 
 export default function DualDiscoverScreen() {
   const navigation = useNavigation<DiscoverNav>();
+  const s = useStrings();
 
   // ---- Profile state ----
   const [profiles, setProfiles] = React.useState<DiscoverProfile[]>([]);
@@ -57,7 +59,7 @@ export default function DualDiscoverScreen() {
       setOffset(prev => prev + data.profiles.length);
       setHasMore(data.has_more);
     } catch {
-      container.toast.error('Error', 'No se pudo cargar el feed');
+      container.toast.error('Error', 'Could not load feed');
     } finally {
       setProfilesLoading(false);
     }
@@ -70,13 +72,13 @@ export default function DualDiscoverScreen() {
       const result = await container.matchApi.likeUser(profile.user_id);
       setProfiles(prev => prev.filter(p => p.user_id !== profile.user_id));
       if (result.is_mutual_match && result.match_id) {
-        container.toast.success('¡Match! 💜', `Tú y ${profile.display_name} se gustaron`);
+        container.toast.success('It\'s a Match!', `You and ${profile.display_name} liked each other`);
         navigation.navigate('MatchOnboarding', { match_id: result.match_id });
       } else {
-        container.toast.success('Like enviado', `Le diste like a ${profile.display_name}`);
+        container.toast.success('Liked!', `You liked ${profile.display_name}`);
       }
     } catch {
-      container.toast.error('Error', 'No se pudo enviar el like');
+      container.toast.error('Error', 'Could not send like');
     } finally {
       setLikingId(null);
     }
@@ -104,8 +106,8 @@ export default function DualDiscoverScreen() {
       {/* ---- Header ---- */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.eyebrow}>DESCUBRIR</Text>
-          <Text style={styles.title}>Explorar</Text>
+          <Text style={styles.eyebrow}>DISCOVER</Text>
+          <Text style={styles.title}>Explore</Text>
         </View>
         <View style={styles.headerActions}>
           <TouchableOpacity
@@ -137,13 +139,13 @@ export default function DualDiscoverScreen() {
       <View style={styles.columnLabels}>
         <View style={styles.colLabel}>
           <MaterialCommunityIcons name="account-heart-outline" size={12} color="rgba(255,255,255,0.35)" />
-          <Text style={styles.colLabelText}>Perfiles</Text>
+          <Text style={styles.colLabelText}>Profiles</Text>
           <MaterialCommunityIcons name="arrow-up" size={10} color="rgba(255,255,255,0.25)" />
         </View>
         <View style={{ width: 1 }} />
         <View style={styles.colLabel}>
           <MaterialCommunityIcons name="account-group-outline" size={12} color="rgba(255,255,255,0.35)" />
-          <Text style={styles.colLabelText}>Grupos</Text>
+          <Text style={styles.colLabelText}>Lobbies</Text>
           <MaterialCommunityIcons name="arrow-down" size={10} color="rgba(255,255,255,0.25)" />
         </View>
       </View>
@@ -168,7 +170,7 @@ export default function DualDiscoverScreen() {
             !profilesLoading ? (
               <View style={styles.emptyCol}>
                 <MaterialCommunityIcons name="heart-search" size={36} color="rgba(183,148,246,0.25)" />
-                <Text style={styles.emptyText}>Sin perfiles</Text>
+                <Text style={styles.emptyText}>No profiles</Text>
               </View>
             ) : null
           }
@@ -195,7 +197,7 @@ export default function DualDiscoverScreen() {
             !lobbiesLoading ? (
               <View style={styles.emptyCol}>
                 <MaterialCommunityIcons name="account-group-outline" size={36} color="rgba(183,148,246,0.25)" />
-                <Text style={styles.emptyText}>Crea el{'\n'}primer grupo</Text>
+                <Text style={styles.emptyText}>Create the{'\n'}first lobby</Text>
               </View>
             ) : null
           }
@@ -216,7 +218,7 @@ export default function DualDiscoverScreen() {
           style={styles.fabGrad}
         >
           <MaterialCommunityIcons name="account-group-outline" size={18} color="#fff" />
-          <Text style={styles.fabText}>Nuevo Grupo</Text>
+          <Text style={styles.fabText}>New Lobby</Text>
         </LinearGradient>
       </TouchableOpacity>
     </SafeAreaView>

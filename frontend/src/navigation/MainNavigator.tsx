@@ -1,9 +1,10 @@
-﻿import React from 'react';
+import React from 'react';
+import { View, Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { MainTabParamList } from '../types';
 import { COLORS } from '../core/constants';
+import { useStrings } from '../core/i18n/useStrings';
 
 // Screens
 import ChatScreen from '../screens/Chat/ChatScreen';
@@ -15,7 +16,7 @@ import DiscoverNavigator from './DiscoverNavigator';
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export default function MainNavigator() {
-  const theme = useTheme();
+  const s = useStrings();
 
   return (
     <Tab.Navigator
@@ -24,71 +25,99 @@ export default function MainNavigator() {
           let iconName: keyof typeof MaterialCommunityIcons.glyphMap;
 
           if (route.name === 'Chat') {
-            iconName = focused ? 'heart-circle' : 'heart-circle-outline';
+            iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === 'History') {
-            iconName = focused ? 'message-text-clock' : 'message-text-clock-outline';
+            iconName = focused ? 'message-text' : 'message-text-outline';
           } else if (route.name === 'Discover') {
-            iconName = focused ? 'fire-circle' : 'fire';
+            iconName = focused ? 'compass' : 'compass-outline';
           } else if (route.name === 'Trainer') {
-            iconName = focused ? 'diamond-stone' : 'diamond-outline';
+            iconName = focused ? 'trophy' : 'trophy-outline';
           } else {
-            iconName = focused ? 'account-heart' : 'account-heart-outline';
+            iconName = focused ? 'account-circle' : 'account-circle-outline';
+          }
+
+          // Explore tab gets a glow indicator
+          if (route.name === 'Discover' && focused) {
+            return (
+              <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                <View style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 22,
+                  backgroundColor: COLORS.primary,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  shadowColor: COLORS.shadow.colored,
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: 1,
+                  shadowRadius: 12,
+                  elevation: 8,
+                }}>
+                  <MaterialCommunityIcons name="compass" size={22} color="#FFF" />
+                </View>
+              </View>
+            );
           }
 
           return <MaterialCommunityIcons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: COLORS.primary,
-        tabBarInactiveTintColor: theme.colors.onSurfaceVariant,
+        tabBarInactiveTintColor: COLORS.text.muted,
         tabBarStyle: {
           position: 'absolute',
-          left: 10,
-          right: 10,
-          bottom: 8,
-          backgroundColor: theme.dark ? 'rgba(30,26,46,0.9)' : 'rgba(255,255,255,0.9)',
+          left: 16,
+          right: 16,
+          bottom: Platform.OS === 'ios' ? 20 : 12,
+          backgroundColor: 'rgba(13, 11, 10, 0.92)',
           borderTopWidth: 0,
-          borderRadius: 16,
-          paddingBottom: 5,
-          paddingTop: 5,
-          height: 60,
-          shadowColor: COLORS.shadow.colored,
+          borderRadius: 28,
+          borderWidth: 1,
+          borderColor: 'rgba(255, 255, 255, 0.08)',
+          height: 64,
+          paddingBottom: 8,
+          paddingTop: 8,
+          shadowColor: '#000',
           shadowOffset: { width: 0, height: 8 },
-          shadowOpacity: 0.12,
-          shadowRadius: 12,
-          elevation: 6,
+          shadowOpacity: 0.6,
+          shadowRadius: 20,
+          elevation: 20,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '600'
+          fontSize: 11,
+          fontWeight: '600',
+          marginTop: 2,
         },
-        headerShown: false
+        tabBarItemStyle: {
+          paddingVertical: 4,
+        },
+        headerShown: false,
       })}
     >
       <Tab.Screen
         name="Chat"
         component={ChatScreen}
-        options={{ tabBarLabel: 'Inicio' }}
+        options={{ tabBarLabel: s.tabs.home }}
       />
       <Tab.Screen
         name="History"
         component={ConversationHistoryScreen}
-        options={{ tabBarLabel: 'Historial' }}
+        options={{ tabBarLabel: s.tabs.chats }}
       />
       <Tab.Screen
         name="Discover"
         component={DiscoverNavigator}
-        options={{ tabBarLabel: 'Descubrir' }}
+        options={{ tabBarLabel: s.tabs.explore }}
       />
       <Tab.Screen
         name="Trainer"
         component={TrainerScreen}
-        options={{ tabBarLabel: 'Entrenador' }}
+        options={{ tabBarLabel: s.tabs.train }}
       />
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
-        options={{ tabBarLabel: 'Perfil' }}
+        options={{ tabBarLabel: s.tabs.me }}
       />
     </Tab.Navigator>
   );
 }
-
