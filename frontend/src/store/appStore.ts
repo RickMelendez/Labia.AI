@@ -30,7 +30,7 @@ export const useAppStore = create<AppState>((set) => ({
     set({ isAuthenticated: true });
     // Inject token into API client
     const { container } = await import('../infrastructure/di/Container');
-    container.apiClient.setAuthToken(token);
+    container.api.setAuthToken(token);
   },
 
   setCulturalStyle: (culturalStyle) => {
@@ -68,7 +68,7 @@ export const useAppStore = create<AppState>((set) => ({
     ]);
     // Clear token from API client
     import('../infrastructure/di/Container').then(({ container }) => {
-      container.apiClient.setAuthToken(null);
+      container.api.setAuthToken(null);
     });
   }
 }));
@@ -91,7 +91,7 @@ export const initializeAppStore = async () => {
     // Inject auth token into API client if it exists
     if (token) {
       const { container } = await import('../infrastructure/di/Container');
-      container.apiClient.setAuthToken(token);
+      container.api.setAuthToken(token);
     }
 
     useAppStore.setState({

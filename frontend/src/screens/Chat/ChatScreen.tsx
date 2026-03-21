@@ -48,17 +48,15 @@ export default function ChatScreen() {
           bio: inputText,
           cultural_style: culturalStyle,
           num_suggestions: 3,
-          include_follow_ups: true
         });
-        setSuggestions(response.suggestions);
+        setSuggestions(response.suggestions as any);
         container.toast.success('¡Listo!', `${response.suggestions.length} sugerencias generadas`);
       } else {
         const response = await container.responseApi.generateResponses({
           received_message: inputText,
           cultural_style: culturalStyle,
-          relationship_stage: 'early'
         });
-        setSuggestions(response.suggestions);
+        setSuggestions(response.suggestions as any);
         container.toast.success('¡Listo!', `${response.suggestions.length} respuestas generadas`);
       }
     } catch (error: any) {

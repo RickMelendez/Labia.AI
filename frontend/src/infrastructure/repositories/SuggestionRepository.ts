@@ -5,7 +5,7 @@
   PreviewOpenerParams
 } from '../../domain/repositories/ISuggestionRepository';
 import { Suggestion } from '../../domain/entities/Suggestion.entity';
-import { Tone } from '../../domain/value-objects/Tone.vo';
+import { Tone, ToneType } from '../../domain/value-objects/Tone.vo';
 import { CulturalStyle } from '../../domain/value-objects/CulturalStyle.vo';
 import { OpenerApi } from '../api/endpoints/OpenerApi';
 import { ResponseApi } from '../api/endpoints/ResponseApi';
@@ -37,7 +37,7 @@ export class SuggestionRepository implements ISuggestionRepository {
     return response.suggestions.map((s) =>
       Suggestion.createOpener({
         text: s.text,
-        tone: s.tone,
+        tone: s.tone as ToneType,
         explanation: s.explanation,
         followUps: s.follow_ups
       })
@@ -60,7 +60,7 @@ export class SuggestionRepository implements ISuggestionRepository {
     return response.suggestions.map((s) =>
       Suggestion.createResponse({
         text: s.text,
-        tone: s.tone,
+        tone: s.tone as ToneType,
         explanation: s.explanation
       })
     );
