@@ -96,13 +96,13 @@ export default function OnboardingReadyScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0C0A08' },
+  container: { flex: 1, backgroundColor: '#FAF8F5' },
   bgGlow: {
     position: 'absolute',
     width: 400,
     height: 400,
     borderRadius: 200,
-    backgroundColor: 'rgba(245,158,11,0.05)',
+    backgroundColor: 'rgba(249,112,96,0.05)',
     top: -100,
     alignSelf: 'center',
   },
@@ -118,8 +118,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: 'rgba(245,158,11,0.20)',
-    backgroundColor: 'rgba(245,158,11,0.06)',
+    borderColor: 'rgba(249,112,96,0.20)',
+    backgroundColor: 'rgba(249,112,96,0.06)',
   },
   ringInner: {
     width: 104,
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: 'rgba(245,158,11,0.40)',
+    shadowColor: 'rgba(249,112,96,0.40)',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 1,
     shadowRadius: 16,
@@ -146,13 +146,13 @@ const styles = StyleSheet.create({
   featureList: { gap: 12, marginTop: 8, width: '100%' },
   featureRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: '#161210',
-    borderWidth: 1, borderColor: 'rgba(245,158,11,0.08)',
+    backgroundColor: '#F0EDE8',
+    borderWidth: 1, borderColor: 'rgba(249,112,96,0.08)',
     borderRadius: 14, paddingHorizontal: 16, paddingVertical: 12,
   },
   featureIcon: {
     width: 36, height: 36, borderRadius: 10,
-    backgroundColor: 'rgba(245,158,11,0.10)',
+    backgroundColor: 'rgba(249,112,96,0.10)',
     alignItems: 'center', justifyContent: 'center',
   },
   featureLabel: {
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 10, paddingVertical: 18, borderRadius: 18,
     backgroundColor: COLORS.primary,
-    shadowColor: 'rgba(245,158,11,0.40)',
+    shadowColor: 'rgba(249,112,96,0.40)',
     shadowOffset: { width: 0, height: 8 }, shadowOpacity: 1, shadowRadius: 20, elevation: 12,
   },
   ctaText: {

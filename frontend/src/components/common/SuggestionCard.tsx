@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface.dark,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: 'rgba(0,0,0,0.06)',
     flexDirection: 'row',
     overflow: 'hidden',
     shadowColor: COLORS.shadow.card,
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
   explanationContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#1E1916',
+    backgroundColor: '#E8E2DC',
     padding: 10,
     borderRadius: 8,
     marginBottom: 10,
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
   divider: {
     width: 1,
     height: 18,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(0,0,0,0.08)',
     marginHorizontal: 2,
   },
   feedbackBtn: {
@@ -232,6 +232,6 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   feedbackActive: {
-    backgroundColor: 'rgba(245,158,11,0.10)',
+    backgroundColor: 'rgba(249,112,96,0.10)',
   },
 });

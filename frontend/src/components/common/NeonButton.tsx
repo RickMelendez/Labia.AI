@@ -26,7 +26,7 @@ export default function NeonButton({
   const isDisabled = disabled || loading;
 
   const bgColor = isDisabled
-    ? '#2A2118'
+    ? '#F5D0CB'
     : variant === 'danger'
     ? COLORS.rose
     : variant === 'ghost'

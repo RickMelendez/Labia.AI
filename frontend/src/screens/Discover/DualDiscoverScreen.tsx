@@ -137,7 +137,7 @@ export default function DualDiscoverScreen() {
           ListEmptyComponent={
             !profilesLoading ? (
               <View style={styles.emptyCol}>
-                <MaterialCommunityIcons name="heart-search" size={32} color="rgba(245,158,11,0.25)" />
+                <MaterialCommunityIcons name="heart-search" size={32} color="rgba(249,112,96,0.25)" />
                 <Text style={styles.emptyText}>No profiles</Text>
               </View>
             ) : null
@@ -161,7 +161,7 @@ export default function DualDiscoverScreen() {
           ListEmptyComponent={
             !lobbiesLoading ? (
               <View style={styles.emptyCol}>
-                <MaterialCommunityIcons name="account-group-outline" size={32} color="rgba(245,158,11,0.25)" />
+                <MaterialCommunityIcons name="account-group-outline" size={32} color="rgba(249,112,96,0.25)" />
                 <Text style={styles.emptyText}>Create the{'\n'}first lobby</Text>
               </View>
             ) : null
@@ -210,9 +210,9 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#1E1916',
+    backgroundColor: '#E8E2DC',
     borderWidth: 1,
-    borderColor: 'rgba(245,158,11,0.12)',
+    borderColor: 'rgba(0,0,0,0.08)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     width: 1,
-    backgroundColor: 'rgba(245,158,11,0.08)',
+    backgroundColor: 'rgba(249,112,96,0.08)',
   },
   emptyCol: {
     alignItems: 'center',
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
     borderRadius: 100,
     backgroundColor: COLORS.primary,
-    shadowColor: 'rgba(245,158,11,0.35)',
+    shadowColor: 'rgba(249,112,96,0.30)',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 1,
     shadowRadius: 14,

@@ -91,7 +91,7 @@ export default function OnboardingNameScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0C0A08' },
+  container: { flex: 1, backgroundColor: '#FAF8F5' },
   safe: { flex: 1 },
   kav: { flex: 1 },
   header: {
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   backBtn: { padding: 4 },
   progressTrack: {
     flex: 1, height: 4, borderRadius: 2,
-    backgroundColor: '#261E1A', overflow: 'hidden',
+    backgroundColor: '#E0D5CF', overflow: 'hidden',
   },
   progressFill: { height: '100%', borderRadius: 2, backgroundColor: COLORS.primary },
   stepCount: {
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 32,
     borderBottomWidth: 2,
-    borderBottomColor: 'rgba(245,158,11,0.35)',
+    borderBottomColor: 'rgba(249,112,96,0.35)',
     paddingBottom: 10,
   },
   input: {
@@ -162,14 +162,14 @@ const styles = StyleSheet.create({
     paddingVertical: 17,
     borderRadius: 16,
     backgroundColor: COLORS.primary,
-    shadowColor: 'rgba(245,158,11,0.35)',
+    shadowColor: 'rgba(249,112,96,0.35)',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 1,
     shadowRadius: 14,
     elevation: 10,
   },
   ctaDisabled: {
-    backgroundColor: '#2A1E14',
+    backgroundColor: '#F5D0CB',
     shadowOpacity: 0,
     elevation: 0,
   },

@@ -129,7 +129,7 @@ export default function OnboardingInterestsScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0C0A08' },
+  container: { flex: 1, backgroundColor: '#FAF8F5' },
   safe: { flex: 1 },
   header: {
     flexDirection: 'row', alignItems: 'center',
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   backBtn: { padding: 4 },
   progressTrack: {
     flex: 1, height: 4, borderRadius: 2,
-    backgroundColor: '#261E1A', overflow: 'hidden',
+    backgroundColor: '#E0D5CF', overflow: 'hidden',
   },
   progressFill: { height: '100%', borderRadius: 2, backgroundColor: COLORS.primary },
   stepCount: { fontFamily: TYPOGRAPHY.fontFamily.medium, fontSize: 11, color: COLORS.text.muted },
@@ -161,13 +161,13 @@ const styles = StyleSheet.create({
   },
   chip: {
     flexDirection: 'row', alignItems: 'center', gap: 7,
-    backgroundColor: '#161210',
+    backgroundColor: '#F0EDE8',
     borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.06)',
     borderRadius: 100, paddingHorizontal: 14, paddingVertical: 10,
   },
   chipActive: {
     borderColor: COLORS.primary,
-    backgroundColor: 'rgba(245,158,11,0.08)',
+    backgroundColor: 'rgba(249,112,96,0.08)',
   },
   chipLabel: {
     fontFamily: TYPOGRAPHY.fontFamily.medium, fontSize: 13, color: COLORS.text.muted,
@@ -180,10 +180,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, paddingVertical: 17, borderRadius: 16,
     backgroundColor: COLORS.primary,
-    shadowColor: 'rgba(245,158,11,0.35)',
+    shadowColor: 'rgba(249,112,96,0.35)',
     shadowOffset: { width: 0, height: 6 }, shadowOpacity: 1, shadowRadius: 14, elevation: 10,
   },
-  ctaDisabled: { backgroundColor: '#2A1E14', shadowOpacity: 0, elevation: 0 },
+  ctaDisabled: { backgroundColor: '#F5D0CB', shadowOpacity: 0, elevation: 0 },
   ctaText: {
     fontFamily: TYPOGRAPHY.fontFamily.semibold, fontSize: 16,
     fontWeight: '600', color: COLORS.text.onBrand,

@@ -22,7 +22,7 @@ export default function DiscoverCard({ profile, onLike, likeLoading }: DiscoverC
         <Image source={{ uri: profile.photo_urls[0] }} style={styles.photo} resizeMode="cover" />
       ) : (
         <View style={styles.photoPlaceholder}>
-          <MaterialCommunityIcons name="account-heart" size={48} color="rgba(245,158,11,0.30)" />
+          <MaterialCommunityIcons name="account-heart" size={48} color="rgba(249,112,96,0.30)" />
         </View>
       )}
 
@@ -80,10 +80,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginHorizontal: 5,
     marginVertical: 6,
-    backgroundColor: '#161210',
+    backgroundColor: '#F0EDE8',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
-    shadowColor: 'rgba(0,0,0,0.7)',
+    borderColor: 'rgba(0,0,0,0.06)',
+    shadowColor: 'rgba(0,0,0,0.15)',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 1,
     shadowRadius: 16,
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1E1916',
+    backgroundColor: '#E8E2DC',
   },
   gradient: {
     position: 'absolute',
@@ -141,10 +141,10 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   chip: {
-    backgroundColor: 'rgba(245,158,11,0.12)',
+    backgroundColor: 'rgba(249,112,96,0.12)',
     borderRadius: 100,
     borderWidth: 1,
-    borderColor: 'rgba(245,158,11,0.20)',
+    borderColor: 'rgba(249,112,96,0.20)',
     paddingHorizontal: 8,
     paddingVertical: 2,
   },
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.secondary, // rose red
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: 'rgba(220,38,38,0.45)',
+    shadowColor: 'rgba(232,85,78,0.45)',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 1,
     shadowRadius: 8,

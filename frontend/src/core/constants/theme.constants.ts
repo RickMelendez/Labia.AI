@@ -1,168 +1,164 @@
-// Theme Colors — Warm Amber "Premium Dating"
-// Visual direction: very dark brown-black, amber/gold primary, red-rose accent.
-// No glassmorphism — solid surfaces only. Each screen has its own personality.
+// Theme Colors — Soft Warm Neutral + Coral
+// Visual direction: warm off-white backgrounds, earthy surfaces, coral primary accent.
+// Light mode. No glassmorphism — solid surfaces only.
 
 export const COLORS = {
-  // === BRAND: Amber Gold + Red-Rose === //
-  brand: '#F59E0B',          // Amber gold (primary CTA, active tabs, progress)
-  brandDark: '#D97706',      // Amber darker (pressed states, badges)
-  brandLight: '#FCD34D',     // Amber lighter (highlights)
-  brand50: 'rgba(245,158,11,0.10)',   // Amber tint (chip backgrounds)
-  brand12: 'rgba(245,158,11,0.12)',   // Subtle amber border tint
+  // === BRAND: Coral + Warm Red === //
+  brand: '#F97060',          // Warm coral (primary CTA, active tabs, progress)
+  brandDark: '#E85D4A',      // Coral darker (pressed states, badges)
+  brandLight: '#FFAB9F',     // Coral lighter (highlights)
+  brand50: 'rgba(249,112,96,0.10)',   // Coral tint (chip backgrounds)
+  brand12: 'rgba(249,112,96,0.12)',   // Subtle coral border tint
 
-  rose: '#DC2626',           // Red-rose (likes, matches, passion)
-  roseDark: '#B91C1C',       // Rose darker
-  roseLight: '#EF4444',      // Rose lighter
+  rose: '#E8554E',           // Warm red (likes, matches, hearts)
+  roseDark: '#C73F38',       // Rose darker
+  roseLight: '#EF7A74',      // Rose lighter
 
   // Primary / Secondary (keep these aliases for backward compat)
-  primary: '#F59E0B',
-  primaryLight: '#FCD34D',
-  primaryDark: '#D97706',
+  primary: '#F97060',
+  primaryLight: '#FFAB9F',
+  primaryDark: '#E85D4A',
 
-  secondary: '#DC2626',
-  secondaryLight: '#EF4444',
-  secondaryDark: '#B91C1C',
+  secondary: '#E8554E',
+  secondaryLight: '#EF7A74',
+  secondaryDark: '#C73F38',
 
   // Accent (alias)
-  accent: '#F59E0B',
-  accentLight: '#FCD34D',
-  accentDark: '#D97706',
+  accent: '#F97060',
+  accentLight: '#FFAB9F',
+  accentDark: '#E85D4A',
 
   // Action colors (for discover screen)
-  like: '#DC2626',           // Rose/red for heart/like
-  pass: '#4B4B4B',           // Dark grey for pass/skip
-  superlike: '#F59E0B',      // Amber for superlike/star
+  like: '#E8554E',           // Warm red for heart/like
+  pass: '#A89088',           // Muted warm for pass/skip
+  superlike: '#F97060',      // Coral for superlike/star
 
   // Semantic
   success: '#10B981',
   error: '#EF4444',
-  warning: '#F59E0B',
+  warning: '#F97060',
   info: '#3B82F6',
 
   // === TEXT === //
   text: {
-    primary: '#FAFAF9',          // Warm white
-    secondary: '#C9B89A',        // Warm beige secondary
-    muted: '#7C6C5A',            // Warm muted / placeholders
-    disabled: '#4A3F34',         // Very muted
-    inverse: '#0C0A08',          // Dark text on light surfaces
-    onBrand: '#0C0A08',          // Dark text ON amber — better contrast
-    onDark: '#FAFAF9',
-    onDarkMuted: '#C9B89A',
+    primary: '#1C1917',          // Near-black warm
+    secondary: '#78645A',        // Warm muted brown
+    muted: '#A89088',            // Lighter muted / placeholders
+    disabled: '#C4B4AE',         // Very muted
+    inverse: '#FFFFFF',          // White text on dark/colored surfaces
+    onBrand: '#FFFFFF',          // White text ON coral — best contrast
+    onDark: '#1C1917',
+    onDarkMuted: '#78645A',
     onPhoto: '#FFFFFF',          // Always white when over photo backgrounds
-    link: '#FCD34D',             // Lighter amber for links
+    link: '#F97060',             // Coral for links
 
     // Legacy aliases
-    strong: '#FAFAF9',
-    body: '#C9B89A',
-    onBrandDark: '#0C0A08',
-    accent: '#FCD34D',
-    tertiary: '#7C6C5A',
+    strong: '#1C1917',
+    body: '#78645A',
+    onBrandDark: '#FFFFFF',
+    accent: '#E85D4A',
+    tertiary: '#A89088',
   },
 
   // === BACKGROUNDS === //
   background: {
-    app: '#0C0A08',              // Very dark brown-black
-    light: '#0C0A08',
-    lightSecondary: '#0F0D0B',
-    dark: '#0C0A08',
-    darkSecondary: '#0F0D0B',
-    card: '#161210',             // Solid dark card (NO transparency)
+    app: '#FAF8F5',              // Warm off-white
+    light: '#FAF8F5',
+    lightSecondary: '#F5F2EE',
+    dark: '#FAF8F5',
+    darkSecondary: '#F5F2EE',
+    card: '#F0EDE8',             // Solid warm card
   },
 
   // === SURFACES (solid, no glassmorphism) === //
   surface: {
-    light: '#161210',            // Surface level 1 — dark card
-    lightElevated: '#1E1916',    // Surface level 2 — elevated card
-    tinted: 'rgba(245,158,11,0.08)',  // Amber-tinted surface (selected states)
-    border: 'rgba(245,158,11,0.12)', // Subtle amber border
+    light: '#F0EDE8',            // Surface level 1 — warm card
+    lightElevated: '#E8E2DC',    // Surface level 2 — elevated card
+    tinted: 'rgba(249,112,96,0.08)',  // Coral-tinted surface (selected states)
+    border: 'rgba(249,112,96,0.20)', // Coral border
     photoOverlay: 'rgba(0,0,0,0.50)',
-    inputBg: '#1E1916',          // Input field background
+    inputBg: '#E8E2DC',          // Input field background
 
-    // Solid surfaces (no transparency)
-    dark: '#161210',
-    dark2: '#1E1916',
-    dark3: '#261E1A',
-    darkElevated: '#261E1A',
-    lavendar: 'rgba(245,158,11,0.08)',  // repurposed as amber tint
+    // Solid surfaces
+    dark: '#F0EDE8',
+    dark2: '#E8E2DC',
+    dark3: '#DED6CE',
+    darkElevated: '#DED6CE',
+    lavendar: 'rgba(249,112,96,0.08)',  // Coral tint
   },
 
   // === BORDERS === //
   border: {
-    light: 'rgba(255,255,255,0.06)',   // Neutral dark border
-    medium: 'rgba(255,255,255,0.10)',
-    dark: 'rgba(255,255,255,0.04)',
-    focus: '#F59E0B',                  // Amber focus border
-    brand: '#F59E0B',
-    amber: 'rgba(245,158,11,0.20)',    // Amber border
-    lavendar: 'rgba(245,158,11,0.15)', // Repurposed
+    light: 'rgba(0,0,0,0.06)',         // Subtle dark border
+    medium: 'rgba(0,0,0,0.10)',
+    dark: 'rgba(0,0,0,0.04)',
+    focus: '#F97060',                   // Coral focus border
+    brand: '#F97060',
+    amber: 'rgba(249,112,96,0.25)',     // Coral border
+    lavendar: 'rgba(249,112,96,0.15)', // Coral border light
   },
 
   // === GRADIENTS === //
   gradient: {
-    // Primary gradient — amber progression (for XP bars, special accents only)
-    primary: ['#F59E0B', '#D97706'] as const,
-    button: ['#F59E0B', '#D97706'] as const,
-    magicButton: ['#F59E0B', '#D97706'] as const,
+    primary: ['#F97060', '#E85D4A'] as const,
+    button: ['#F97060', '#E85D4A'] as const,
+    magicButton: ['#F97060', '#E85D4A'] as const,
 
-    // Progress bar
-    progress: ['#F59E0B', '#FCD34D'] as const,
+    progress: ['#F97060', '#FFAB9F'] as const,
 
-    // Photo scrim — transparent to dark
     photoScrim: ['transparent', 'rgba(0,0,0,0.90)'] as const,
     photoScrimMid: ['rgba(0,0,0,0)', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,0.92)'] as const,
 
-    // Background (now just flat — gradient barely used)
-    appBg: ['#0C0A08', '#0C0A08'] as const,
+    appBg: ['#FAF8F5', '#FAF8F5'] as const,
 
     // Legacy aliases
-    magic: ['#F59E0B', '#D97706', '#B45309'] as const,
-    romantic: ['#DC2626', '#F59E0B'] as const,
-    dreamy: ['#F59E0B', '#DC2626'] as const,
-    night: ['#0C0A08', '#161210'] as const,
-    card: ['#161210', '#161210'] as const,
-    lavendar: ['#F59E0B', '#FCD34D'] as const,
-    lavandarHero: ['#F59E0B', '#DC2626'] as const,
-    secondary: ['#DC2626', '#EF4444'] as const,
-    neon: ['#F59E0B', '#D97706'] as const,
-    accent: ['#D97706', '#F59E0B'] as const,
-    deep: ['#B45309', '#D97706'] as const,
+    magic: ['#F97060', '#E85D4A', '#C73F38'] as const,
+    romantic: ['#E8554E', '#F97060'] as const,
+    dreamy: ['#F97060', '#E8554E'] as const,
+    night: ['#FAF8F5', '#F0EDE8'] as const,
+    card: ['#F0EDE8', '#F0EDE8'] as const,
+    lavendar: ['#F97060', '#FFAB9F'] as const,
+    lavandarHero: ['#F97060', '#E8554E'] as const,
+    secondary: ['#E8554E', '#EF7A74'] as const,
+    neon: ['#F97060', '#E85D4A'] as const,
+    accent: ['#E85D4A', '#F97060'] as const,
+    deep: ['#C73F38', '#E85D4A'] as const,
   },
 
   // === OVERLAYS === //
   overlay: {
-    light: 'rgba(0,0,0,0.5)',
-    dark: 'rgba(0,0,0,0.75)',
-    gradient: 'rgba(245,158,11,0.06)',
-    lavendar: 'rgba(245,158,11,0.10)',
+    light: 'rgba(0,0,0,0.3)',
+    dark: 'rgba(0,0,0,0.55)',
+    gradient: 'rgba(249,112,96,0.06)',
+    lavendar: 'rgba(249,112,96,0.10)',
   },
 
-  // === SHADOWS (dark only, no colored glow on surfaces) === //
+  // === SHADOWS === //
   shadow: {
-    light: 'rgba(0,0,0,0.3)',
-    medium: 'rgba(0,0,0,0.5)',
-    heavy: 'rgba(0,0,0,0.7)',
-    colored: 'rgba(245,158,11,0.25)',   // Amber glow — CTA buttons only
-    card: 'rgba(0,0,0,0.5)',
+    light: 'rgba(0,0,0,0.06)',
+    medium: 'rgba(0,0,0,0.10)',
+    heavy: 'rgba(0,0,0,0.18)',
+    colored: 'rgba(249,112,96,0.30)',   // Coral glow — CTA buttons only
+    card: 'rgba(0,0,0,0.08)',
     photo: 'rgba(0,0,0,0.7)',
-    lavendar: 'rgba(245,158,11,0.20)',
+    lavendar: 'rgba(249,112,96,0.20)',
   },
 
   // === STATES === //
   states: {
     hover: {
-      brand: '#D97706',
-      surface: '#1E1916',
-      lavendar: 'rgba(245,158,11,0.15)',
+      brand: '#E85D4A',
+      surface: '#E8E2DC',
+      lavendar: 'rgba(249,112,96,0.15)',
     },
     active: {
-      brand: '#B45309',
-      surface: '#261E1A',
-      lavendar: 'rgba(245,158,11,0.20)',
+      brand: '#C73F38',
+      surface: '#DED6CE',
+      lavendar: 'rgba(249,112,96,0.20)',
     },
     disabled: {
-      background: '#1A1410',
-      text: '#4A3F34',
+      background: '#F5D0CB',
+      text: '#C4B4AE',
     },
   },
 };
@@ -183,11 +179,11 @@ export const FOCUS_RING = {
   shadowRadius: 8,
 };
 
-// Tone-based gradients — amber theme
+// Tone-based gradients — coral theme
 export const TONE_GRADIENTS: Record<string, readonly [string, string]> = {
-  chill:        ['#F59E0B', '#D97706'],
-  elegant:      ['#B45309', '#78350F'],
+  chill:        ['#F97060', '#E85D4A'],
+  elegant:      ['#C73F38', '#A83330'],
   intellectual: ['#6B7280', '#4B5563'],
-  playero:      ['#DC2626', '#B91C1C'],
-  minimalist:   ['#4B4B4B', '#2D2D2D'],
+  playero:      ['#E8554E', '#C73F38'],
+  minimalist:   ['#A89088', '#78645A'],
 } as const;

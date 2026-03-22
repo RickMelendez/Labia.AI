@@ -6,9 +6,7 @@ import { COLORS } from '../core/constants';
 import { useStrings } from '../core/i18n/useStrings';
 
 // Screens
-import ChatScreen from '../screens/Chat/ChatScreen';
 import ConversationHistoryScreen from '../screens/History/ConversationHistoryScreen';
-import TrainerScreen from '../screens/Trainer/TrainerScreen';
 import ProfileScreen from '../screens/Profile/ProfileScreen';
 import DiscoverNavigator from './DiscoverNavigator';
 
@@ -23,14 +21,10 @@ export default function MainNavigator() {
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof MaterialCommunityIcons.glyphMap;
 
-          if (route.name === 'Chat') {
-            iconName = focused ? 'home' : 'home-outline';
+          if (route.name === 'Discover') {
+            iconName = focused ? 'compass' : 'compass-outline';
           } else if (route.name === 'History') {
             iconName = focused ? 'message-text' : 'message-text-outline';
-          } else if (route.name === 'Discover') {
-            iconName = focused ? 'compass' : 'compass-outline';
-          } else if (route.name === 'Trainer') {
-            iconName = focused ? 'trophy' : 'trophy-outline';
           } else {
             iconName = focused ? 'account-circle' : 'account-circle-outline';
           }
@@ -40,9 +34,9 @@ export default function MainNavigator() {
         tabBarActiveTintColor: COLORS.primary,
         tabBarInactiveTintColor: COLORS.text.muted,
         tabBarStyle: {
-          backgroundColor: '#0F0C0A',
+          backgroundColor: '#FAF8F5',
           borderTopWidth: 1,
-          borderTopColor: 'rgba(245,158,11,0.10)',
+          borderTopColor: 'rgba(0,0,0,0.08)',
           height: 60,
           paddingBottom: 8,
           paddingTop: 4,
@@ -63,10 +57,8 @@ export default function MainNavigator() {
         headerShown: false,
       })}
     >
-      <Tab.Screen name="Chat" component={ChatScreen} options={{ tabBarLabel: s.tabs.home }} />
-      <Tab.Screen name="History" component={ConversationHistoryScreen} options={{ tabBarLabel: s.tabs.chats }} />
       <Tab.Screen name="Discover" component={DiscoverNavigator} options={{ tabBarLabel: s.tabs.explore }} />
-      <Tab.Screen name="Trainer" component={TrainerScreen} options={{ tabBarLabel: s.tabs.train }} />
+      <Tab.Screen name="History" component={ConversationHistoryScreen} options={{ tabBarLabel: s.tabs.chats }} />
       <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarLabel: s.tabs.me }} />
     </Tab.Navigator>
   );

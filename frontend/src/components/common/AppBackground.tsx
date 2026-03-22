@@ -17,7 +17,7 @@ export default function AppBackground() {
 const styles = StyleSheet.create({
   base: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#0C0A08',
+    backgroundColor: '#FAF8F5',
   },
   topWarm: {
     position: 'absolute',
@@ -26,6 +26,6 @@ const styles = StyleSheet.create({
     width: 280,
     height: 280,
     borderRadius: 140,
-    backgroundColor: 'rgba(245,158,11,0.05)',
+    backgroundColor: 'rgba(249,112,96,0.04)',
   },
 });

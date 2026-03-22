@@ -225,9 +225,9 @@ const inputStyles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#161210',
+    backgroundColor: '#F0EDE8',
     borderWidth: 1,
-    borderColor: 'rgba(245,158,11,0.12)',
+    borderColor: 'rgba(249,112,96,0.12)',
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
@@ -248,7 +248,7 @@ const inputStyles = StyleSheet.create({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0C0A08',
+    backgroundColor: '#FAF8F5',
   },
   keyboardView: {
     flex: 1,
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
-    shadowColor: 'rgba(245,158,11,0.35)',
+    shadowColor: 'rgba(249,112,96,0.30)',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 1,
     shadowRadius: 12,
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: 'rgba(0,0,0,0.06)',
   },
   dividerText: {
     fontFamily: TYPOGRAPHY.fontFamily.regular,
@@ -333,9 +333,9 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#161210',
+    backgroundColor: '#F0EDE8',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(0,0,0,0.08)',
     alignItems: 'center',
     justifyContent: 'center',
   },
