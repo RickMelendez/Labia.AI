@@ -1,17 +1,16 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import {
   View, Text, FlatList, StyleSheet, TouchableOpacity,
-  ActivityIndicator, Animated,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import AppBackground from '../../components/common/AppBackground';
 import DiscoverCard from '../../components/discover/DiscoverCard';
 import LobbyCard from '../../components/discover/LobbyCard';
-import { COLORS } from '../../core/constants';
+import { COLORS, TYPOGRAPHY } from '../../core/constants';
 import { useStrings } from '../../core/i18n/useStrings';
 import { container } from '../../infrastructure/di/Container';
 import { useLobbyStore } from '../../store/lobbyStore';
@@ -33,17 +32,6 @@ export default function DualDiscoverScreen() {
 
   // ---- Lobby state ----
   const { lobbies, lobbiesLoading, fetchLobbies } = useLobbyStore();
-
-  // ---- Animated divider glow ----
-  const glowAnim = useRef(new Animated.Value(0.3)).current;
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(glowAnim, { toValue: 0.9, duration: 2200, useNativeDriver: true }),
-        Animated.timing(glowAnim, { toValue: 0.3, duration: 2200, useNativeDriver: true }),
-      ])
-    ).start();
-  }, []);
 
   useEffect(() => {
     fetchProfiles();
@@ -72,7 +60,7 @@ export default function DualDiscoverScreen() {
       const result = await container.matchApi.likeUser(profile.user_id);
       setProfiles(prev => prev.filter(p => p.user_id !== profile.user_id));
       if (result.is_mutual_match && result.match_id) {
-        container.toast.success('It\'s a Match!', `You and ${profile.display_name} liked each other`);
+        container.toast.success("It's a Match!", `You and ${profile.display_name} liked each other`);
         navigation.navigate('MatchOnboarding', { match_id: result.match_id });
       } else {
         container.toast.success('Liked!', `You liked ${profile.display_name}`);
@@ -103,54 +91,34 @@ export default function DualDiscoverScreen() {
     <SafeAreaView style={styles.container} edges={['top']}>
       <AppBackground />
 
-      {/* ---- Header ---- */}
+      {/* Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.eyebrow}>DISCOVER</Text>
-          <Text style={styles.title}>Explore</Text>
-        </View>
+        <Text style={styles.title}>Explore</Text>
         <View style={styles.headerActions}>
           <TouchableOpacity
             style={styles.headerBtn}
-            onPress={() => navigation.navigate('CreateLobby')}
-          >
-            <LinearGradient
-              colors={['rgba(183,148,246,0.15)', 'rgba(94,66,156,0.15)']}
-              style={styles.headerBtnGrad}
-            >
-              <MaterialCommunityIcons name="plus" size={20} color={COLORS.accent} />
-            </LinearGradient>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.headerBtn}
             onPress={() => navigation.navigate('MatchOnboarding', { match_id: 0 } as any)}
+            activeOpacity={0.75}
           >
-            <LinearGradient
-              colors={['rgba(244,146,240,0.15)', 'rgba(224,113,219,0.15)']}
-              style={styles.headerBtnGrad}
-            >
-              <MaterialCommunityIcons name="heart-multiple-outline" size={20} color={COLORS.secondary} />
-            </LinearGradient>
+            <MaterialCommunityIcons name="heart-multiple-outline" size={20} color={COLORS.secondary} />
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* ---- Column labels ---- */}
+      {/* Column labels */}
       <View style={styles.columnLabels}>
         <View style={styles.colLabel}>
-          <MaterialCommunityIcons name="account-heart-outline" size={12} color="rgba(255,255,255,0.35)" />
+          <MaterialCommunityIcons name="account-heart-outline" size={11} color={COLORS.text.muted} />
           <Text style={styles.colLabelText}>Profiles</Text>
-          <MaterialCommunityIcons name="arrow-up" size={10} color="rgba(255,255,255,0.25)" />
         </View>
         <View style={{ width: 1 }} />
         <View style={styles.colLabel}>
-          <MaterialCommunityIcons name="account-group-outline" size={12} color="rgba(255,255,255,0.35)" />
+          <MaterialCommunityIcons name="account-group-outline" size={11} color={COLORS.text.muted} />
           <Text style={styles.colLabelText}>Lobbies</Text>
-          <MaterialCommunityIcons name="arrow-down" size={10} color="rgba(255,255,255,0.25)" />
         </View>
       </View>
 
-      {/* ---- Dual scroll body ---- */}
+      {/* Dual scroll body */}
       <View style={styles.body}>
         {/* Left column — profiles */}
         <FlatList
@@ -163,13 +131,13 @@ export default function DualDiscoverScreen() {
           showsVerticalScrollIndicator={false}
           ListFooterComponent={
             profilesLoading
-              ? <ActivityIndicator color={COLORS.accent} style={{ marginVertical: 16 }} size="small" />
+              ? <ActivityIndicator color={COLORS.primary} style={{ marginVertical: 16 }} size="small" />
               : null
           }
           ListEmptyComponent={
             !profilesLoading ? (
               <View style={styles.emptyCol}>
-                <MaterialCommunityIcons name="heart-search" size={36} color="rgba(183,148,246,0.25)" />
+                <MaterialCommunityIcons name="heart-search" size={32} color="rgba(245,158,11,0.25)" />
                 <Text style={styles.emptyText}>No profiles</Text>
               </View>
             ) : null
@@ -177,13 +145,10 @@ export default function DualDiscoverScreen() {
           contentContainerStyle={{ paddingBottom: 120, paddingTop: 4 }}
         />
 
-        {/* Animated glowing divider */}
-        <View style={styles.dividerWrapper}>
-          <Animated.View style={[styles.dividerGlow, { opacity: glowAnim }]} />
-          <View style={styles.divider} />
-        </View>
+        {/* Divider */}
+        <View style={styles.divider} />
 
-        {/* Right column — lobbies (inverted scroll) */}
+        {/* Right column — lobbies */}
         <FlatList
           style={styles.column}
           data={lobbies}
@@ -196,7 +161,7 @@ export default function DualDiscoverScreen() {
           ListEmptyComponent={
             !lobbiesLoading ? (
               <View style={styles.emptyCol}>
-                <MaterialCommunityIcons name="account-group-outline" size={36} color="rgba(183,148,246,0.25)" />
+                <MaterialCommunityIcons name="account-group-outline" size={32} color="rgba(245,158,11,0.25)" />
                 <Text style={styles.emptyText}>Create the{'\n'}first lobby</Text>
               </View>
             ) : null
@@ -205,21 +170,14 @@ export default function DualDiscoverScreen() {
         />
       </View>
 
-      {/* ---- FAB ---- */}
+      {/* FAB — amber solid */}
       <TouchableOpacity
         style={styles.fab}
         onPress={() => navigation.navigate('CreateLobby')}
         activeOpacity={0.85}
       >
-        <LinearGradient
-          colors={[COLORS.primary, COLORS.primaryDark]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.fabGrad}
-        >
-          <MaterialCommunityIcons name="account-group-outline" size={18} color="#fff" />
-          <Text style={styles.fabText}>New Lobby</Text>
-        </LinearGradient>
+        <MaterialCommunityIcons name="account-group-outline" size={16} color={COLORS.text.onBrand} />
+        <Text style={styles.fabText}>New Lobby</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -237,35 +195,26 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 12,
   },
-  eyebrow: {
-    fontSize: 9,
-    fontFamily: 'Poppins_600SemiBold',
-    color: 'rgba(183,148,246,0.55)',
-    letterSpacing: 2,
-  },
   title: {
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 26,
-    fontFamily: 'Poppins_700Bold',
-    color: '#FFFFFF',
+    fontWeight: '700',
+    color: COLORS.text.primary,
     letterSpacing: -0.5,
-    marginTop: -2,
   },
   headerActions: {
     flexDirection: 'row',
     gap: 10,
   },
   headerBtn: {
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  headerBtnGrad: {
     width: 40,
     height: 40,
     borderRadius: 12,
+    backgroundColor: '#1E1916',
+    borderWidth: 1,
+    borderColor: 'rgba(245,158,11,0.12)',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
   },
   columnLabels: {
     flexDirection: 'row',
@@ -281,10 +230,11 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   colLabelText: {
+    fontFamily: TYPOGRAPHY.fontFamily.semibold,
     fontSize: 10,
-    fontFamily: 'Poppins_600SemiBold',
-    color: 'rgba(255,255,255,0.3)',
-    letterSpacing: 1,
+    fontWeight: '600',
+    color: COLORS.text.muted,
+    letterSpacing: 0.8,
     textTransform: 'uppercase',
   },
   body: {
@@ -294,22 +244,9 @@ const styles = StyleSheet.create({
   column: {
     flex: 1,
   },
-  dividerWrapper: {
-    width: 1,
-    alignItems: 'center',
-  },
   divider: {
     width: 1,
-    flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.07)',
-  },
-  dividerGlow: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    width: 6,
-    backgroundColor: COLORS.primary + '30',
-    borderRadius: 4,
+    backgroundColor: 'rgba(245,158,11,0.08)',
   },
   emptyCol: {
     alignItems: 'center',
@@ -318,9 +255,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   emptyText: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 10,
-    fontFamily: 'Poppins_400Regular',
-    color: 'rgba(255,255,255,0.2)',
+    color: COLORS.text.muted,
     textAlign: 'center',
     lineHeight: 15,
   },
@@ -328,26 +265,24 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 100,
     alignSelf: 'center',
-    borderRadius: 100,
-    overflow: 'hidden',
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.45,
-    shadowRadius: 14,
-    elevation: 10,
-  },
-  fabGrad: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 7,
     paddingHorizontal: 20,
     paddingVertical: 13,
     borderRadius: 100,
+    backgroundColor: COLORS.primary,
+    shadowColor: 'rgba(245,158,11,0.35)',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 14,
+    elevation: 10,
   },
   fabText: {
-    color: '#FFFFFF',
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: TYPOGRAPHY.fontFamily.semibold,
+    color: COLORS.text.onBrand,
     fontSize: 13,
+    fontWeight: '600',
     letterSpacing: 0.3,
   },
 });

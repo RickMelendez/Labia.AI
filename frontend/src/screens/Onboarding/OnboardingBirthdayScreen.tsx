@@ -1,12 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated,
+  View, Text, StyleSheet, TouchableOpacity, ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { COLORS } from '../../core/constants';
+import { COLORS, TYPOGRAPHY } from '../../core/constants';
 import type { OnboardingStackParamList } from '../../types';
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'OnboardingBirthday'>;
@@ -15,15 +14,12 @@ const TOTAL_STEPS = 5;
 const STEP = 2;
 
 const DAYS   = Array.from({ length: 31 }, (_, i) => i + 1);
-const MONTHS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const YEAR_NOW = new Date().getFullYear();
-const YEARS  = Array.from({ length: 82 }, (_, i) => YEAR_NOW - 18 - i); // 18–100
+const YEARS  = Array.from({ length: 82 }, (_, i) => YEAR_NOW - 18 - i);
 
 function PickerColumn({
-  items,
-  selected,
-  onSelect,
-  format,
+  items, selected, onSelect, format,
 }: {
   items: number[] | string[];
   selected: number | string;
@@ -56,72 +52,48 @@ function PickerColumn({
 
 export default function OnboardingBirthdayScreen({ navigation }: Props) {
   const [day, setDay]     = useState(1);
-  const [month, setMonth] = useState('Ene');
+  const [month, setMonth] = useState('Jan');
   const [year, setYear]   = useState(YEAR_NOW - 25);
-  const fadeIn = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(fadeIn, { toValue: 1, duration: 400, useNativeDriver: true }).start();
-  }, []);
-
   const age = YEAR_NOW - year;
 
   return (
     <View style={styles.container}>
-      <LinearGradient colors={['#05030E', '#0D0820']} style={StyleSheet.absoluteFillObject} />
-
       <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
-        {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <MaterialCommunityIcons name="arrow-left" size={22} color="rgba(255,255,255,0.5)" />
+            <MaterialCommunityIcons name="arrow-left" size={20} color={COLORS.text.muted} />
           </TouchableOpacity>
           <View style={styles.progressTrack}>
-            <LinearGradient
-              colors={[COLORS.secondary, COLORS.primary]}
-              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-              style={[styles.progressFill, { width: `${(STEP / TOTAL_STEPS) * 100}%` }]}
-            />
+            <View style={[styles.progressFill, { width: `${(STEP / TOTAL_STEPS) * 100}%` }]} />
           </View>
           <Text style={styles.stepCount}>{STEP}/{TOTAL_STEPS}</Text>
         </View>
 
-        <Animated.View style={[styles.content, { opacity: fadeIn }]}>
-          <Text style={styles.question}>¿Cuándo naciste?</Text>
-          <Text style={styles.hint}>Solo se muestra tu edad, no tu cumpleaños</Text>
+        <View style={styles.content}>
+          <Text style={styles.question}>When were you born?</Text>
+          <Text style={styles.hint}>Only your age is shown, not your birthday</Text>
 
-          {/* Picker */}
           <View style={styles.pickerWrap}>
-            {/* Selection highlight */}
             <View style={styles.pickerHighlight} pointerEvents="none" />
-
             <PickerColumn items={DAYS}   selected={day}   onSelect={setDay}   />
             <PickerColumn items={MONTHS} selected={month} onSelect={setMonth} />
             <PickerColumn items={YEARS}  selected={year}  onSelect={setYear}  />
           </View>
 
-          {/* Age preview */}
           <View style={styles.agePreview}>
-            <MaterialCommunityIcons name="cake-variant-outline" size={16} color={COLORS.accent} />
-            <Text style={styles.ageText}>{age} años</Text>
+            <MaterialCommunityIcons name="cake-variant-outline" size={15} color={COLORS.primary} />
+            <Text style={styles.ageText}>{age} years old</Text>
           </View>
-        </Animated.View>
+        </View>
 
-        {/* CTA */}
         <View style={styles.bottom}>
           <TouchableOpacity
             style={styles.cta}
             onPress={() => navigation.navigate('OnboardingGender')}
             activeOpacity={0.85}
           >
-            <LinearGradient
-              colors={[COLORS.secondary, COLORS.primary]}
-              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-              style={styles.ctaGrad}
-            >
-              <Text style={styles.ctaText}>Continuar</Text>
-              <MaterialCommunityIcons name="arrow-right" size={18} color="#fff" />
-            </LinearGradient>
+            <Text style={styles.ctaText}>Continue</Text>
+            <MaterialCommunityIcons name="arrow-right" size={18} color={COLORS.text.onBrand} />
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -130,84 +102,66 @@ export default function OnboardingBirthdayScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: '#0C0A08' },
   safe: { flex: 1 },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 8,
-    gap: 12,
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 20, paddingTop: 12, paddingBottom: 8, gap: 12,
   },
   backBtn: { padding: 4 },
   progressTrack: {
-    flex: 1, height: 3, borderRadius: 2,
-    backgroundColor: 'rgba(255,255,255,0.08)', overflow: 'hidden',
+    flex: 1, height: 4, borderRadius: 2,
+    backgroundColor: '#261E1A', overflow: 'hidden',
   },
-  progressFill: { height: '100%', borderRadius: 2 },
-  stepCount: { fontSize: 11, fontFamily: 'Poppins_500Medium', color: 'rgba(255,255,255,0.25)' },
+  progressFill: { height: '100%', borderRadius: 2, backgroundColor: COLORS.primary },
+  stepCount: { fontFamily: TYPOGRAPHY.fontFamily.medium, fontSize: 11, color: COLORS.text.muted },
   content: { flex: 1, paddingHorizontal: 28, paddingTop: 40 },
-  question: { fontSize: 32, fontFamily: 'Poppins_700Bold', color: '#FFFFFF', lineHeight: 40 },
-  hint: { fontSize: 14, fontFamily: 'Poppins_400Regular', color: 'rgba(255,255,255,0.35)', marginTop: 6 },
+  question: {
+    fontFamily: TYPOGRAPHY.fontFamily.bold, fontSize: 32, fontWeight: '700',
+    color: COLORS.text.primary, lineHeight: 40,
+  },
+  hint: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular, fontSize: 14,
+    color: COLORS.text.muted, marginTop: 6,
+  },
   pickerWrap: {
-    flexDirection: 'row',
-    marginTop: 32,
-    height: 220,
-    position: 'relative',
+    flexDirection: 'row', marginTop: 32, height: 220, position: 'relative',
   },
   pickerHighlight: {
-    position: 'absolute',
-    left: 0, right: 0,
-    top: '50%',
-    marginTop: -24,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    position: 'absolute', left: 0, right: 0,
+    top: '50%', marginTop: -24, height: 48,
+    borderRadius: 12, backgroundColor: 'rgba(245,158,11,0.06)',
+    borderWidth: 1, borderColor: 'rgba(245,158,11,0.12)',
   },
   pickerCol: { flex: 1 },
-  pickerItem: {
-    height: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 10,
-  },
+  pickerItem: { height: 48, alignItems: 'center', justifyContent: 'center', borderRadius: 10 },
   pickerItemActive: {},
   pickerText: {
-    fontSize: 17,
-    fontFamily: 'Poppins_400Regular',
-    color: 'rgba(255,255,255,0.2)',
+    fontFamily: TYPOGRAPHY.fontFamily.regular, fontSize: 17, color: COLORS.text.muted,
   },
   pickerTextActive: {
-    fontSize: 20,
-    fontFamily: 'Poppins_600SemiBold',
-    color: '#FFFFFF',
+    fontFamily: TYPOGRAPHY.fontFamily.semibold, fontSize: 20, color: COLORS.text.primary,
   },
   agePreview: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 24,
-    alignSelf: 'center',
-    backgroundColor: 'rgba(183,148,246,0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(183,148,246,0.2)',
-    borderRadius: 100,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    marginTop: 24, alignSelf: 'center',
+    backgroundColor: 'rgba(245,158,11,0.08)',
+    borderWidth: 1, borderColor: 'rgba(245,158,11,0.18)',
+    borderRadius: 100, paddingHorizontal: 16, paddingVertical: 8,
   },
-  ageText: { fontSize: 14, fontFamily: 'Poppins_600SemiBold', color: COLORS.accent },
+  ageText: {
+    fontFamily: TYPOGRAPHY.fontFamily.semibold, fontSize: 14, color: COLORS.primary,
+  },
   bottom: { paddingHorizontal: 24, paddingBottom: 24 },
   cta: {
-    borderRadius: 16, overflow: 'hidden',
-    shadowColor: COLORS.primary, shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4, shadowRadius: 14, elevation: 10,
-  },
-  ctaGrad: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, paddingVertical: 17, borderRadius: 16,
+    backgroundColor: COLORS.primary,
+    shadowColor: 'rgba(245,158,11,0.35)',
+    shadowOffset: { width: 0, height: 6 }, shadowOpacity: 1, shadowRadius: 14, elevation: 10,
   },
-  ctaText: { fontSize: 16, fontFamily: 'Poppins_600SemiBold', color: '#FFFFFF' },
+  ctaText: {
+    fontFamily: TYPOGRAPHY.fontFamily.semibold, fontSize: 16,
+    fontWeight: '600', color: COLORS.text.onBrand,
+  },
 });

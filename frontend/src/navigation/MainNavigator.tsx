@@ -1,5 +1,4 @@
 import React from 'react';
-import { View, Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { MainTabParamList } from '../types';
@@ -36,51 +35,22 @@ export default function MainNavigator() {
             iconName = focused ? 'account-circle' : 'account-circle-outline';
           }
 
-          // Explore tab gets a glow indicator
-          if (route.name === 'Discover' && focused) {
-            return (
-              <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-                <View style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 22,
-                  backgroundColor: COLORS.primary,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  shadowColor: COLORS.shadow.colored,
-                  shadowOffset: { width: 0, height: 0 },
-                  shadowOpacity: 1,
-                  shadowRadius: 12,
-                  elevation: 8,
-                }}>
-                  <MaterialCommunityIcons name="compass" size={22} color="#FFF" />
-                </View>
-              </View>
-            );
-          }
-
           return <MaterialCommunityIcons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: COLORS.primary,
         tabBarInactiveTintColor: COLORS.text.muted,
         tabBarStyle: {
-          position: 'absolute',
-          left: 16,
-          right: 16,
-          bottom: Platform.OS === 'ios' ? 20 : 12,
-          backgroundColor: 'rgba(13, 11, 10, 0.92)',
-          borderTopWidth: 0,
-          borderRadius: 28,
-          borderWidth: 1,
-          borderColor: 'rgba(255, 255, 255, 0.08)',
-          height: 64,
+          backgroundColor: '#0F0C0A',
+          borderTopWidth: 1,
+          borderTopColor: 'rgba(245,158,11,0.10)',
+          height: 60,
           paddingBottom: 8,
-          paddingTop: 8,
+          paddingTop: 4,
+          elevation: 8,
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: 8 },
-          shadowOpacity: 0.6,
-          shadowRadius: 20,
-          elevation: 20,
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.4,
+          shadowRadius: 8,
         },
         tabBarLabelStyle: {
           fontSize: 11,
@@ -88,36 +58,16 @@ export default function MainNavigator() {
           marginTop: 2,
         },
         tabBarItemStyle: {
-          paddingVertical: 4,
+          paddingVertical: 2,
         },
         headerShown: false,
       })}
     >
-      <Tab.Screen
-        name="Chat"
-        component={ChatScreen}
-        options={{ tabBarLabel: s.tabs.home }}
-      />
-      <Tab.Screen
-        name="History"
-        component={ConversationHistoryScreen}
-        options={{ tabBarLabel: s.tabs.chats }}
-      />
-      <Tab.Screen
-        name="Discover"
-        component={DiscoverNavigator}
-        options={{ tabBarLabel: s.tabs.explore }}
-      />
-      <Tab.Screen
-        name="Trainer"
-        component={TrainerScreen}
-        options={{ tabBarLabel: s.tabs.train }}
-      />
-      <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{ tabBarLabel: s.tabs.me }}
-      />
+      <Tab.Screen name="Chat" component={ChatScreen} options={{ tabBarLabel: s.tabs.home }} />
+      <Tab.Screen name="History" component={ConversationHistoryScreen} options={{ tabBarLabel: s.tabs.chats }} />
+      <Tab.Screen name="Discover" component={DiscoverNavigator} options={{ tabBarLabel: s.tabs.explore }} />
+      <Tab.Screen name="Trainer" component={TrainerScreen} options={{ tabBarLabel: s.tabs.train }} />
+      <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarLabel: s.tabs.me }} />
     </Tab.Navigator>
   );
 }

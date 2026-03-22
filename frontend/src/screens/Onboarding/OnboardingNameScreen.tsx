@@ -1,13 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput,
-  KeyboardAvoidingView, Platform, Animated,
+  KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { COLORS } from '../../core/constants';
+import { COLORS, TYPOGRAPHY } from '../../core/constants';
 import type { OnboardingStackParamList } from '../../types';
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'OnboardingName'>;
@@ -17,56 +16,36 @@ const STEP = 1;
 
 export default function OnboardingNameScreen({ navigation }: Props) {
   const [name, setName] = useState('');
-  const fadeIn = useRef(new Animated.Value(0)).current;
-  const slideUp = useRef(new Animated.Value(30)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeIn, { toValue: 1, duration: 400, useNativeDriver: true }),
-      Animated.timing(slideUp, { toValue: 0, duration: 400, useNativeDriver: true }),
-    ]).start();
-  }, []);
-
   const canContinue = name.trim().length >= 2;
 
   return (
     <View style={styles.container}>
-      <LinearGradient colors={['#05030E', '#0D0820']} style={StyleSheet.absoluteFillObject} />
-
       <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
         <KeyboardAvoidingView
           style={styles.kav}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
-          {/* Header */}
+          {/* Progress header */}
           <View style={styles.header}>
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-              <MaterialCommunityIcons name="arrow-left" size={22} color="rgba(255,255,255,0.5)" />
+              <MaterialCommunityIcons name="arrow-left" size={20} color={COLORS.text.muted} />
             </TouchableOpacity>
-            {/* Progress bar */}
             <View style={styles.progressTrack}>
-              <LinearGradient
-                colors={[COLORS.secondary, COLORS.primary]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={[styles.progressFill, { width: `${(STEP / TOTAL_STEPS) * 100}%` }]}
-              />
+              <View style={[styles.progressFill, { width: `${(STEP / TOTAL_STEPS) * 100}%` }]} />
             </View>
             <Text style={styles.stepCount}>{STEP}/{TOTAL_STEPS}</Text>
           </View>
 
           {/* Content */}
-          <Animated.View
-            style={[styles.content, { opacity: fadeIn, transform: [{ translateY: slideUp }] }]}
-          >
-            <Text style={styles.question}>¿Cómo te llamas?</Text>
-            <Text style={styles.hint}>Así te verán los demás</Text>
+          <View style={styles.content}>
+            <Text style={styles.question}>What's your name?</Text>
+            <Text style={styles.hint}>This is how others will see you</Text>
 
             <View style={styles.inputWrap}>
               <TextInput
                 style={styles.input}
-                placeholder="Tu nombre..."
-                placeholderTextColor="rgba(255,255,255,0.2)"
+                placeholder="Your name..."
+                placeholderTextColor={COLORS.text.muted}
                 value={name}
                 onChangeText={setName}
                 autoFocus
@@ -76,16 +55,18 @@ export default function OnboardingNameScreen({ navigation }: Props) {
                 onSubmitEditing={() => canContinue && navigation.navigate('OnboardingBirthday')}
               />
               {name.length > 0 && (
-                <TouchableOpacity onPress={() => setName('')} style={styles.clearBtn}>
-                  <MaterialCommunityIcons name="close-circle" size={20} color="rgba(255,255,255,0.25)" />
+                <TouchableOpacity onPress={() => setName('')}>
+                  <MaterialCommunityIcons name="close-circle" size={20} color={COLORS.text.muted} />
                 </TouchableOpacity>
               )}
             </View>
 
-            {name.trim().length >= 2 && (
-              <Text style={styles.preview}>Hola, <Text style={styles.previewName}>{name.trim()} 👋</Text></Text>
+            {canContinue && (
+              <Text style={styles.preview}>
+                Hi, <Text style={styles.previewName}>{name.trim()} 👋</Text>
+              </Text>
             )}
-          </Animated.View>
+          </View>
 
           {/* CTA */}
           <View style={styles.bottom}>
@@ -95,15 +76,12 @@ export default function OnboardingNameScreen({ navigation }: Props) {
               disabled={!canContinue}
               activeOpacity={0.85}
             >
-              <LinearGradient
-                colors={canContinue ? [COLORS.secondary, COLORS.primary] : ['#2a2040', '#2a2040']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.ctaGrad}
-              >
-                <Text style={styles.ctaText}>Continuar</Text>
-                <MaterialCommunityIcons name="arrow-right" size={18} color={canContinue ? '#fff' : 'rgba(255,255,255,0.3)'} />
-              </LinearGradient>
+              <Text style={[styles.ctaText, !canContinue && styles.ctaTextDisabled]}>Continue</Text>
+              <MaterialCommunityIcons
+                name="arrow-right"
+                size={18}
+                color={canContinue ? COLORS.text.onBrand : COLORS.text.muted}
+              />
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
@@ -113,7 +91,7 @@ export default function OnboardingNameScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: '#0C0A08' },
   safe: { flex: 1 },
   kav: { flex: 1 },
   header: {
@@ -126,37 +104,27 @@ const styles = StyleSheet.create({
   },
   backBtn: { padding: 4 },
   progressTrack: {
-    flex: 1,
-    height: 3,
-    borderRadius: 2,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    overflow: 'hidden',
+    flex: 1, height: 4, borderRadius: 2,
+    backgroundColor: '#261E1A', overflow: 'hidden',
   },
-  progressFill: {
-    height: '100%',
-    borderRadius: 2,
-  },
+  progressFill: { height: '100%', borderRadius: 2, backgroundColor: COLORS.primary },
   stepCount: {
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
     fontSize: 11,
-    fontFamily: 'Poppins_500Medium',
-    color: 'rgba(255,255,255,0.25)',
+    color: COLORS.text.muted,
   },
-  content: {
-    flex: 1,
-    paddingHorizontal: 28,
-    paddingTop: 48,
-    gap: 12,
-  },
+  content: { flex: 1, paddingHorizontal: 28, paddingTop: 48, gap: 12 },
   question: {
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 32,
-    fontFamily: 'Poppins_700Bold',
-    color: '#FFFFFF',
+    fontWeight: '700',
+    color: COLORS.text.primary,
     lineHeight: 40,
   },
   hint: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 15,
-    fontFamily: 'Poppins_400Regular',
-    color: 'rgba(255,255,255,0.35)',
+    color: COLORS.text.muted,
     marginTop: -4,
   },
   inputWrap: {
@@ -164,53 +132,52 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 32,
     borderBottomWidth: 2,
-    borderBottomColor: COLORS.primary + '60',
+    borderBottomColor: 'rgba(245,158,11,0.35)',
     paddingBottom: 10,
   },
   input: {
+    fontFamily: TYPOGRAPHY.fontFamily.semibold,
     flex: 1,
     fontSize: 28,
-    fontFamily: 'Poppins_600SemiBold',
-    color: '#FFFFFF',
+    color: COLORS.text.primary,
     letterSpacing: -0.5,
     padding: 0,
   },
-  clearBtn: { padding: 4 },
   preview: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 15,
-    fontFamily: 'Poppins_400Regular',
-    color: 'rgba(255,255,255,0.3)',
+    color: COLORS.text.muted,
     marginTop: 12,
   },
   previewName: {
-    color: COLORS.accent,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: TYPOGRAPHY.fontFamily.semibold,
+    color: COLORS.primary,
   },
-  bottom: {
-    paddingHorizontal: 24,
-    paddingBottom: 24,
-  },
+  bottom: { paddingHorizontal: 24, paddingBottom: 24 },
   cta: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 14,
-    elevation: 10,
-  },
-  ctaDisabled: { shadowOpacity: 0 },
-  ctaGrad: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 17,
     borderRadius: 16,
+    backgroundColor: COLORS.primary,
+    shadowColor: 'rgba(245,158,11,0.35)',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 14,
+    elevation: 10,
+  },
+  ctaDisabled: {
+    backgroundColor: '#2A1E14',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   ctaText: {
+    fontFamily: TYPOGRAPHY.fontFamily.semibold,
     fontSize: 16,
-    fontFamily: 'Poppins_600SemiBold',
-    color: '#FFFFFF',
+    fontWeight: '600',
+    color: COLORS.text.onBrand,
   },
+  ctaTextDisabled: { color: COLORS.text.muted },
 });

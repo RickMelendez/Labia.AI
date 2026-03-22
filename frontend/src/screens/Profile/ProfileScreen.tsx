@@ -4,8 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AppBackground from '../../components/common/AppBackground';
 import NeonButton from '../../components/common/NeonButton';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS, CULTURAL_STYLES, TONES } from '../../core/constants';
+import { COLORS, CULTURAL_STYLES, TONES, TYPOGRAPHY } from '../../core/constants';
 import { useAppStore } from '../../store/appStore';
 import { useStrings } from '../../core/i18n/useStrings';
 import { container } from '../../infrastructure/di/Container';
@@ -28,7 +27,6 @@ export default function ProfileScreen() {
   const [editVisible, setEditVisible] = useState(false);
   const [profile, setProfile] = useState<DatingProfile | null>(null);
 
-  // Edit form state
   const [displayName, setDisplayName] = useState('');
   const [age, setAge] = useState('');
   const [gender, setGender] = useState('');
@@ -139,18 +137,13 @@ export default function ProfileScreen() {
     <SafeAreaView style={styles.container} edges={['top']}>
       <AppBackground />
 
-      {/* Header */}
+      {/* Header — large avatar + name */}
       <View style={styles.header}>
-        <LinearGradient
-          colors={COLORS.gradient.primary}
-          style={styles.avatarRing}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
+        <View style={styles.avatarRing}>
           <View style={styles.avatarInner}>
-            <MaterialCommunityIcons name="account" size={36} color={COLORS.text.secondary} />
+            <MaterialCommunityIcons name="account" size={36} color={COLORS.text.muted} />
           </View>
-        </LinearGradient>
+        </View>
         <Text style={styles.headerName}>{user?.name || s.profile.noName}</Text>
         <Text style={styles.headerEmail}>{user?.email || ''}</Text>
       </View>
@@ -174,7 +167,7 @@ export default function ProfileScreen() {
             <NeonButton
               label={profile ? s.profile.editProfile : s.profile.createProfile}
               onPress={() => setEditVisible(true)}
-              leftIcon={<MaterialCommunityIcons name="pencil" size={18} color="#FFF" />}
+              leftIcon={<MaterialCommunityIcons name="pencil" size={18} color={COLORS.text.onBrand} />}
             />
           </View>
         </View>
@@ -204,8 +197,9 @@ export default function ProfileScreen() {
             <Text style={styles.planDesc}>10 {s.profile.freePerDay}</Text>
             <NeonButton
               label="Upgrade to Pro"
+              variant="ghost"
               onPress={() => container.toast.info('Coming soon', 'Subscription options coming soon')}
-              leftIcon={<MaterialCommunityIcons name="crown-outline" size={18} color="#FFF" />}
+              leftIcon={<MaterialCommunityIcons name="crown-outline" size={18} color={COLORS.primary} />}
             />
           </View>
         </View>
@@ -215,9 +209,9 @@ export default function ProfileScreen() {
           <Text style={styles.sectionTitle}>{s.profile.settings}</Text>
 
           {/* Language toggle */}
-          <View style={styles.settingItem}>
+          <View style={styles.settingRow}>
             <View style={styles.settingLeft}>
-              <MaterialCommunityIcons name="translate" size={22} color={COLORS.primary} />
+              <MaterialCommunityIcons name="translate" size={20} color={COLORS.primary} />
               <Text style={styles.settingLabel}>{s.profile.language}</Text>
             </View>
             <View style={styles.langToggle}>
@@ -226,25 +220,17 @@ export default function ProfileScreen() {
                   key={lang}
                   onPress={() => setLanguage(lang)}
                   activeOpacity={0.8}
+                  style={[styles.langChip, language === lang && styles.langChipActive]}
                 >
-                  {language === lang ? (
-                    <LinearGradient
-                      colors={COLORS.gradient.primary}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                      style={styles.langChipActive}
-                    >
-                      <Text style={styles.langChipTextActive}>{lang.toUpperCase()}</Text>
-                    </LinearGradient>
-                  ) : (
-                    <View style={styles.langChip}>
-                      <Text style={styles.langChipText}>{lang.toUpperCase()}</Text>
-                    </View>
-                  )}
+                  <Text style={[styles.langChipText, language === lang && styles.langChipTextActive]}>
+                    {lang.toUpperCase()}
+                  </Text>
                 </TouchableOpacity>
               ))}
             </View>
           </View>
+
+          <View style={styles.divider} />
 
           <SettingRow
             icon="flag-variant"
@@ -252,6 +238,8 @@ export default function ProfileScreen() {
             value={`${currentCulture?.flag} ${currentCulture?.label}`}
             onPress={() => setShowCultureModal(true)}
           />
+
+          <View style={styles.divider} />
 
           <SettingRow
             icon="palette"
@@ -264,7 +252,7 @@ export default function ProfileScreen() {
         {/* Logout */}
         <View style={styles.section}>
           <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.75}>
-            <MaterialCommunityIcons name="logout" size={20} color={COLORS.error} />
+            <MaterialCommunityIcons name="logout" size={18} color={COLORS.error} />
             <Text style={styles.logoutText}>{s.profile.logout}</Text>
           </TouchableOpacity>
         </View>
@@ -273,7 +261,6 @@ export default function ProfileScreen() {
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* Modals */}
       <CulturalStyleModal
         visible={showCultureModal}
         selectedStyle={culturalStyle}
@@ -331,7 +318,7 @@ export default function ProfileScreen() {
             <NeonButton
               label={s.common.save}
               onPress={saveProfile}
-              leftIcon={<MaterialCommunityIcons name="content-save" size={18} color="#FFF" />}
+              leftIcon={<MaterialCommunityIcons name="content-save" size={18} color={COLORS.text.onBrand} />}
             />
             <TouchableOpacity style={styles.cancelBtn} onPress={() => setEditVisible(false)}>
               <Text style={styles.cancelText}>{s.common.cancel}</Text>
@@ -353,9 +340,9 @@ interface SettingRowProps {
 
 function SettingRow({ icon, label, value, onPress }: SettingRowProps) {
   return (
-    <TouchableOpacity style={styles.settingItem} onPress={onPress} disabled={!onPress} activeOpacity={0.7}>
+    <TouchableOpacity style={styles.settingRow} onPress={onPress} disabled={!onPress} activeOpacity={0.7}>
       <View style={styles.settingLeft}>
-        <MaterialCommunityIcons name={icon} size={22} color={COLORS.primary} />
+        <MaterialCommunityIcons name={icon} size={20} color={COLORS.primary} />
         <Text style={styles.settingLabel}>{label}</Text>
       </View>
       <View style={styles.settingRight}>
@@ -381,6 +368,8 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
+    borderWidth: 3,
+    borderColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
@@ -389,11 +378,12 @@ const styles = StyleSheet.create({
     width: 78,
     height: 78,
     borderRadius: 39,
-    backgroundColor: COLORS.surface.dark2,
+    backgroundColor: '#1E1916',
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerName: {
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 22,
     fontWeight: '800',
     color: COLORS.text.primary,
@@ -401,6 +391,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   headerEmail: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 13,
     color: COLORS.text.secondary,
   },
@@ -412,20 +403,21 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontFamily: TYPOGRAPHY.fontFamily.semibold,
+    fontSize: 11,
+    fontWeight: '600',
     color: COLORS.text.secondary,
     textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    letterSpacing: 1,
     marginBottom: 10,
   },
   card: {
-    backgroundColor: COLORS.surface.light,
+    backgroundColor: '#161210',
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: COLORS.border.light,
-    shadowColor: COLORS.shadow.card,
+    borderColor: 'rgba(245,158,11,0.10)',
+    shadowColor: 'rgba(0,0,0,0.5)',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 1,
     shadowRadius: 12,
@@ -438,6 +430,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   cardRowText: {
+    fontFamily: TYPOGRAPHY.fontFamily.semibold,
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.text.primary,
@@ -450,7 +443,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 8,
-    backgroundColor: COLORS.surface.dark2,
+    backgroundColor: '#1E1916',
   },
   planRow: {
     flexDirection: 'row',
@@ -458,38 +451,40 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   planName: {
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 20,
     fontWeight: '800',
     color: COLORS.text.primary,
   },
   planBadge: {
-    backgroundColor: COLORS.surface.tinted,
+    backgroundColor: 'rgba(245,158,11,0.10)',
     borderWidth: 1,
-    borderColor: COLORS.border.lavendar,
+    borderColor: 'rgba(245,158,11,0.25)',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 10,
   },
   planBadgeText: {
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 12,
     fontWeight: '700',
     color: COLORS.primary,
   },
   planDesc: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 13,
     color: COLORS.text.secondary,
   },
-  settingItem: {
+  // Flat setting rows — no card per row, separated by thin dividers
+  settingRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: COLORS.surface.light,
-    borderRadius: 12,
     paddingVertical: 14,
-    paddingHorizontal: 16,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: COLORS.border.light,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: 'rgba(245,158,11,0.08)',
   },
   settingLeft: {
     flexDirection: 'row',
@@ -498,6 +493,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   settingLabel: {
+    fontFamily: TYPOGRAPHY.fontFamily.semibold,
     fontSize: 15,
     fontWeight: '600',
     color: COLORS.text.primary,
@@ -508,6 +504,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   settingValue: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 13,
     color: COLORS.text.secondary,
   },
@@ -515,52 +512,48 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 6,
   },
-  langChipActive: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  langChipTextActive: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
   langChip: {
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 20,
-    backgroundColor: COLORS.surface.dark2,
+    backgroundColor: '#1E1916',
     borderWidth: 1,
-    borderColor: COLORS.border.light,
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  langChipActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
   langChipText: {
+    fontFamily: TYPOGRAPHY.fontFamily.semibold,
     fontSize: 12,
     fontWeight: '600',
-    color: COLORS.text.secondary,
+    color: COLORS.text.muted,
+  },
+  langChipTextActive: {
+    color: COLORS.text.onBrand,
+    fontWeight: '700',
   },
   logoutBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: 'rgba(239,68,68,0.10)',
-    borderWidth: 1,
-    borderColor: 'rgba(239,68,68,0.20)',
     gap: 8,
   },
   logoutText: {
+    fontFamily: TYPOGRAPHY.fontFamily.semibold,
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '600',
     color: COLORS.error,
   },
   version: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 12,
     color: COLORS.text.muted,
     textAlign: 'center',
     marginBottom: 16,
   },
-  // Edit modal
   photoGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -588,22 +581,25 @@ const styles = StyleSheet.create({
     width: '30%',
     aspectRatio: 1,
     borderRadius: 10,
-    borderWidth: 1,
-    borderColor: COLORS.border.light,
-    backgroundColor: COLORS.surface.dark,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: 'rgba(245,158,11,0.20)',
+    backgroundColor: '#1E1916',
     alignItems: 'center',
     justifyContent: 'center',
   },
   inputLabel: {
+    fontFamily: TYPOGRAPHY.fontFamily.semibold,
     fontSize: 13,
     fontWeight: '600',
     color: COLORS.text.secondary,
     marginBottom: 8,
   },
   input: {
-    backgroundColor: COLORS.surface.inputBg,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+    backgroundColor: '#1E1916',
     borderWidth: 1,
-    borderColor: COLORS.border.light,
+    borderColor: 'rgba(245,158,11,0.12)',
     borderRadius: 12,
     padding: 14,
     fontSize: 15,
@@ -616,6 +612,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   cancelText: {
+    fontFamily: TYPOGRAPHY.fontFamily.semibold,
     fontSize: 15,
     fontWeight: '600',
     color: COLORS.text.secondary,

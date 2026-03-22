@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { COLORS } from '../../core/constants';
+import { COLORS, TYPOGRAPHY } from '../../core/constants';
 import type { DiscoverProfile } from '../../types';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -22,37 +22,28 @@ export default function DiscoverCard({ profile, onLike, likeLoading }: DiscoverC
         <Image source={{ uri: profile.photo_urls[0] }} style={styles.photo} resizeMode="cover" />
       ) : (
         <View style={styles.photoPlaceholder}>
-          <MaterialCommunityIcons name="account-heart" size={52} color="rgba(180,140,255,0.4)" />
+          <MaterialCommunityIcons name="account-heart" size={48} color="rgba(245,158,11,0.30)" />
         </View>
       )}
 
-      {/* Deep gradient overlay — bottom 65% */}
+      {/* Dark gradient overlay at bottom */}
       <LinearGradient
-        colors={['transparent', 'rgba(5,3,14,0.55)', 'rgba(5,3,14,0.93)']}
+        colors={['transparent', 'rgba(12,10,8,0.55)', 'rgba(12,10,8,0.92)']}
         locations={[0, 0.45, 1]}
         style={styles.gradient}
       />
 
-      {/* Top edge shimmer */}
-      <LinearGradient
-        colors={['rgba(5,3,14,0.35)', 'transparent']}
-        style={styles.topFade}
-      />
-
-      {/* Info — bottom overlay */}
+      {/* Info */}
       <View style={styles.info}>
         <View style={styles.nameRow}>
           <Text style={styles.name}>{profile.display_name}</Text>
-          {profile.age ? (
-            <Text style={styles.age}>{profile.age}</Text>
-          ) : null}
+          {profile.age ? <Text style={styles.age}>{profile.age}</Text> : null}
         </View>
 
         {profile.bio ? (
           <Text style={styles.bio} numberOfLines={1}>{profile.bio}</Text>
         ) : null}
 
-        {/* Interest chips */}
         {profile.interests && profile.interests.length > 0 && (
           <View style={styles.chips}>
             {profile.interests.slice(0, 2).map((interest, i) => (
@@ -64,7 +55,7 @@ export default function DiscoverCard({ profile, onLike, likeLoading }: DiscoverC
         )}
       </View>
 
-      {/* Like button */}
+      {/* Like button — rose red */}
       <TouchableOpacity
         style={[styles.likeBtn, likeLoading && styles.btnDisabled]}
         onPress={onLike}
@@ -73,7 +64,7 @@ export default function DiscoverCard({ profile, onLike, likeLoading }: DiscoverC
       >
         <MaterialCommunityIcons
           name={likeLoading ? 'loading' : 'heart'}
-          size={20}
+          size={18}
           color="#fff"
         />
       </TouchableOpacity>
@@ -85,16 +76,16 @@ const styles = StyleSheet.create({
   card: {
     width: CARD_WIDTH,
     height: 260,
-    borderRadius: 18,
+    borderRadius: 16,
     overflow: 'hidden',
     marginHorizontal: 5,
     marginVertical: 6,
-    backgroundColor: '#12092A',
+    backgroundColor: '#161210',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.06)',
-    shadowColor: '#000',
+    shadowColor: 'rgba(0,0,0,0.7)',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.45,
+    shadowOpacity: 1,
     shadowRadius: 16,
     elevation: 10,
   },
@@ -105,7 +96,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1A0E35',
+    backgroundColor: '#1E1916',
   },
   gradient: {
     position: 'absolute',
@@ -113,13 +104,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: '70%',
-  },
-  topFade: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 60,
   },
   info: {
     position: 'absolute',
@@ -134,20 +118,21 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   name: {
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     color: '#FFFFFF',
-    fontSize: 16,
-    fontFamily: 'Poppins_700Bold',
+    fontSize: 15,
+    fontWeight: '700',
     letterSpacing: 0.2,
   },
   age: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     color: 'rgba(255,255,255,0.65)',
-    fontSize: 14,
-    fontFamily: 'Poppins_400Regular',
+    fontSize: 13,
   },
   bio: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     color: 'rgba(255,255,255,0.55)',
     fontSize: 10,
-    fontFamily: 'Poppins_400Regular',
     lineHeight: 14,
   },
   chips: {
@@ -156,31 +141,31 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   chip: {
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: 'rgba(245,158,11,0.12)',
     borderRadius: 100,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
+    borderColor: 'rgba(245,158,11,0.20)',
     paddingHorizontal: 8,
     paddingVertical: 2,
   },
   chipText: {
-    color: 'rgba(255,255,255,0.85)',
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+    color: COLORS.primary,
     fontSize: 9,
-    fontFamily: 'Poppins_500Medium',
   },
   likeBtn: {
     position: 'absolute',
     bottom: 12,
     right: 12,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.primary,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: COLORS.secondary, // rose red
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: COLORS.primary,
+    shadowColor: 'rgba(220,38,38,0.45)',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.55,
+    shadowOpacity: 1,
     shadowRadius: 8,
     elevation: 6,
   },

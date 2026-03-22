@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { COLORS } from '../../core/constants';
+import { COLORS, TYPOGRAPHY } from '../../core/constants';
 import { useStrings } from '../../core/i18n/useStrings';
 import { container } from '../../infrastructure/di/Container';
 
@@ -69,6 +68,12 @@ const AVAILABLE_MISSIONS: Mission[] = [
   },
 ];
 
+const DIFFICULTY_COLOR: Record<string, string> = {
+  easy:   '#10B981',  // green
+  medium: '#F59E0B',  // amber
+  hard:   '#DC2626',  // red
+};
+
 export default function TrainerScreen() {
   const s = useStrings();
   const [missions, setMissions] = useState<Mission[]>(AVAILABLE_MISSIONS);
@@ -122,27 +127,8 @@ export default function TrainerScreen() {
     container.toast.success('Mission Complete!', `+${mission.xp} XP earned`);
   };
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'easy':   return COLORS.success;
-      case 'medium': return COLORS.warning;
-      case 'hard':   return COLORS.error;
-      default:       return COLORS.text.secondary;
-    }
-  };
-
-  const getDifficultyLabel = (difficulty: string) => {
-    switch (difficulty) {
-      case 'easy':   return s.trainer.difficulty.easy;
-      case 'medium': return s.trainer.difficulty.medium;
-      case 'hard':   return s.trainer.difficulty.hard;
-      default:       return difficulty;
-    }
-  };
-
   const completedMissions = missions.filter(m => m.completed).length;
   const xpInLevel = totalXP % 100;
-  const progressPct = xpInLevel;
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -153,36 +139,28 @@ export default function TrainerScreen() {
           <Text style={styles.headerSubtitle}>{s.trainer.subtitle}</Text>
         </View>
 
-        {/* Hero Stats Card */}
+        {/* Stats card */}
         <View style={styles.statsCard}>
           <View style={styles.statsTopRow}>
-            {/* Level badge */}
-            <LinearGradient
-              colors={COLORS.gradient.primary}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.levelBadge}
-            >
-              <MaterialCommunityIcons name="trophy" size={16} color="#FFF" />
+            {/* Level badge — solid amber */}
+            <View style={styles.levelBadge}>
+              <MaterialCommunityIcons name="trophy" size={15} color={COLORS.text.onBrand} />
               <Text style={styles.levelText}>{s.trainer.level} {level}</Text>
-            </LinearGradient>
+            </View>
 
             {/* XP total */}
-            <Text style={styles.xpTotal}>
-              <Text style={styles.xpTotalNumber}>{totalXP}</Text>
-              <Text style={styles.xpTotalLabel}> {s.trainer.xp}</Text>
-            </Text>
+            <View>
+              <Text style={styles.xpTotal}>
+                <Text style={styles.xpTotalNumber}>{totalXP}</Text>
+                <Text style={styles.xpTotalLabel}> {s.trainer.xp}</Text>
+              </Text>
+            </View>
           </View>
 
-          {/* XP Progress bar */}
+          {/* XP Progress bar — solid amber */}
           <View style={styles.progressRow}>
             <View style={styles.progressTrack}>
-              <LinearGradient
-                colors={COLORS.gradient.primary}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={[styles.progressFill, { width: `${progressPct}%` }]}
-              />
+              <View style={[styles.progressFill, { width: `${xpInLevel}%` }]} />
             </View>
             <Text style={styles.progressLabel}>
               {xpInLevel}/100 XP {s.trainer.toNextLevel}
@@ -217,9 +195,10 @@ export default function TrainerScreen() {
               disabled={mission.completed}
               activeOpacity={0.75}
             >
-              {/* Left accent strip */}
-              <View style={[styles.missionAccent, { backgroundColor: getDifficultyColor(mission.difficulty) }]} />
+              {/* Left accent strip — difficulty color */}
+              <View style={[styles.missionAccent, { backgroundColor: DIFFICULTY_COLOR[mission.difficulty] }]} />
 
+              {/* Icon */}
               <View style={styles.missionIconWrap}>
                 <MaterialCommunityIcons
                   name={mission.completed ? 'check-circle' : (mission.icon as any)}
@@ -228,15 +207,16 @@ export default function TrainerScreen() {
                 />
               </View>
 
+              {/* Body */}
               <View style={styles.missionBody}>
                 <Text style={[styles.missionTitle, mission.completed && styles.missionTitleDone]}>
                   {mission.title}
                 </Text>
                 <Text style={styles.missionDesc}>{mission.description}</Text>
                 <View style={styles.missionFooter}>
-                  <View style={[styles.difficultyChip, { backgroundColor: getDifficultyColor(mission.difficulty) + '22' }]}>
-                    <Text style={[styles.difficultyLabel, { color: getDifficultyColor(mission.difficulty) }]}>
-                      {getDifficultyLabel(mission.difficulty)}
+                  <View style={[styles.difficultyChip, { backgroundColor: DIFFICULTY_COLOR[mission.difficulty] + '22' }]}>
+                    <Text style={[styles.difficultyLabel, { color: DIFFICULTY_COLOR[mission.difficulty] }]}>
+                      {s.trainer.difficulty[mission.difficulty]}
                     </Text>
                   </View>
                   <Text style={styles.xpChip}>+{mission.xp} {s.trainer.xpReward}</Text>
@@ -267,12 +247,14 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   headerTitle: {
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 28,
     fontWeight: '800',
     color: COLORS.text.primary,
     letterSpacing: -0.5,
   },
   headerSubtitle: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 14,
     color: COLORS.text.secondary,
     marginTop: 2,
@@ -280,12 +262,12 @@ const styles = StyleSheet.create({
   statsCard: {
     marginHorizontal: 24,
     marginBottom: 24,
-    backgroundColor: COLORS.surface.light,
+    backgroundColor: '#161210',
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: COLORS.border.light,
-    shadowColor: COLORS.shadow.card,
+    borderColor: 'rgba(245,158,11,0.12)',
+    shadowColor: 'rgba(0,0,0,0.5)',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 1,
     shadowRadius: 16,
@@ -304,21 +286,23 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
     gap: 6,
+    backgroundColor: COLORS.primary,
   },
   levelText: {
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 14,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: COLORS.text.onBrand,
   },
-  xpTotal: {
-    textAlign: 'right',
-  },
+  xpTotal: {},
   xpTotalNumber: {
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 24,
     fontWeight: '800',
     color: COLORS.primary,
   },
   xpTotalLabel: {
+    fontFamily: TYPOGRAPHY.fontFamily.semibold,
     fontSize: 14,
     fontWeight: '600',
     color: COLORS.text.secondary,
@@ -329,16 +313,18 @@ const styles = StyleSheet.create({
   progressTrack: {
     height: 8,
     borderRadius: 4,
-    backgroundColor: COLORS.surface.dark2,
+    backgroundColor: '#261E1A',
     overflow: 'hidden',
     marginBottom: 6,
   },
   progressFill: {
     height: '100%',
     borderRadius: 4,
+    backgroundColor: COLORS.primary,
     minWidth: 8,
   },
   progressLabel: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 12,
     color: COLORS.text.secondary,
     textAlign: 'right',
@@ -352,48 +338,51 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statValue: {
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 26,
     fontWeight: '800',
     color: COLORS.primary,
     marginBottom: 4,
   },
   statLabel: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 12,
     color: COLORS.text.secondary,
   },
   statDivider: {
     width: 1,
     height: 40,
-    backgroundColor: COLORS.border.light,
+    backgroundColor: 'rgba(245,158,11,0.12)',
     marginHorizontal: 16,
   },
   section: {
     paddingHorizontal: 24,
   },
   sectionTitle: {
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 18,
     fontWeight: '700',
-    color: COLORS.text.primary,
+    color: COLORS.primary,
     marginBottom: 14,
     letterSpacing: -0.3,
   },
   missionCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.surface.light,
+    backgroundColor: '#161210',
     borderRadius: 14,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: COLORS.border.light,
+    borderColor: 'rgba(255,255,255,0.06)',
     overflow: 'hidden',
-    shadowColor: COLORS.shadow.card,
+    shadowColor: 'rgba(0,0,0,0.5)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 1,
     shadowRadius: 8,
     elevation: 4,
   },
   missionCardDone: {
-    opacity: 0.55,
+    opacity: 0.5,
   },
   missionAccent: {
     width: 3,
@@ -403,7 +392,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: COLORS.surface.tinted,
+    backgroundColor: 'rgba(245,158,11,0.08)',
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 12,
@@ -416,6 +405,7 @@ const styles = StyleSheet.create({
     paddingRight: 12,
   },
   missionTitle: {
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 15,
     fontWeight: '700',
     color: COLORS.text.primary,
@@ -423,9 +413,10 @@ const styles = StyleSheet.create({
   },
   missionTitleDone: {
     textDecorationLine: 'line-through',
-    color: COLORS.text.secondary,
+    color: COLORS.text.muted,
   },
   missionDesc: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 13,
     color: COLORS.text.secondary,
     marginBottom: 8,
@@ -442,10 +433,12 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   difficultyLabel: {
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 11,
     fontWeight: '700',
   },
   xpChip: {
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 12,
     fontWeight: '700',
     color: COLORS.primary,

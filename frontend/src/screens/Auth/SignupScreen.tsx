@@ -7,14 +7,12 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
-  ScrollView
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { COLORS } from '../../core/constants';
+import { COLORS, TYPOGRAPHY } from '../../core/constants';
 import { container } from '../../infrastructure/di/Container';
 import { useAppStore } from '../../store/appStore';
 import AppBackground from '../../components/common/AppBackground';
@@ -34,27 +32,23 @@ export default function SignupScreen({ navigation }: Props) {
 
   const handleSignup = async () => {
     if (!name.trim() || !email.trim() || !password.trim()) {
-      container.toast.error('Error', 'Por favor completa todos los campos');
+      container.toast.error('Error', 'Please fill in all fields');
       return;
     }
-
     if (password !== confirmPassword) {
-      container.toast.error('Error', 'Las contraseñas no coinciden');
+      container.toast.error('Error', 'Passwords do not match');
       return;
     }
-
     if (password.length < 8) {
-      container.toast.error('Error', 'La contraseña debe tener al menos 8 caracteres');
+      container.toast.error('Error', 'Password must be at least 8 characters');
       return;
     }
-
     if (!/[A-Z]/.test(password)) {
-      container.toast.error('Error', 'La contraseña debe tener al menos 1 letra mayúscula');
+      container.toast.error('Error', 'Password must have at least 1 uppercase letter');
       return;
     }
-
     if (!/[0-9]/.test(password)) {
-      container.toast.error('Error', 'La contraseña debe tener al menos 1 número');
+      container.toast.error('Error', 'Password must have at least 1 number');
       return;
     }
 
@@ -63,8 +57,7 @@ export default function SignupScreen({ navigation }: Props) {
       const response = await container.authApi.register({ email, password, name, country: 'US' });
       await setToken(response.token);
       setUser(response.user);
-      container.toast.success('¡Cuenta creada!', `Bienvenido ${name}`);
-      // Will automatically navigate to onboarding
+      container.toast.success('Account created!', `Welcome ${name}`);
     } catch (error: any) {
       console.error('Signup error:', error);
       const detail = error.detail;
@@ -72,15 +65,15 @@ export default function SignupScreen({ navigation }: Props) {
         ? detail.map((e: any) => e.msg).join(', ')
         : typeof detail === 'string'
         ? detail
-        : 'No se pudo crear la cuenta';
-      container.toast.error('Error al registrarse', message);
+        : 'Could not create account';
+      container.toast.error('Sign up failed', message);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}>
+    <SafeAreaView style={styles.container}>
       <AppBackground />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -89,120 +82,101 @@ export default function SignupScreen({ navigation }: Props) {
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* Header */}
           <View style={styles.header}>
-            <MaterialCommunityIcons name="account-heart" size={64} color={COLORS.primary} />
-            <Text style={styles.title}>Crear Cuenta</Text>
-            <Text style={styles.subtitle}>Únete a Labia.AI</Text>
+            <View style={styles.logoCircle}>
+              <Text style={styles.logoLetter}>L</Text>
+            </View>
+            <Text style={styles.brandName}>Create Account</Text>
+            <Text style={styles.subtitle}>Join Labia.AI</Text>
           </View>
 
           {/* Form */}
           <View style={styles.form}>
-            {/* Name Input */}
-            <View style={styles.inputContainer}>
-              <MaterialCommunityIcons name="account-outline" size={20} color={COLORS.text.secondary} />
-              <TextInput
-                style={styles.input}
-                placeholder="Nombre completo"
-                value={name}
-                onChangeText={setName}
-                autoComplete="name"
-                editable={!isLoading}
-              />
-            </View>
+            <InputField
+              icon="account-outline"
+              placeholder="Full name"
+              value={name}
+              onChangeText={setName}
+              editable={!isLoading}
+            />
+            <InputField
+              icon="email-outline"
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              editable={!isLoading}
+            />
+            <InputField
+              icon="lock-outline"
+              placeholder="Password (8+ chars, uppercase, number)"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              autoCapitalize="none"
+              editable={!isLoading}
+              rightIcon={
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                  <MaterialCommunityIcons
+                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={20}
+                    color={COLORS.text.muted}
+                  />
+                </TouchableOpacity>
+              }
+            />
+            <InputField
+              icon="lock-check-outline"
+              placeholder="Confirm password"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry={!showConfirmPassword}
+              autoCapitalize="none"
+              editable={!isLoading}
+              rightIcon={
+                <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+                  <MaterialCommunityIcons
+                    name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={20}
+                    color={COLORS.text.muted}
+                  />
+                </TouchableOpacity>
+              }
+            />
 
-            {/* Email Input */}
-            <View style={styles.inputContainer}>
-              <MaterialCommunityIcons name="email-outline" size={20} color={COLORS.text.secondary} />
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoComplete="email"
-                editable={!isLoading}
-              />
-            </View>
-
-            {/* Password Input */}
-            <View style={styles.inputContainer}>
-              <MaterialCommunityIcons name="lock-outline" size={20} color={COLORS.text.secondary} />
-              <TextInput
-                style={styles.input}
-                placeholder="Contraseña (8+ chars, mayúscula, número)"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-                autoCapitalize="none"
-                editable={!isLoading}
-              />
-              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                <MaterialCommunityIcons
-                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                  size={20}
-                  color={COLORS.text.secondary}
-                />
-              </TouchableOpacity>
-            </View>
-
-            {/* Confirm Password Input */}
-            <View style={styles.inputContainer}>
-              <MaterialCommunityIcons name="lock-check-outline" size={20} color={COLORS.text.secondary} />
-              <TextInput
-                style={styles.input}
-                placeholder="Confirmar contraseña"
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry={!showConfirmPassword}
-                autoCapitalize="none"
-                editable={!isLoading}
-              />
-              <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-                <MaterialCommunityIcons
-                  name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
-                  size={20}
-                  color={COLORS.text.secondary}
-                />
-              </TouchableOpacity>
-            </View>
-
-            {/* Terms */}
             <Text style={styles.terms}>
-              Al registrarte, aceptas nuestros{' '}
-              <Text style={styles.termsLink}>Términos de Servicio</Text> y{' '}
-              <Text style={styles.termsLink}>Política de Privacidad</Text>
+              By signing up, you agree to our{' '}
+              <Text style={styles.termsLink}>Terms of Service</Text> and{' '}
+              <Text style={styles.termsLink}>Privacy Policy</Text>
             </Text>
 
-            {/* Signup Button */}
             <NeonButton
               onPress={handleSignup}
               disabled={isLoading}
-              label={isLoading ? 'Creando…' : 'Crear Cuenta'}
-              leftIcon={<MaterialCommunityIcons name={isLoading ? 'progress-clock' : 'account-plus'} size={20} color="#FFF" />}
+              loading={isLoading}
+              label="Create Account"
+              leftIcon={<MaterialCommunityIcons name="account-plus" size={18} color={COLORS.text.onBrand} />}
             />
 
-            {/* Divider */}
             <View style={styles.divider}>
               <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>o registrarse con</Text>
+              <Text style={styles.dividerText}>or</Text>
               <View style={styles.dividerLine} />
             </View>
 
-            {/* Social Login Buttons */}
             <View style={styles.socialButtons}>
               <TouchableOpacity style={styles.socialButton}>
-                <MaterialCommunityIcons name="google" size={24} color="#DB4437" />
+                <MaterialCommunityIcons name="google" size={22} color="#DB4437" />
               </TouchableOpacity>
               <TouchableOpacity style={styles.socialButton}>
-                <MaterialCommunityIcons name="apple" size={24} color="#000000" />
+                <MaterialCommunityIcons name="apple" size={22} color={COLORS.text.primary} />
               </TouchableOpacity>
             </View>
 
-            {/* Login Link */}
             <View style={styles.loginContainer}>
-              <Text style={styles.loginText}>¿Ya tienes cuenta? </Text>
+              <Text style={styles.loginText}>Already have an account? </Text>
               <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-                <Text style={styles.loginLink}>Inicia Sesión</Text>
+                <Text style={styles.loginLink}>Sign In</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -212,113 +186,173 @@ export default function SignupScreen({ navigation }: Props) {
   );
 }
 
+function InputField({
+  icon, placeholder, value, onChangeText, secureTextEntry, keyboardType, autoCapitalize, editable, rightIcon,
+}: {
+  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  placeholder: string;
+  value: string;
+  onChangeText: (v: string) => void;
+  secureTextEntry?: boolean;
+  keyboardType?: any;
+  autoCapitalize?: any;
+  editable?: boolean;
+  rightIcon?: React.ReactNode;
+}) {
+  const [focused, setFocused] = useState(false);
+  return (
+    <View style={[inputStyles.container, focused && inputStyles.containerFocused]}>
+      <MaterialCommunityIcons name={icon} size={20} color={focused ? COLORS.primary : COLORS.text.muted} />
+      <TextInput
+        style={inputStyles.input}
+        placeholder={placeholder}
+        placeholderTextColor={COLORS.text.muted}
+        value={value}
+        onChangeText={onChangeText}
+        secureTextEntry={secureTextEntry}
+        keyboardType={keyboardType}
+        autoCapitalize={autoCapitalize}
+        editable={editable}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+      />
+      {rightIcon}
+    </View>
+  );
+}
+
+const inputStyles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#161210',
+    borderWidth: 1,
+    borderColor: 'rgba(245,158,11,0.12)',
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    marginBottom: 14,
+    gap: 10,
+  },
+  containerFocused: {
+    borderColor: COLORS.primary,
+  },
+  input: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+    flex: 1,
+    fontSize: 15,
+    color: COLORS.text.primary,
+  },
+});
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#0C0A08',
   },
   keyboardView: {
     flex: 1,
-    paddingHorizontal: 24
+    paddingHorizontal: 24,
   },
   header: {
     alignItems: 'center',
     paddingTop: 40,
-    paddingBottom: 32
+    paddingBottom: 32,
   },
-  title: {
+  logoCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    shadowColor: 'rgba(245,158,11,0.35)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  logoLetter: {
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 32,
     fontWeight: '800',
+    color: COLORS.text.onBrand,
+  },
+  brandName: {
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+    fontSize: 28,
+    fontWeight: '800',
     color: COLORS.text.primary,
-    marginTop: 16,
-    marginBottom: 8
+    letterSpacing: -0.5,
+    marginBottom: 6,
   },
   subtitle: {
-    fontSize: 16,
-    color: COLORS.text.secondary
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+    fontSize: 15,
+    color: COLORS.text.secondary,
   },
   form: {
-    paddingBottom: 40
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.surface.light,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    marginBottom: 16,
-  },
-  input: {
-    flex: 1,
-    fontSize: 16,
-    color: COLORS.text.primary
+    paddingBottom: 40,
   },
   terms: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 12,
     color: COLORS.text.secondary,
     textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 18
+    marginBottom: 20,
+    lineHeight: 18,
   },
   termsLink: {
     color: COLORS.primary,
-    fontWeight: '600'
-  },
-  signupButton: {
-    paddingVertical: 16,
-    borderRadius: 28,
-    alignItems: 'center',
-    marginBottom: 24
-  },
-  signupButtonText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#FFFFFF'
+    fontWeight: '600',
   },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24
+    marginVertical: 20,
   },
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#E5E7EB'
+    backgroundColor: 'rgba(255,255,255,0.06)',
   },
   dividerText: {
-    fontSize: 14,
-    color: COLORS.text.secondary,
-    marginHorizontal: 16
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+    fontSize: 13,
+    color: COLORS.text.muted,
+    marginHorizontal: 16,
   },
   socialButtons: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginBottom: 32
+    gap: 16,
+    marginBottom: 28,
   },
   socialButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: COLORS.surface.light,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: '#161210',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: 'rgba(255,255,255,0.08)',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   loginContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   loginText: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 14,
-    color: COLORS.text.secondary
+    color: COLORS.text.secondary,
   },
   loginLink: {
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 14,
+    fontWeight: '700',
     color: COLORS.primary,
-    fontWeight: '700'
-  }
+  },
 });

@@ -2,46 +2,39 @@ import React, { useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Animated, Image, Dimensions,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { COLORS } from '../../core/constants';
+import { COLORS, TYPOGRAPHY } from '../../core/constants';
 import type { Lobby, ActivityType, EnergyLevel } from '../../types';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH / 2 - 20;
 
-// ---- Activity metadata ----
-
 const ACTIVITY_META: Record<ActivityType, { icon: string; label: string; color: string }> = {
-  date_night:  { icon: 'candle',           label: 'Date Night',  color: '#FF6B9D' },
-  road_trip:   { icon: 'car-convertible',  label: 'Road Trip',   color: '#FFB347' },
-  brunch:      { icon: 'food-croissant',   label: 'Brunch',      color: '#A8E6CF' },
-  adventure:   { icon: 'lightning-bolt',   label: 'Adventure',   color: '#FFD700' },
-  beach:       { icon: 'umbrella-beach',   label: 'Beach',       color: '#4FC3F7' },
-  concert:     { icon: 'music',            label: 'Concert',     color: '#CE93D8' },
-  hiking:      { icon: 'hiking',           label: 'Hiking',      color: '#81C784' },
-  chill:       { icon: 'sofa-single',      label: 'Chill',       color: '#B39DDB' },
+  date_night:  { icon: 'candle',          label: 'Date Night', color: '#FF6B9D' },
+  road_trip:   { icon: 'car-convertible', label: 'Road Trip',  color: '#FFB347' },
+  brunch:      { icon: 'food-croissant',  label: 'Brunch',     color: '#A8E6CF' },
+  adventure:   { icon: 'lightning-bolt',  label: 'Adventure',  color: '#FFD700' },
+  beach:       { icon: 'umbrella-beach',  label: 'Beach',      color: '#4FC3F7' },
+  concert:     { icon: 'music',           label: 'Concert',    color: '#CE93D8' },
+  hiking:      { icon: 'hiking',          label: 'Hiking',     color: '#81C784' },
+  chill:       { icon: 'sofa-single',     label: 'Chill',      color: '#B39DDB' },
 };
 
 const ENERGY_META: Record<EnergyLevel, { color: string; label: string }> = {
-  empty:   { color: '#4a4060',  label: 'empty'   },
-  warm:    { color: '#F59E0B',  label: 'warm'    },
-  buzzing: { color: '#10B981',  label: 'buzzing' },
-  full:    { color: '#7B5FFF',  label: 'full'    },
+  empty:   { color: '#4a4060', label: 'empty'   },
+  warm:    { color: '#F59E0B', label: 'warm'    },
+  buzzing: { color: '#10B981', label: 'buzzing' },
+  full:    { color: '#7B5FFF', label: 'full'    },
 };
-
-// ---- Expiry helpers ----
 
 function formatExpiry(expiresAt: string): string {
   const diff = new Date(expiresAt).getTime() - Date.now();
-  if (diff <= 0) return 'Expirado';
+  if (diff <= 0) return 'Expired';
   const h = Math.floor(diff / 3_600_000);
   const m = Math.floor((diff % 3_600_000) / 60_000);
   if (h > 0) return `${h}h`;
   return `${m}m`;
 }
-
-// ---- Component ----
 
 interface Props {
   lobby: Lobby;
@@ -52,14 +45,13 @@ export default function LobbyCard({ lobby, onPress }: Props) {
   const meta   = ACTIVITY_META[lobby.activity_type] ?? ACTIVITY_META.chill;
   const energy = ENERGY_META[lobby.energy_level];
 
-  // Pulse animation for buzzing/full lobbies
   const pulse = useRef(new Animated.Value(1)).current;
   useEffect(() => {
     if (lobby.energy_level === 'buzzing' || lobby.energy_level === 'full') {
       const anim = Animated.loop(
         Animated.sequence([
-          Animated.timing(pulse, { toValue: 1.22, duration: 800, useNativeDriver: true }),
-          Animated.timing(pulse, { toValue: 1,    duration: 800, useNativeDriver: true }),
+          Animated.timing(pulse, { toValue: 1.2, duration: 900, useNativeDriver: true }),
+          Animated.timing(pulse, { toValue: 1,   duration: 900, useNativeDriver: true }),
         ])
       );
       anim.start();
@@ -71,17 +63,9 @@ export default function LobbyCard({ lobby, onPress }: Props) {
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
-      {/* Subtle gradient bg tinted by activity color */}
-      <LinearGradient
-        colors={[meta.color + '14', 'transparent']}
-        style={StyleSheet.absoluteFillObject}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      />
-
       {/* Activity badge */}
       <View style={[styles.activityBadge, { backgroundColor: meta.color + '22' }]}>
-        <MaterialCommunityIcons name={meta.icon as any} size={12} color={meta.color} />
+        <MaterialCommunityIcons name={meta.icon as any} size={11} color={meta.color} />
         <Text style={[styles.activityLabel, { color: meta.color }]}>{meta.label}</Text>
       </View>
 
@@ -94,17 +78,16 @@ export default function LobbyCard({ lobby, onPress }: Props) {
           <Image source={{ uri: lobby.creator_photo }} style={styles.avatar} />
         ) : (
           <View style={[styles.avatar, styles.avatarPlaceholder]}>
-            <MaterialCommunityIcons name="account" size={11} color={COLORS.accent} />
+            <MaterialCommunityIcons name="account" size={10} color={COLORS.primary} />
           </View>
         )}
         <Text style={styles.creatorName} numberOfLines={1}>{lobby.creator_name}</Text>
       </View>
 
-      {/* Member bar */}
+      {/* Member fill bar */}
       <View style={styles.memberRow}>
-        <MaterialCommunityIcons name="account-multiple" size={12} color="rgba(255,255,255,0.35)" />
+        <MaterialCommunityIcons name="account-multiple" size={11} color={COLORS.text.muted} />
         <Text style={styles.memberCount}>{lobby.member_count}/{lobby.max_size}</Text>
-        {/* Fill bar */}
         <View style={styles.fillTrack}>
           <View
             style={[
@@ -131,7 +114,7 @@ export default function LobbyCard({ lobby, onPress }: Props) {
         </Animated.View>
 
         <View style={styles.expiryBadge}>
-          <MaterialCommunityIcons name="clock-outline" size={10} color="rgba(255,255,255,0.3)" />
+          <MaterialCommunityIcons name="clock-outline" size={9} color={COLORS.text.muted} />
           <Text style={styles.expiryText}>{expiry}</Text>
         </View>
       </View>
@@ -139,8 +122,8 @@ export default function LobbyCard({ lobby, onPress }: Props) {
       {/* Joined badge */}
       {lobby.is_member && (
         <View style={styles.joinedBadge}>
-          <MaterialCommunityIcons name="check-circle" size={10} color={COLORS.accent} />
-          <Text style={[styles.joinedText, { color: COLORS.accent }]}>Joined</Text>
+          <MaterialCommunityIcons name="check-circle" size={9} color={COLORS.primary} />
+          <Text style={[styles.joinedText, { color: COLORS.primary }]}>Joined</Text>
         </View>
       )}
     </TouchableOpacity>
@@ -150,18 +133,18 @@ export default function LobbyCard({ lobby, onPress }: Props) {
 const styles = StyleSheet.create({
   card: {
     width: CARD_WIDTH,
-    borderRadius: 18,
+    borderRadius: 16,
     padding: 12,
     marginHorizontal: 5,
     marginVertical: 6,
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: '#161210',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.09)',
+    borderColor: 'rgba(245,158,11,0.10)',
     overflow: 'hidden',
     gap: 7,
-    shadowColor: '#000',
+    shadowColor: 'rgba(0,0,0,0.5)',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
+    shadowOpacity: 1,
     shadowRadius: 12,
     elevation: 8,
   },
@@ -175,14 +158,16 @@ const styles = StyleSheet.create({
     borderRadius: 100,
   },
   activityLabel: {
+    fontFamily: TYPOGRAPHY.fontFamily.semibold,
     fontSize: 9,
-    fontFamily: 'Poppins_600SemiBold',
+    fontWeight: '600',
     letterSpacing: 0.3,
   },
   name: {
+    fontFamily: TYPOGRAPHY.fontFamily.semibold,
     fontSize: 13,
-    fontFamily: 'Poppins_600SemiBold',
-    color: 'rgba(255,255,255,0.9)',
+    fontWeight: '600',
+    color: COLORS.text.primary,
     lineHeight: 18,
   },
   creatorRow: {
@@ -196,14 +181,14 @@ const styles = StyleSheet.create({
     borderRadius: 9,
   },
   avatarPlaceholder: {
-    backgroundColor: 'rgba(183,148,246,0.2)',
+    backgroundColor: 'rgba(245,158,11,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   creatorName: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 10,
-    fontFamily: 'Poppins_400Regular',
-    color: 'rgba(255,255,255,0.4)',
+    color: COLORS.text.muted,
     flex: 1,
   },
   memberRow: {
@@ -212,21 +197,21 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   memberCount: {
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
     fontSize: 10,
-    fontFamily: 'Poppins_500Medium',
-    color: 'rgba(255,255,255,0.5)',
+    color: COLORS.text.secondary,
   },
   fillTrack: {
     flex: 1,
     height: 3,
     borderRadius: 2,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.06)',
     overflow: 'hidden',
   },
   fillBar: {
     height: '100%',
     borderRadius: 2,
-    opacity: 0.8,
+    opacity: 0.85,
   },
   bottomRow: {
     flexDirection: 'row',
@@ -247,8 +232,8 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   energyText: {
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
     fontSize: 9,
-    fontFamily: 'Poppins_500Medium',
     textTransform: 'capitalize',
   },
   expiryBadge: {
@@ -257,9 +242,9 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   expiryText: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 9,
-    fontFamily: 'Poppins_400Regular',
-    color: 'rgba(255,255,255,0.3)',
+    color: COLORS.text.muted,
   },
   joinedBadge: {
     position: 'absolute',
@@ -268,15 +253,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: 'rgba(183,148,246,0.15)',
+    backgroundColor: 'rgba(245,158,11,0.12)',
     borderWidth: 1,
-    borderColor: 'rgba(183,148,246,0.25)',
+    borderColor: 'rgba(245,158,11,0.25)',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 100,
   },
   joinedText: {
+    fontFamily: TYPOGRAPHY.fontFamily.semibold,
     fontSize: 8,
-    fontFamily: 'Poppins_600SemiBold',
+    fontWeight: '600',
   },
 });

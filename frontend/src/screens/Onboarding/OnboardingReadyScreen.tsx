@@ -1,47 +1,40 @@
 import React, { useEffect, useRef } from 'react';
-import {
-  View, Text, StyleSheet, TouchableOpacity, Animated,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { COLORS } from '../../core/constants';
+import { COLORS, TYPOGRAPHY } from '../../core/constants';
 import { useAppStore } from '../../store/appStore';
 import type { OnboardingStackParamList } from '../../types';
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'OnboardingReady'>;
 
 const FEATURES = [
-  { icon: 'heart-search',   label: 'Descubre perfiles que conectan contigo'  },
-  { icon: 'account-group',  label: 'Únete a grupos y planea aventuras'        },
-  { icon: 'robot-love',     label: 'IA que te ayuda a romper el hielo'        },
+  { icon: 'heart-search',  label: 'Discover profiles that connect with you'  },
+  { icon: 'account-group', label: 'Join groups and plan adventures'           },
+  { icon: 'robot-love',    label: 'AI that helps you break the ice'           },
 ];
 
 export default function OnboardingReadyScreen({ navigation }: Props) {
   const { setDarkMode, setOnboardingCompleted } = useAppStore();
 
-  const ringScale  = useRef(new Animated.Value(0)).current;
-  const iconOpacity = useRef(new Animated.Value(0)).current;
+  const ringScale      = useRef(new Animated.Value(0)).current;
   const contentOpacity = useRef(new Animated.Value(0)).current;
-  const ctaOpacity = useRef(new Animated.Value(0)).current;
-  const pulseAnim  = useRef(new Animated.Value(1)).current;
+  const ctaOpacity     = useRef(new Animated.Value(0)).current;
+  const pulseAnim      = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    // Entrance sequence
     Animated.sequence([
       Animated.spring(ringScale, { toValue: 1, tension: 50, friction: 6, useNativeDriver: true }),
-      Animated.timing(iconOpacity, { toValue: 1, duration: 300, useNativeDriver: true }),
       Animated.timing(contentOpacity, { toValue: 1, duration: 400, useNativeDriver: true }),
       Animated.timing(ctaOpacity, { toValue: 1, duration: 400, useNativeDriver: true }),
     ]).start();
 
-    // Pulse loop on ring
     setTimeout(() => {
       Animated.loop(
         Animated.sequence([
-          Animated.timing(pulseAnim, { toValue: 1.06, duration: 1200, useNativeDriver: true }),
-          Animated.timing(pulseAnim, { toValue: 1,    duration: 1200, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1.05, duration: 1300, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1,    duration: 1300, useNativeDriver: true }),
         ])
       ).start();
     }, 800);
@@ -50,55 +43,35 @@ export default function OnboardingReadyScreen({ navigation }: Props) {
   const handleStart = async () => {
     setDarkMode(true);
     await setOnboardingCompleted();
-    // RootNavigator subscribes to hasCompletedOnboarding — setting it triggers re-render to Main
   };
 
   return (
     <View style={styles.container}>
-      <LinearGradient colors={['#05030E', '#0D0820', '#120930']} style={StyleSheet.absoluteFillObject}
-        start={{ x: 0.3, y: 0 }} end={{ x: 0.7, y: 1 }}
-      />
-      {/* Bg glow */}
-      <View style={styles.bgGlow}>
-        <LinearGradient
-          colors={['rgba(94,66,156,0.25)', 'transparent']}
-          style={StyleSheet.absoluteFillObject}
-        />
-      </View>
+      {/* Subtle amber glow at top */}
+      <View style={styles.bgGlow} />
 
       <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
         <View style={styles.center}>
-          {/* Animated icon ring */}
-          <Animated.View style={[styles.ringOuter, { transform: [{ scale: ringScale }, { scale: pulseAnim }] }]}>
-            <LinearGradient
-              colors={[COLORS.secondary + '30', COLORS.primary + '30']}
-              style={StyleSheet.absoluteFillObject}
-            />
+          {/* Animated amber icon ring */}
+          <Animated.View
+            style={[styles.ringOuter, { transform: [{ scale: ringScale }, { scale: pulseAnim }] }]}
+          >
             <View style={styles.ringInner}>
-              <LinearGradient
-                colors={[COLORS.secondary, COLORS.primary]}
-                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-                style={styles.iconGrad}
-              >
-                <Animated.View style={{ opacity: iconOpacity }}>
-                  <MaterialCommunityIcons name="heart-flash" size={44} color="#FFFFFF" />
-                </Animated.View>
-              </LinearGradient>
+              <MaterialCommunityIcons name="heart-flash" size={44} color={COLORS.text.onBrand} />
             </View>
           </Animated.View>
 
           <Animated.View style={[styles.textArea, { opacity: contentOpacity }]}>
-            <Text style={styles.title}>¡Todo listo! 🎉</Text>
+            <Text style={styles.title}>All set! 🎉</Text>
             <Text style={styles.subtitle}>
-              Tu perfil está configurado.{'\n'}Es hora de conectar.
+              Your profile is ready.{'\n'}Time to connect.
             </Text>
 
-            {/* Feature list */}
             <View style={styles.featureList}>
               {FEATURES.map((f, i) => (
                 <View key={i} style={styles.featureRow}>
                   <View style={styles.featureIcon}>
-                    <MaterialCommunityIcons name={f.icon as any} size={18} color={COLORS.accent} />
+                    <MaterialCommunityIcons name={f.icon as any} size={18} color={COLORS.primary} />
                   </View>
                   <Text style={styles.featureLabel}>{f.label}</Text>
                 </View>
@@ -107,21 +80,14 @@ export default function OnboardingReadyScreen({ navigation }: Props) {
           </Animated.View>
         </View>
 
-        {/* CTA */}
         <Animated.View style={[styles.bottom, { opacity: ctaOpacity }]}>
           <TouchableOpacity
             style={styles.cta}
             onPress={handleStart}
             activeOpacity={0.85}
           >
-            <LinearGradient
-              colors={[COLORS.secondary, COLORS.primary]}
-              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-              style={styles.ctaGrad}
-            >
-              <MaterialCommunityIcons name="heart-search" size={20} color="#fff" />
-              <Text style={styles.ctaText}>Explorar Labia.AI</Text>
-            </LinearGradient>
+            <MaterialCommunityIcons name="heart-search" size={20} color={COLORS.text.onBrand} />
+            <Text style={styles.ctaText}>Explore Labia.AI</Text>
           </TouchableOpacity>
         </Animated.View>
       </SafeAreaView>
@@ -130,102 +96,79 @@ export default function OnboardingReadyScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  safe: { flex: 1 },
+  container: { flex: 1, backgroundColor: '#0C0A08' },
   bgGlow: {
     position: 'absolute',
-    width: 500,
-    height: 500,
-    borderRadius: 250,
+    width: 400,
+    height: 400,
+    borderRadius: 200,
+    backgroundColor: 'rgba(245,158,11,0.05)',
     top: -100,
     alignSelf: 'center',
-    overflow: 'hidden',
   },
+  safe: { flex: 1 },
   center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 28,
-    gap: 28,
+    flex: 1, alignItems: 'center', justifyContent: 'center',
+    paddingHorizontal: 28, gap: 28,
   },
   ringOuter: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
+    width: 148,
+    height: 148,
+    borderRadius: 74,
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(183,148,246,0.2)',
+    borderWidth: 2,
+    borderColor: 'rgba(245,158,11,0.20)',
+    backgroundColor: 'rgba(245,158,11,0.06)',
   },
   ringInner: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    overflow: 'hidden',
-  },
-  iconGrad: {
-    width: '100%',
-    height: '100%',
+    width: 104,
+    height: 104,
+    borderRadius: 52,
+    backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: 'rgba(245,158,11,0.40)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 16,
+    elevation: 8,
   },
-  textArea: {
-    alignItems: 'center',
-    gap: 10,
-  },
+  textArea: { alignItems: 'center', gap: 10 },
   title: {
-    fontSize: 36,
-    fontFamily: 'Poppins_700Bold',
-    color: '#FFFFFF',
-    textAlign: 'center',
+    fontFamily: TYPOGRAPHY.fontFamily.bold, fontSize: 36, fontWeight: '700',
+    color: COLORS.text.primary, textAlign: 'center',
   },
   subtitle: {
-    fontSize: 16,
-    fontFamily: 'Poppins_400Regular',
-    color: 'rgba(255,255,255,0.45)',
-    textAlign: 'center',
-    lineHeight: 24,
+    fontFamily: TYPOGRAPHY.fontFamily.regular, fontSize: 16,
+    color: COLORS.text.secondary, textAlign: 'center', lineHeight: 24,
   },
-  featureList: {
-    gap: 12,
-    marginTop: 8,
-    width: '100%',
-  },
+  featureList: { gap: 12, marginTop: 8, width: '100%' },
   featureRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.07)',
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    backgroundColor: '#161210',
+    borderWidth: 1, borderColor: 'rgba(245,158,11,0.08)',
+    borderRadius: 14, paddingHorizontal: 16, paddingVertical: 12,
   },
   featureIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: 'rgba(183,148,246,0.12)',
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 36, height: 36, borderRadius: 10,
+    backgroundColor: 'rgba(245,158,11,0.10)',
+    alignItems: 'center', justifyContent: 'center',
   },
   featureLabel: {
-    fontSize: 13,
-    fontFamily: 'Poppins_500Medium',
-    color: 'rgba(255,255,255,0.7)',
-    flex: 1,
+    fontFamily: TYPOGRAPHY.fontFamily.medium, fontSize: 13,
+    color: COLORS.text.secondary, flex: 1,
   },
   bottom: { paddingHorizontal: 24, paddingBottom: 32 },
   cta: {
-    borderRadius: 18, overflow: 'hidden',
-    shadowColor: COLORS.primary, shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.5, shadowRadius: 20, elevation: 12,
-  },
-  ctaGrad: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 10, paddingVertical: 18, borderRadius: 18,
+    backgroundColor: COLORS.primary,
+    shadowColor: 'rgba(245,158,11,0.40)',
+    shadowOffset: { width: 0, height: 8 }, shadowOpacity: 1, shadowRadius: 20, elevation: 12,
   },
-  ctaText: { fontSize: 17, fontFamily: 'Poppins_700Bold', color: '#FFFFFF', letterSpacing: 0.3 },
+  ctaText: {
+    fontFamily: TYPOGRAPHY.fontFamily.bold, fontSize: 17, fontWeight: '700',
+    color: COLORS.text.onBrand, letterSpacing: 0.3,
+  },
 });
